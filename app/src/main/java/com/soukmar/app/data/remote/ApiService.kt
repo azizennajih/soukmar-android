@@ -28,4 +28,10 @@ interface ApiService {
 
     @GET("auth/me")
     suspend fun me(): Response<UserDto>
+
+    @GET("listings")
+    suspend fun getListings(@QueryMap params: Map<String, String>): Response<ListingsResponseDto>
+
+    @GET("catalog/categories/{category}/full")
+    suspend fun getCategoryFull(@Path("category") category: String): Response<CategoryFullResponse>
 }
