@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -41,6 +42,7 @@ fun HomeScreen(
     onOpenDeposerAnnonce: () -> Unit,
     onOpenChat: () -> Unit,
     onOpenMesAnnonces: () -> Unit,
+    onOpenFavoris: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     Scaffold(
@@ -48,6 +50,9 @@ fun HomeScreen(
             TopAppBar(
                 title = { SoukMarLogo() },
                 actions = {
+                    IconButton(onClick = onOpenFavoris) {
+                        Icon(Icons.Filled.FavoriteBorder, contentDescription = "Mes favoris")
+                    }
                     IconButton(onClick = onOpenMesAnnonces) {
                         Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Mes annonces")
                     }

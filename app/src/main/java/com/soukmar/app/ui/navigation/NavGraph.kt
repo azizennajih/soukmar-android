@@ -14,6 +14,7 @@ import com.soukmar.app.ui.screens.auth.ResetPasswordScreen
 import com.soukmar.app.ui.screens.chat.ChatListScreen
 import com.soukmar.app.ui.screens.chat.ChatScreen
 import com.soukmar.app.ui.screens.deposerannonce.DeposerAnnonceScreen
+import com.soukmar.app.ui.screens.favoris.FavorisScreen
 import com.soukmar.app.ui.screens.home.HomeScreen
 import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
 import com.soukmar.app.ui.screens.listings.ListingsScreen
@@ -66,7 +67,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenSearch = { navController.navigate(Routes.listings()) },
                 onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) },
                 onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
-                onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) }
+                onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
+                onOpenFavoris = { navController.navigate(Routes.FAVORIS) }
             )
         }
         composable(
@@ -127,6 +129,17 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
                 onEditListing = { id -> navController.navigate(Routes.deposerAnnonce(id)) },
                 onNewListing = { navController.navigate(Routes.deposerAnnonce()) }
+            )
+        }
+        composable(Routes.FAVORIS) {
+            FavorisScreen(
+                onBack = { navController.popBackStack() },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onBrowse = {
+                    navController.navigate(Routes.listings()) {
+                        popUpTo(Routes.FAVORIS) { inclusive = true }
+                    }
+                }
             )
         }
     }
