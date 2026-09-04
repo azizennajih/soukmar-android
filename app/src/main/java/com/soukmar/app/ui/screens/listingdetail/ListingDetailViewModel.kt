@@ -66,6 +66,8 @@ class ListingDetailViewModel @Inject constructor(
         private set
     var chatMessage by mutableStateOf<String?>(null)
         private set
+    var navigateToChatId by mutableStateOf<String?>(null)
+        private set
 
     fun load(id: String) {
         viewModelScope.launch {
@@ -172,13 +174,14 @@ class ListingDetailViewModel @Inject constructor(
         chatStarting = true
         chatMessage = null
         viewModelScope.launch {
-            chatMessage = when (chatRepository.startConversation(id)) {
-                is ApiResult.Success -> "Conversation démarrée ! Le chat complet arrive dans une prochaine mise à jour."
-                is ApiResult.Error -> "Impossible de démarrer la conversation pour le moment."
+            when (val result = chatRepository.startConversation(id)) {
+                is ApiResult.Success -> navigateToChatId = result.data.id
+                is ApiResult.Error -> chatMessage = result.message
             }
             chatStarting = false
         }
     }
 
     fun clearChatMessage() { chatMessage = null }
+    fun clearNavigateToChatId() { navigateToChatId = null }
 }

@@ -107,7 +107,7 @@ Reihenfolge und Stand:
 2. ✅ Home + Anzeigen durchsuchen/suchen mit dynamischen EAV-Filtern
 3. ✅ Anzeigendetail (Galerie, Attribute, Preis-Indikator, Favoriten, Bewertung, Melden, Chat-Einstieg)
 4. ✅ Anzeige aufgeben (Assistent mit dynamischen Attributen, Foto-Upload, Premium/Telefon-Toggle) — `ui/screens/deposerannonce/`. ViewModel unterstützt bereits Edit-Modus (optionaler `id`-Routenparameter, `ListingUpsertRequest` für POST **und** PUT), aber im NavGraph ist aktuell nur der Create-Einstieg (FAB auf Home) verdrahtet — der Edit-Einstieg kommt mit Phase 6 (Mes Annonces → "Bearbeiten"-Button navigiert zu `Routes.deposerAnnonce(listing.id)`). Foto-Picker nutzt `ActivityResultContracts.GetMultipleContents()` (kein Photo-Picker-Play-Services-Zwang). Reihenfolge/Hauptbild wird per Tap-to-promote gelöst (kein Drag&Drop wie im Web).
-5. ⬜ Chat (Socket.IO Echtzeit, Angebote, Schnellantworten, Melden)
+5. ✅ Chat (Socket.IO Echtzeit, Angebote, Schnellantworten, Melden) — `ui/screens/chat/` (Liste + Konversation), `data/remote/ChatSocketManager.kt`. Gleiches Event-Protokoll wie `soukmar-backend/src/socket.ts` (`send_message`, `send_offer`, `respond_offer`, `cancel_offer`, `cancel_reservation`, `typing` → `new_message`, `offer_updated`, `user_typing`, `listing_status_changed`). Es gibt **kein** eigenes REST-Endpoint zum Senden — Nachrichten/Angebote laufen ausschließlich über den Socket. Einstieg über Chat-Icon in `HomeScreen`-TopAppBar sowie über "Contacter le vendeur" in `ListingDetailScreen` (navigiert jetzt direkt in die Konversation statt der alten Platzhalter-Snackbar).
 6. ⬜ Meine Anzeigen (Bump, 14-Tage-Statistik)
 7. ⬜ Favoriten-Übersicht
 8. ⬜ Profil (bearbeiten + Passwort ändern)

@@ -69,4 +69,10 @@ interface ApiService {
 
     @POST("chat/conversations")
     suspend fun createConversation(@Body body: CreateConversationRequest): Response<ConversationDto>
+
+    @GET("chat/conversations")
+    suspend fun getConversations(): Response<List<ConversationDto>>
+
+    @GET("chat/conversations/{id}/messages")
+    suspend fun getMessages(@Path("id") id: String): Response<List<MessageDto>>
 }

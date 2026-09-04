@@ -51,6 +51,7 @@ fun ListingDetailScreen(
     listingId: String,
     onBack: () -> Unit,
     onRequireLogin: () -> Unit,
+    onOpenChat: (String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -61,6 +62,12 @@ fun ListingDetailScreen(
         viewModel.chatMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearChatMessage()
+        }
+    }
+    LaunchedEffect(viewModel.navigateToChatId) {
+        viewModel.navigateToChatId?.let {
+            onOpenChat(it)
+            viewModel.clearNavigateToChatId()
         }
     }
 

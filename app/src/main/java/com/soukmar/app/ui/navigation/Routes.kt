@@ -13,4 +13,7 @@ object Routes {
     fun listingDetail(id: String) = "listing/$id"
     const val DEPOSER_ANNONCE = "deposer_annonce?id={id}"
     fun deposerAnnonce(id: String? = null) = if (id != null) "deposer_annonce?id=$id" else "deposer_annonce"
+    const val CHAT_LIST = "chat"
+    const val CHAT_DETAIL = "chat/{conversationId}"
+    fun chatDetail(conversationId: String) = "chat/$conversationId"
 }

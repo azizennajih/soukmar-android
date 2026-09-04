@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -37,6 +38,7 @@ fun HomeScreen(
     onOpenCategory: (String) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenDeposerAnnonce: () -> Unit,
+    onOpenChat: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     Scaffold(
@@ -44,6 +46,9 @@ fun HomeScreen(
             TopAppBar(
                 title = { SoukMarLogo() },
                 actions = {
+                    IconButton(onClick = onOpenChat) {
+                        Icon(Icons.Filled.ChatBubbleOutline, contentDescription = "Messages")
+                    }
                     IconButton(onClick = { viewModel.logout(onLoggedOut) }) {
                         Icon(Icons.Filled.Logout, contentDescription = "Se déconnecter")
                     }

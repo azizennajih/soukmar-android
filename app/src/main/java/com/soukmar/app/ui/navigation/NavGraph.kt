@@ -11,6 +11,8 @@ import com.soukmar.app.ui.screens.auth.ForgotPasswordScreen
 import com.soukmar.app.ui.screens.auth.LoginScreen
 import com.soukmar.app.ui.screens.auth.RegisterScreen
 import com.soukmar.app.ui.screens.auth.ResetPasswordScreen
+import com.soukmar.app.ui.screens.chat.ChatListScreen
+import com.soukmar.app.ui.screens.chat.ChatScreen
 import com.soukmar.app.ui.screens.deposerannonce.DeposerAnnonceScreen
 import com.soukmar.app.ui.screens.home.HomeScreen
 import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
@@ -61,7 +63,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 },
                 onOpenCategory = { category -> navController.navigate(Routes.listings(category)) },
                 onOpenSearch = { navController.navigate(Routes.listings()) },
-                onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) }
+                onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) },
+                onOpenChat = { navController.navigate(Routes.CHAT_LIST) }
             )
         }
         composable(
@@ -81,7 +84,8 @@ fun SoukMarNavGraph(startDestination: String) {
             ListingDetailScreen(
                 listingId = backStackEntry.arguments?.getString("id") ?: "",
                 onBack = { navController.popBackStack() },
-                onRequireLogin = { navController.navigate(Routes.LOGIN) }
+                onRequireLogin = { navController.navigate(Routes.LOGIN) },
+                onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) }
             )
         }
         composable(
@@ -97,6 +101,22 @@ fun SoukMarNavGraph(startDestination: String) {
                         popUpTo(Routes.DEPOSER_ANNONCE) { inclusive = true }
                     }
                 }
+            )
+        }
+        composable(Routes.CHAT_LIST) {
+            ChatListScreen(
+                onBack = { navController.popBackStack() },
+                onOpenConversation = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) }
+            )
+        }
+        composable(
+            route = Routes.CHAT_DETAIL,
+            arguments = listOf(navArgument("conversationId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            ChatScreen(
+                conversationId = backStackEntry.arguments?.getString("conversationId") ?: "",
+                onBack = { navController.popBackStack() },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
             )
         }
     }
