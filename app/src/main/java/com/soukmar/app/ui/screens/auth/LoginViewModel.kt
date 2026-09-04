@@ -56,6 +56,7 @@ class LoginViewModel @Inject constructor(
             val result = authRepository.resendVerification(target)
             resendLoading = false
             resendOk = result is ApiResult.Success
+            if (result is ApiResult.Error) error = result.message
         }
     }
 }
