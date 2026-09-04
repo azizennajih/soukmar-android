@@ -11,6 +11,7 @@ import com.soukmar.app.ui.screens.auth.ForgotPasswordScreen
 import com.soukmar.app.ui.screens.auth.LoginScreen
 import com.soukmar.app.ui.screens.auth.RegisterScreen
 import com.soukmar.app.ui.screens.auth.ResetPasswordScreen
+import com.soukmar.app.ui.screens.deposerannonce.DeposerAnnonceScreen
 import com.soukmar.app.ui.screens.home.HomeScreen
 import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
 import com.soukmar.app.ui.screens.listings.ListingsScreen
@@ -59,7 +60,8 @@ fun SoukMarNavGraph(startDestination: String) {
                     }
                 },
                 onOpenCategory = { category -> navController.navigate(Routes.listings(category)) },
-                onOpenSearch = { navController.navigate(Routes.listings()) }
+                onOpenSearch = { navController.navigate(Routes.listings()) },
+                onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) }
             )
         }
         composable(
@@ -80,6 +82,21 @@ fun SoukMarNavGraph(startDestination: String) {
                 listingId = backStackEntry.arguments?.getString("id") ?: "",
                 onBack = { navController.popBackStack() },
                 onRequireLogin = { navController.navigate(Routes.LOGIN) }
+            )
+        }
+        composable(
+            route = Routes.DEPOSER_ANNONCE,
+            arguments = listOf(navArgument("id") { type = NavType.StringType; nullable = true; defaultValue = null })
+        ) { backStackEntry ->
+            DeposerAnnonceScreen(
+                editId = backStackEntry.arguments?.getString("id"),
+                onBack = { navController.popBackStack() },
+                onRequireLogin = { navController.navigate(Routes.LOGIN) },
+                onPublished = { id ->
+                    navController.navigate(Routes.listingDetail(id)) {
+                        popUpTo(Routes.DEPOSER_ANNONCE) { inclusive = true }
+                    }
+                }
             )
         }
     }

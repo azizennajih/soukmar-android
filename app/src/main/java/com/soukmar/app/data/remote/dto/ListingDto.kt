@@ -1,6 +1,7 @@
 package com.soukmar.app.data.remote.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class ListingUserDto(
@@ -61,3 +62,26 @@ data class FavoriteRecordDto(
     val userId: String? = null,
     val listingId: String? = null
 )
+
+/** Body for both POST /listings and PUT /listings/:id — mirrors the web
+ * deposer-annonce component, which reuses the same payload object for
+ * create and update rather than sending a partial diff. */
+@Serializable
+data class ListingUpsertRequest(
+    val title: String,
+    val description: String,
+    val price: Double? = null,
+    val currency: String = "MAD",
+    val category: String,
+    val subcategoryId: String? = null,
+    val condition: String? = null,
+    val city: String,
+    val images: List<String> = emptyList(),
+    val phone: String? = null,
+    val whatsapp: String? = null,
+    val showPhone: Boolean = true,
+    val attributes: Map<String, JsonElement> = emptyMap()
+)
+
+@Serializable
+data class UploadResponseDto(val urls: List<String> = emptyList())

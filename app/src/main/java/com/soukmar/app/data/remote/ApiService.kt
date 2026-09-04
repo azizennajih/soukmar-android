@@ -1,6 +1,7 @@
 package com.soukmar.app.data.remote
 
 import com.soukmar.app.data.remote.dto.*
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -37,6 +38,16 @@ interface ApiService {
 
     @GET("listings/{id}")
     suspend fun getListing(@Path("id") id: String): Response<ListingDto>
+
+    @POST("listings")
+    suspend fun createListing(@Body body: ListingUpsertRequest): Response<ListingDto>
+
+    @PUT("listings/{id}")
+    suspend fun updateListing(@Path("id") id: String, @Body body: ListingUpsertRequest): Response<ListingDto>
+
+    @Multipart
+    @POST("upload")
+    suspend fun uploadImages(@Part images: List<MultipartBody.Part>): Response<UploadResponseDto>
 
     @GET("favorites")
     suspend fun getFavorites(): Response<List<ListingDto>>

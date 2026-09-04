@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -25,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.SoukMarLogo
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.theme.BorderColor
+import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
@@ -34,6 +36,7 @@ fun HomeScreen(
     onLoggedOut: () -> Unit,
     onOpenCategory: (String) -> Unit,
     onOpenSearch: () -> Unit,
+    onOpenDeposerAnnonce: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     Scaffold(
@@ -45,6 +48,15 @@ fun HomeScreen(
                         Icon(Icons.Filled.Logout, contentDescription = "Se déconnecter")
                     }
                 }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onOpenDeposerAnnonce,
+                containerColor = Primary,
+                contentColor = WhiteColor,
+                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                text = { Text("Déposer une annonce") }
             )
         }
     ) { padding ->

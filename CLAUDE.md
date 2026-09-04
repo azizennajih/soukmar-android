@@ -89,6 +89,7 @@ Die Android-App hat (im Gegensatz zur Web-App mit 6 Sprachen) noch keine i18n-Sc
 - **Compose Screens:** Datei-Header `@file:OptIn(ExperimentalMaterial3Api::class)` (und `ExperimentalFoundationApi::class` bei Pager-Nutzung) statt einzelner `@OptIn` pro Funktion.
 - **Navigation:** `Routes.kt` als zentrales Objekt mit Konstanten + Helper-Funktionen für parametrisierte Routen (`Routes.listingDetail(id)` statt String-Interpolation im Aufrufer).
 - **Farben/Kategorien:** `ui/model/CatalogModels.kt` — statische Kopie von `CATEGORIES`/`CONDITION_CATEGORIES`/`HIGHLIGHT_ATTR_CODES` aus `listing.model.ts`. Bei Änderungen am Web-Katalog **beide Seiten** aktualisieren.
+- **"Tap to open a dropdown" auf einem `readOnly` `OutlinedTextField`:** ein `.clickable{}` direkt auf dem TextField feuert unzuverlässig nicht — das TextField konsumiert den Tap selbst zuerst für seinen eigenen Fokus/Cursor. Stattdessen einen transparenten Overlay-`Box(Modifier.matchParentSize().clickable{...})` als Geschwister-Element *über* dem TextField platzieren (siehe `CityDropdown`/`AttributeField` SELECT-Case in `DeposerAnnonceScreen.kt`).
 
 ---
 
@@ -105,7 +106,7 @@ Reihenfolge und Stand:
 1. ✅ Auth (Login/Register/Passwort vergessen+zurücksetzen)
 2. ✅ Home + Anzeigen durchsuchen/suchen mit dynamischen EAV-Filtern
 3. ✅ Anzeigendetail (Galerie, Attribute, Preis-Indikator, Favoriten, Bewertung, Melden, Chat-Einstieg)
-4. ⬜ Anzeige aufgeben (Assistent mit dynamischen Attributen, Foto-Upload, Premium/Telefon-Toggle)
+4. ✅ Anzeige aufgeben (Assistent mit dynamischen Attributen, Foto-Upload, Premium/Telefon-Toggle) — `ui/screens/deposerannonce/`. ViewModel unterstützt bereits Edit-Modus (optionaler `id`-Routenparameter, `ListingUpsertRequest` für POST **und** PUT), aber im NavGraph ist aktuell nur der Create-Einstieg (FAB auf Home) verdrahtet — der Edit-Einstieg kommt mit Phase 6 (Mes Annonces → "Bearbeiten"-Button navigiert zu `Routes.deposerAnnonce(listing.id)`). Foto-Picker nutzt `ActivityResultContracts.GetMultipleContents()` (kein Photo-Picker-Play-Services-Zwang). Reihenfolge/Hauptbild wird per Tap-to-promote gelöst (kein Drag&Drop wie im Web).
 5. ⬜ Chat (Socket.IO Echtzeit, Angebote, Schnellantworten, Melden)
 6. ⬜ Meine Anzeigen (Bump, 14-Tage-Statistik)
 7. ⬜ Favoriten-Übersicht
