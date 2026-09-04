@@ -32,13 +32,18 @@ import com.soukmar.app.ui.theme.TextPrimary
 @Composable
 fun ListingsScreen(
     initialCategory: String?,
+    savedSearchId: String?,
     onBack: () -> Unit,
     onOpenListing: (String) -> Unit,
     viewModel: ListingsViewModel = hiltViewModel()
 ) {
     var showFilters by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (initialCategory != null && viewModel.selectedCategory == null) viewModel.setCategory(initialCategory)
+        if (savedSearchId != null) {
+            viewModel.applySavedSearchById(savedSearchId)
+        } else if (initialCategory != null && viewModel.selectedCategory == null) {
+            viewModel.setCategory(initialCategory)
+        }
     }
 
     Scaffold(
@@ -67,6 +72,7 @@ fun ListingsScreen(
                     }
                 )
                 CategoryChipsRow(selected = viewModel.selectedCategory, onSelect = { viewModel.setCategory(it) })
+                if (viewModel.isLoggedIn) SaveSearchSection(viewModel)
                 if (showFilters) FiltersPanel(viewModel)
             }
         }
@@ -139,6 +145,43 @@ private fun FilterChipItem(label: String, emoji: String? = null, selected: Boole
         label = { Text(if (emoji != null) "$emoji $label" else label) },
         colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
     )
+}
+
+@Composable
+private fun SaveSearchSection(viewModel: ListingsViewModel) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+        when {
+            viewModel.searchSaved -> Text("✅ Recherche enregistrée !", color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
+            viewModel.showSaveSearchForm -> {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = viewModel.newSearchName,
+                        onValueChange = { viewModel.newSearchName = it },
+                        placeholder = { Text("Nom de la recherche") },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(onClick = { viewModel.cancelSaveSearch() }) { Text("Annuler") }
+                    Button(
+                        onClick = { viewModel.saveSearch() },
+                        enabled = viewModel.newSearchName.isNotBlank() && !viewModel.savingSearch,
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    ) {
+                        Text(if (viewModel.savingSearch) "…" else "Enregistrer")
+                    }
+                }
+                viewModel.saveSearchError?.let {
+                    Spacer(Modifier.height(4.dp))
+                    Text(it, color = com.soukmar.app.ui.theme.ErrorColor, style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            else -> TextButton(onClick = { viewModel.showSaveSearchForm = true }) {
+                Text("🔔 Enregistrer cette recherche")
+            }
+        }
+    }
 }
 
 @Composable

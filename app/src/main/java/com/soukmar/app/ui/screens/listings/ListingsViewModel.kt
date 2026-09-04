@@ -5,13 +5,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.data.remote.dto.SavedSearchCreateRequest
+import com.soukmar.app.data.remote.dto.SavedSearchDto
 import com.soukmar.app.data.remote.dto.SubcategoryWithAttributesDto
 import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.CatalogRepository
 import com.soukmar.app.data.repository.ListingRepository
+import com.soukmar.app.data.repository.SavedSearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,7 +26,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ListingsViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
-    private val catalogRepository: CatalogRepository
+    private val catalogRepository: CatalogRepository,
+    private val savedSearchRepository: SavedSearchRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     var query by mutableStateOf("")
@@ -59,8 +66,20 @@ class ListingsViewModel @Inject constructor(
     var hasMore by mutableStateOf(false)
         private set
 
+    var isLoggedIn by mutableStateOf(false)
+        private set
+    var showSaveSearchForm by mutableStateOf(false)
+    var newSearchName by mutableStateOf("")
+    var savingSearch by mutableStateOf(false)
+        private set
+    var searchSaved by mutableStateOf(false)
+        private set
+    var saveSearchError by mutableStateOf<String?>(null)
+        private set
+
     init {
         search()
+        viewModelScope.launch { isLoggedIn = tokenManager.isLoggedIn() }
     }
 
     fun setCategory(value: String?) {
@@ -186,4 +205,93 @@ class ListingsViewModel @Inject constructor(
             loadingMore = false
         }
     }
+
+    fun saveSearch() {
+        val trimmedName = newSearchName.trim()
+        if (trimmedName.isEmpty() || savingSearch) return
+        savingSearch = true
+        saveSearchError = null
+        viewModelScope.launch {
+            val attrs = attrSelections
+                .filterValues { it.isNotEmpty() }
+                .mapValues { it.value.toList() }
+                .takeIf { it.isNotEmpty() }
+            val body = SavedSearchCreateRequest(
+                name = trimmedName,
+                category = selectedCategory,
+                subcategoryId = selectedSubcategoryId,
+                q = query.trim().takeIf { it.isNotBlank() },
+                minPrice = minPrice.toDoubleOrNull(),
+                maxPrice = maxPrice.toDoubleOrNull(),
+                condition = selectedCondition,
+                attrs = attrs
+            )
+            when (val result = savedSearchRepository.create(body)) {
+                is ApiResult.Success -> {
+                    showSaveSearchForm = false
+                    newSearchName = ""
+                    searchSaved = true
+                    delay(3000)
+                    searchSaved = false
+                }
+                is ApiResult.Error -> saveSearchError = result.message
+            }
+            savingSearch = false
+        }
+    }
+
+    fun cancelSaveSearch() {
+        showSaveSearchForm = false
+        saveSearchError = null
+        newSearchName = ""
+    }
+
+    /** Re-fetches the user's saved searches to find [id] and re-applies its
+     * stored filters — there's no GET-by-id endpoint, only the list one. */
+    fun applySavedSearchById(id: String) {
+        viewModelScope.launch {
+            when (val result = savedSearchRepository.getAll()) {
+                is ApiResult.Success -> result.data.find { it.id == id }?.let { applySavedSearch(it) }
+                is ApiResult.Error -> { /* fall back to whatever filters are already set */ }
+            }
+        }
+    }
+
+    private fun applySavedSearch(saved: SavedSearchDto) {
+        viewModelScope.launch {
+            query = saved.q ?: ""
+            minPrice = saved.minPrice?.let { formatPlain(it) } ?: ""
+            maxPrice = saved.maxPrice?.let { formatPlain(it) } ?: ""
+            selectedCondition = saved.condition
+            selectedSubcategoryId = saved.subcategoryId
+            attrSelections = saved.attrs?.mapValues { it.value.toSet() } ?: emptyMap()
+            attrRanges = emptyMap()
+            selectedCategory = saved.category
+
+            if (saved.category != null) {
+                when (val result = catalogRepository.getCategoryFull(saved.category)) {
+                    is ApiResult.Success -> {
+                        subcategories = result.data.subcategories
+                        filterableAttributes = if (saved.subcategoryId != null) {
+                            subcategories.find { it.id == saved.subcategoryId }?.attributeDefinitions?.filter { it.filterable }
+                                ?: unionFilterableAttrs(subcategories)
+                        } else {
+                            unionFilterableAttrs(subcategories)
+                        }
+                    }
+                    is ApiResult.Error -> {
+                        subcategories = emptyList()
+                        filterableAttributes = emptyList()
+                    }
+                }
+            } else {
+                subcategories = emptyList()
+                filterableAttributes = emptyList()
+            }
+            search()
+        }
+    }
+
+    private fun formatPlain(value: Double): String =
+        if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
 }

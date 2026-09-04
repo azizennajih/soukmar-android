@@ -7,8 +7,14 @@ object Routes {
     const val RESET_PASSWORD = "reset_password?token={token}"
     fun resetPassword(token: String) = "reset_password?token=$token"
     const val HOME = "home"
-    const val LISTINGS = "listings?category={category}"
-    fun listings(category: String? = null) = if (category != null) "listings?category=$category" else "listings"
+    const val LISTINGS = "listings?category={category}&savedSearchId={savedSearchId}"
+    fun listings(category: String? = null, savedSearchId: String? = null): String {
+        val params = buildList {
+            category?.let { add("category=$it") }
+            savedSearchId?.let { add("savedSearchId=$it") }
+        }
+        return if (params.isEmpty()) "listings" else "listings?" + params.joinToString("&")
+    }
     const val LISTING_DETAIL = "listing/{id}"
     fun listingDetail(id: String) = "listing/$id"
     const val DEPOSER_ANNONCE = "deposer_annonce?id={id}"
@@ -21,4 +27,5 @@ object Routes {
     const val PROFIL = "profil"
     const val SELLER_PROFILE = "vendeur/{id}"
     fun sellerProfile(id: String) = "vendeur/$id"
+    const val SAVED_SEARCHES = "recherches_sauvegardees"
 }

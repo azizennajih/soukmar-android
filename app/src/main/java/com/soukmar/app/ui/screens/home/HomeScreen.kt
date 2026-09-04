@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -49,6 +50,7 @@ fun HomeScreen(
     onOpenMesAnnonces: () -> Unit,
     onOpenFavoris: () -> Unit,
     onOpenProfil: () -> Unit,
+    onOpenSavedSearches: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -72,6 +74,11 @@ fun HomeScreen(
                             Icon(Icons.Filled.MoreVert, contentDescription = "Plus")
                         }
                         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Recherches sauvegardées") },
+                                leadingIcon = { Icon(Icons.Filled.NotificationsNone, contentDescription = null) },
+                                onClick = { menuExpanded = false; onOpenSavedSearches() }
+                            )
                             DropdownMenuItem(
                                 text = { Text("Profil") },
                                 leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },

@@ -21,6 +21,7 @@ import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
 import com.soukmar.app.ui.screens.listings.ListingsScreen
 import com.soukmar.app.ui.screens.mesannonces.MesAnnoncesScreen
 import com.soukmar.app.ui.screens.sellerprofile.SellerProfileScreen
+import com.soukmar.app.ui.screens.savedsearches.SavedSearchesScreen
 
 @Composable
 fun SoukMarNavGraph(startDestination: String) {
@@ -71,15 +72,20 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
                 onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
-                onOpenProfil = { navController.navigate(Routes.PROFIL) }
+                onOpenProfil = { navController.navigate(Routes.PROFIL) },
+                onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) }
             )
         }
         composable(
             route = Routes.LISTINGS,
-            arguments = listOf(navArgument("category") { type = NavType.StringType; nullable = true; defaultValue = null })
+            arguments = listOf(
+                navArgument("category") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("savedSearchId") { type = NavType.StringType; nullable = true; defaultValue = null }
+            )
         ) { backStackEntry ->
             ListingsScreen(
                 initialCategory = backStackEntry.arguments?.getString("category"),
+                savedSearchId = backStackEntry.arguments?.getString("savedSearchId"),
                 onBack = { navController.popBackStack() },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
             )
@@ -157,6 +163,12 @@ fun SoukMarNavGraph(startDestination: String) {
                 sellerId = backStackEntry.arguments?.getString("id") ?: "",
                 onBack = { navController.popBackStack() },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+            )
+        }
+        composable(Routes.SAVED_SEARCHES) {
+            SavedSearchesScreen(
+                onBack = { navController.popBackStack() },
+                onOpenSearch = { savedSearchId -> navController.navigate(Routes.listings(savedSearchId = savedSearchId)) }
             )
         }
     }

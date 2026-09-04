@@ -105,4 +105,13 @@ interface ApiService {
 
     @GET("chat/conversations/{id}/messages")
     suspend fun getMessages(@Path("id") id: String): Response<List<MessageDto>>
+
+    @GET("saved-searches")
+    suspend fun getSavedSearches(): Response<List<SavedSearchDto>>
+
+    @POST("saved-searches")
+    suspend fun createSavedSearch(@Body body: SavedSearchCreateRequest): Response<SavedSearchDto>
+
+    @DELETE("saved-searches/{id}")
+    suspend fun deleteSavedSearch(@Path("id") id: String): Response<SuccessDto>
 }
