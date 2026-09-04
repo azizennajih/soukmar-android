@@ -21,8 +21,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.soukmar.app.data.i18n.I18nRepository
 import com.soukmar.app.data.remote.dto.AdminReportDto
-import com.soukmar.app.ui.model.timeAgo
+import com.soukmar.app.ui.i18n.LocalI18n
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
 import com.soukmar.app.ui.theme.Gold
@@ -36,11 +39,11 @@ import com.soukmar.app.ui.theme.WhiteColor
 
 private val FILTERS = listOf("PENDING", "RESOLVED", "DISMISSED", "ALL")
 
-private fun statusLabel(status: String): String = when (status) {
-    "PENDING" -> "En attente"
-    "RESOLVED" -> "Résolu"
-    "DISMISSED" -> "Rejeté"
-    else -> "Toutes"
+private fun statusLabel(status: String, i18n: I18nRepository): String = when (status) {
+    "PENDING" -> i18n.t("admin.reports_status_pending")
+    "RESOLVED" -> i18n.t("admin.reports_status_resolved")
+    "DISMISSED" -> i18n.t("admin.reports_status_dismissed")
+    else -> i18n.t("admin.filter_all")
 }
 
 @Composable
@@ -50,11 +53,12 @@ fun AdminScreen(
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) { viewModel.load() }
+    val i18n = LocalI18n.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Signalements") },
+                title = { Text(t("admin.reports_title")) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
             )
         }
@@ -68,7 +72,7 @@ fun AdminScreen(
                     FilterChip(
                         selected = viewModel.filter == f,
                         onClick = { viewModel.filter = f },
-                        label = { Text("${statusLabel(f)} (${viewModel.countFor(f)})") },
+                        label = { Text("${statusLabel(f, i18n)} (${viewModel.countFor(f)})") },
                         colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
                     )
                 }
@@ -107,12 +111,12 @@ fun AdminScreen(
             title = { Text(if (status == "RESOLVED") "Résoudre le signalement" else "Rejeter le signalement") },
             text = {
                 Column {
-                    Text("Note interne (optionnel)", color = TextMuted, fontSize = 12.sp)
+                    Text(t("admin.reports_note_prompt"), color = TextMuted, fontSize = 12.sp)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
                         value = viewModel.actionNote,
                         onValueChange = { viewModel.actionNote = it },
-                        placeholder = { Text("Note interne (optionnel)") },
+                        placeholder = { Text(t("admin.reports_note_prompt")) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2
                     )
@@ -128,7 +132,7 @@ fun AdminScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.cancelAction() }) { Text("Annuler") }
+                TextButton(onClick = { viewModel.cancelAction() }) { Text(t("common.cancel")) }
             }
         )
     }
@@ -141,6 +145,7 @@ private fun ReportCard(
     onResolve: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val i18n = LocalI18n.current
     Column(
         modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
     ) {
@@ -151,18 +156,18 @@ private fun ReportCard(
                 else -> ErrorColor.copy(alpha = 0.1f) to ErrorColor
             }
             Box(modifier = Modifier.background(bg, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                Text(statusLabel(report.status), color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(statusLabel(report.status, i18n), color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.width(8.dp))
-            Text(timeAgo(report.createdAt), color = TextMuted, fontSize = 11.sp)
+            Text(timeAgoT(report.createdAt), color = TextMuted, fontSize = 11.sp)
         }
 
         Spacer(Modifier.height(10.dp))
-        Text("Signalé par", color = TextMuted, fontSize = 11.sp)
+        Text(t("admin.reports_reporter"), color = TextMuted, fontSize = 11.sp)
         Text("${report.reporter?.name ?: "?"} · ${report.reporter?.email ?: ""}", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
 
         Spacer(Modifier.height(8.dp))
-        Text("Utilisateur signalé", color = TextMuted, fontSize = 11.sp)
+        Text(t("admin.reports_reported"), color = TextMuted, fontSize = 11.sp)
         Text("${report.reported?.name ?: "?"} · ${report.reported?.email ?: ""}", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
 
         report.listing?.let { listing ->
@@ -188,10 +193,10 @@ private fun ReportCard(
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onResolve, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-                    Text("✅ Résoudre")
+                    Text(t("admin.reports_resolve"))
                 }
                 OutlinedButton(onClick = onDismiss) {
-                    Text("❌ Rejeter")
+                    Text(t("admin.reports_dismiss"))
                 }
             }
         }
@@ -207,6 +212,6 @@ private fun EmptyState() {
     ) {
         Text("🚩", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Aucun signalement pour le moment.", color = TextMuted, textAlign = TextAlign.Center)
+        Text(t("admin.reports_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }
 }

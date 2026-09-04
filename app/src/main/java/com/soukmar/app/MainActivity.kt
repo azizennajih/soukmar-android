@@ -11,7 +11,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.soukmar.app.data.i18n.I18nRepository
 import com.soukmar.app.data.local.TokenManager
+import com.soukmar.app.ui.i18n.LocalI18n
 import com.soukmar.app.ui.navigation.Routes
 import com.soukmar.app.ui.navigation.SoukMarNavGraph
 import com.soukmar.app.ui.theme.SoukMarTheme
@@ -22,11 +26,17 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var tokenManager: TokenManager
+    @Inject lateinit var i18nRepository: I18nRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val layoutDirection = if (i18nRepository.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+            CompositionLocalProvider(
+                LocalI18n provides i18nRepository,
+                LocalLayoutDirection provides layoutDirection
+            ) {
             SoukMarTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     var startDestination by remember { mutableStateOf<String?>(null) }
@@ -48,6 +58,7 @@ class MainActivity : ComponentActivity() {
                         SoukMarNavGraph(startDestination = dest)
                     }
                 }
+            }
             }
         }
     }

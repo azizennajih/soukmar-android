@@ -20,8 +20,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.soukmar.app.data.i18n.I18nRepository
 import com.soukmar.app.data.remote.dto.NotificationDto
-import com.soukmar.app.ui.model.timeAgo
+import com.soukmar.app.ui.i18n.LocalI18n
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
@@ -41,11 +44,11 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications") },
+                title = { Text(t("notifications.title")) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } },
                 actions = {
                     if (viewModel.hasUnread) {
-                        TextButton(onClick = { viewModel.markAllRead() }) { Text("Tout marquer comme lu") }
+                        TextButton(onClick = { viewModel.markAllRead() }) { Text(t("notifications.mark_all_read")) }
                     }
                 }
             )
@@ -81,21 +84,22 @@ fun NotificationsScreen(
     }
 }
 
-private fun templateFor(n: NotificationDto): String {
+private fun templateFor(n: NotificationDto, i18n: I18nRepository): String {
     val name = n.actorName ?: ""
     return when (n.type) {
-        "NEW_INQUIRY" -> "Vous avez reçu une nouvelle demande de $name."
-        "NEW_REPLY" -> "$name a répondu à votre demande."
-        "NEW_MESSAGE" -> "Vous avez reçu un nouveau message de $name."
-        "NEW_REVIEW" -> "$name vous a laissé une évaluation."
-        "SAVED_SEARCH_MATCH" -> "Nouvelle annonce pour votre recherche « $name »."
-        "REPORT_RESOLVED" -> "Votre signalement a été examiné par notre équipe."
+        "NEW_INQUIRY" -> i18n.t("notifications.new_inquiry", mapOf("name" to name))
+        "NEW_REPLY" -> i18n.t("notifications.new_reply", mapOf("name" to name))
+        "NEW_MESSAGE" -> i18n.t("notifications.new_message", mapOf("name" to name))
+        "NEW_REVIEW" -> i18n.t("notifications.new_review", mapOf("name" to name))
+        "SAVED_SEARCH_MATCH" -> i18n.t("notifications.saved_search_match", mapOf("name" to name))
+        "REPORT_RESOLVED" -> i18n.t("notifications.report_resolved")
         else -> "Nouvelle notification."
     }
 }
 
 @Composable
 private fun NotificationRow(n: NotificationDto, onClick: () -> Unit) {
+    val i18n = LocalI18n.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -109,13 +113,13 @@ private fun NotificationRow(n: NotificationDto, onClick: () -> Unit) {
             Spacer(Modifier.width(10.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(templateFor(n), color = TextPrimary, fontSize = 14.sp, fontWeight = if (n.isRead) FontWeight.Normal else FontWeight.SemiBold)
+            Text(templateFor(n, i18n), color = TextPrimary, fontSize = 14.sp, fontWeight = if (n.isRead) FontWeight.Normal else FontWeight.SemiBold)
             n.listingTitle?.let {
                 Spacer(Modifier.height(4.dp))
                 Text("📌 $it", color = TextMuted, fontSize = 12.sp)
             }
             Spacer(Modifier.height(4.dp))
-            Text(timeAgo(n.createdAt), color = TextMuted, fontSize = 11.sp)
+            Text(timeAgoT(n.createdAt), color = TextMuted, fontSize = 11.sp)
         }
     }
 }
@@ -129,10 +133,10 @@ private fun EmptyState() {
     ) {
         Text("🔔", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Aucune notification", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+        Text(t("notifications.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
         Text(
-            "Vous serez averti ici dès qu'il se passe quelque chose.",
+            t("notifications.empty_sub"),
             color = TextMuted,
             textAlign = TextAlign.Center
         )

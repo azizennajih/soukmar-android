@@ -26,6 +26,7 @@ import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
+import com.soukmar.app.ui.i18n.t
 
 @Composable
 fun FavorisScreen(
@@ -39,7 +40,7 @@ fun FavorisScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mes favoris (${viewModel.listings.size})") },
+                title = { Text("${t("mes_favoris.title")} (${viewModel.listings.size})") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
             )
         }
@@ -85,12 +86,12 @@ private fun EmptyFavoris(onBrowse: () -> Unit) {
     ) {
         Text("🤍", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Aucun favori", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+        Text(t("mes_favoris.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
-        Text("Ajoutez des annonces à vos favoris pour les retrouver ici.", color = TextMuted, textAlign = TextAlign.Center)
+        Text(t("mes_favoris.empty_sub"), color = TextMuted, textAlign = TextAlign.Center)
         Spacer(Modifier.height(16.dp))
         Button(onClick = onBrowse, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-            Text("Parcourir les annonces")
+            Text(t("mes_favoris.browse_btn"))
         }
     }
 }

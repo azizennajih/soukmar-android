@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.ConversationDto
 import com.soukmar.app.data.remote.dto.partnerName
+import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
@@ -40,8 +41,8 @@ fun ChatListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Messages") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                title = { Text(t("chat.title")) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -69,9 +70,9 @@ private fun EmptyConversations() {
     ) {
         Text("💬", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Aucune conversation", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+        Text(t("chat.no_conv"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
-        Text("Contactez un vendeur depuis une annonce", color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(t("chat.no_conv_sub"), color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
 }
 

@@ -39,10 +39,11 @@ import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
 import com.soukmar.app.data.remote.dto.SubcategoryWithAttributesDto
 import com.soukmar.app.ui.components.ErrorBanner
 import com.soukmar.app.ui.components.PrimaryButton
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.model.MOROCCO_CITIES
 import com.soukmar.app.ui.model.categoryConfig
-import com.soukmar.app.ui.model.humanizeCode
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
 import com.soukmar.app.ui.theme.GoldLight
@@ -69,7 +70,7 @@ fun DeposerAnnonceScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (viewModel.isEdit) "Modifier l'annonce" else "Déposer une annonce") },
+                title = { Text(if (viewModel.isEdit) t("deposer.header_title_edit") else t("deposer.header_title")) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") } }
             )
         }
@@ -94,11 +95,11 @@ private fun LoginGate(onRequireLogin: () -> Unit) {
     ) {
         Text("🔐", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Connexion requise", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text(t("deposer.gate_title"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(Modifier.height(8.dp))
-        Text("Connectez-vous pour déposer une annonce.", color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(t("deposer.gate_sub"), color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Se connecter", onClick = onRequireLogin, modifier = Modifier.fillMaxWidth(0.7f))
+        PrimaryButton(text = t("deposer.gate_btn"), onClick = onRequireLogin, modifier = Modifier.fillMaxWidth(0.7f))
     }
 }
 
@@ -112,11 +113,11 @@ private fun PublishSuccess(isEdit: Boolean) {
         Text("✅", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
         Text(
-            if (isEdit) "Annonce mise à jour !" else "Annonce publiée !",
+            if (isEdit) t("deposer.success_title_edit") else t("deposer.success_title"),
             style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary
         )
         Spacer(Modifier.height(8.dp))
-        Text("Elle est maintenant visible sur SoukMar.", color = TextMuted)
+        Text(if (isEdit) t("deposer.success_sub_edit") else t("deposer.success_sub"), color = TextMuted)
     }
 }
 
@@ -157,7 +158,7 @@ private fun DeposerAnnonceContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (viewModel.step > 0) {
-                OutlinedButton(onClick = { viewModel.goBack() }, enabled = !viewModel.loading) { Text("Retour") }
+                OutlinedButton(onClick = { viewModel.goBack() }, enabled = !viewModel.loading) { Text(t("deposer.back")) }
             } else {
                 Spacer(Modifier.width(1.dp))
             }
@@ -166,7 +167,7 @@ private fun DeposerAnnonceContent(
                     onClick = { viewModel.goNext() },
                     enabled = viewModel.canNext,
                     colors = ButtonDefaults.buttonColors(containerColor = Primary, contentColor = Color.White)
-                ) { Text("Suivant") }
+                ) { Text(t("deposer.next")) }
             } else {
                 Button(
                     onClick = { viewModel.publish(onPublished) },
@@ -175,12 +176,12 @@ private fun DeposerAnnonceContent(
                 ) {
                     if (viewModel.uploading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
-                        Spacer(Modifier.width(8.dp)); Text("Envoi des photos…")
+                        Spacer(Modifier.width(8.dp)); Text(t("deposer.uploading"))
                     } else if (viewModel.loading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
-                        Spacer(Modifier.width(8.dp)); Text("Publication…")
+                        Spacer(Modifier.width(8.dp)); Text(t("deposer.publishing"))
                     } else {
-                        Text(if (viewModel.isEdit) "Mettre à jour" else "Publier l'annonce")
+                        Text(if (viewModel.isEdit) t("deposer.publish_edit") else t("deposer.publish"))
                     }
                 }
             }
@@ -188,10 +189,18 @@ private fun DeposerAnnonceContent(
     }
 }
 
+private val DEPOSER_STEP_KEYS = listOf(
+    "deposer.step_category",
+    "deposer.step_subcategory",
+    "deposer.step_details",
+    "deposer.step_photos",
+    "deposer.step_contact"
+)
+
 @Composable
 private fun Stepper(step: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
-        DEPOSER_STEPS.forEachIndexed { index, label ->
+        DEPOSER_STEPS.forEachIndexed { index, _ ->
             val done = index < step
             val active = index == step
             Box(
@@ -209,7 +218,7 @@ private fun Stepper(step: Int, modifier: Modifier = Modifier) {
                 )
             }
             Spacer(Modifier.width(6.dp))
-            Text(label, fontSize = 12.sp, color = if (active) TextPrimary else TextMuted, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal)
+            Text(t(DEPOSER_STEP_KEYS[index]), fontSize = 12.sp, color = if (active) TextPrimary else TextMuted, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal)
             if (index < DEPOSER_STEPS.size - 1) {
                 Box(modifier = Modifier.width(16.dp).height(1.dp).background(if (done) Primary else BorderColor))
             }
@@ -219,7 +228,7 @@ private fun Stepper(step: Int, modifier: Modifier = Modifier) {
 
 @Composable
 private fun CategoryStep(viewModel: DeposerAnnonceViewModel) {
-    Text("Choisissez une catégorie", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+    Text(t("deposer.cat_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(12.dp))
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -240,7 +249,7 @@ private fun CategoryStep(viewModel: DeposerAnnonceViewModel) {
             ) {
                 Text(cat.emoji, fontSize = 26.sp)
                 Spacer(Modifier.height(6.dp))
-                Text(cat.label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (selected) Primary else cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (selected) Primary else cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
@@ -248,7 +257,7 @@ private fun CategoryStep(viewModel: DeposerAnnonceViewModel) {
 
 @Composable
 private fun SubcategoryStep(viewModel: DeposerAnnonceViewModel) {
-    Text("Choisissez une sous-catégorie", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+    Text(t("deposer.subcat_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(12.dp))
     if (viewModel.loadingSubcats) {
         Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
@@ -271,7 +280,7 @@ private fun SubcategoryStep(viewModel: DeposerAnnonceViewModel) {
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(humanizeCode(sub.code), fontSize = 13.sp, color = if (selected) Primary else TextPrimary, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text(tCatalog("subcats.${sub.code}", sub.code), fontSize = 13.sp, color = if (selected) Primary else TextPrimary, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
@@ -280,14 +289,14 @@ private fun SubcategoryStep(viewModel: DeposerAnnonceViewModel) {
 @Composable
 private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
     val form = viewModel.form
-    Text("Détails de l'annonce", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+    Text(t("deposer.details_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(12.dp))
 
     OutlinedTextField(
         value = form.title,
         onValueChange = { if (it.length <= 100) viewModel.updateForm { f -> f.copy(title = it) } },
-        label = { Text("Titre de l'annonce") },
-        supportingText = { Text("${form.title.length}/100 caractères") },
+        label = { Text(t("deposer.label_title")) },
+        supportingText = { Text("${form.title.length}/100 ${t("deposer.chars")}") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
@@ -296,7 +305,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
     OutlinedTextField(
         value = form.description,
         onValueChange = { viewModel.updateForm { f -> f.copy(description = it) } },
-        label = { Text("Description") },
+        label = { Text(t("deposer.label_desc")) },
         minLines = 4,
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
@@ -306,7 +315,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         OutlinedTextField(
             value = form.price,
             onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.updateForm { f -> f.copy(price = it) } },
-            label = { Text("Prix") },
+            label = { Text(t("deposer.label_price")) },
             placeholder = { Text("0") },
             singleLine = true,
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -319,7 +328,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
                 value = form.currency,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Devise") },
+                label = { Text(t("deposer.label_currency")) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
                 modifier = Modifier.fillMaxWidth().menuAnchor(),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
@@ -336,7 +345,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
 
     if (viewModel.showCondition) {
         Spacer(Modifier.height(12.dp))
-        Text("État", fontSize = 13.sp, color = TextMuted)
+        Text(t("deposer.label_condition"), fontSize = 13.sp, color = TextMuted)
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             listOf("NEW" to "Neuf", "USED" to "Occasion").forEach { (value, label) ->
@@ -374,8 +383,8 @@ private fun CityDropdown(selected: String, onSelect: (String) -> Unit) {
             value = selected,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Ville") },
-            placeholder = { Text("Choisir une ville") },
+            label = { Text(t("deposer.label_city")) },
+            placeholder = { Text(t("deposer.city_default")) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(),
             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
@@ -400,7 +409,7 @@ private fun CityDropdown(selected: String, onSelect: (String) -> Unit) {
 private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonceViewModel) {
     Column {
         Row {
-            Text(humanizeCode(def.code), fontSize = 13.sp, color = TextMuted)
+            Text(tCatalog("attrs.${def.code}", def.code), fontSize = 13.sp, color = TextMuted)
             if (def.required) Text(" *", fontSize = 13.sp, color = Primary)
         }
         Spacer(Modifier.height(4.dp))
@@ -423,7 +432,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
             "BOOLEAN" -> {
                 val value = viewModel.attrBoolValue(def.code)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf(true to "Oui", false to "Non").forEach { (v, label) ->
+                    listOf(true to t("common.yes"), false to t("common.no")).forEach { (v, label) ->
                         val selected = value == v
                         Box(
                             modifier = Modifier
@@ -442,7 +451,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                 val value = viewModel.attrTextValue(def.code)
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                     OutlinedTextField(
-                        value = if (value.isEmpty()) "" else humanizeCode(value),
+                        value = if (value.isEmpty()) "" else tCatalog("attrs.opts.$value", value),
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text("Sélectionner…") },
@@ -452,7 +461,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                     )
                     ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         def.options.forEach { opt ->
-                            DropdownMenuItem(text = { Text(humanizeCode(opt)) }, onClick = { viewModel.setAttrText(def.code, opt); expanded = false })
+                            DropdownMenuItem(text = { Text(tCatalog("attrs.opts.$opt", opt)) }, onClick = { viewModel.setAttrText(def.code, opt); expanded = false })
                         }
                     }
                 }
@@ -463,9 +472,9 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
 
 @Composable
 private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit) {
-    Text("Photos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+    Text(t("deposer.photos_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(4.dp))
-    Text("Ajoutez jusqu'à ${viewModel.maxPhotos} photos.", color = TextMuted, fontSize = 13.sp)
+    Text("${t("deposer.photos_sub_prefix")} ${viewModel.maxPhotos} ${t("deposer.photos_sub_suffix")}", color = TextMuted, fontSize = 13.sp)
     Spacer(Modifier.height(12.dp))
 
     Row(
@@ -477,7 +486,7 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(checked = viewModel.isPremium, onCheckedChange = { viewModel.updatePremium(it) }, colors = CheckboxDefaults.colors(checkedColor = Gold))
-        Text("🌟 Annonce premium (jusqu'à 20 photos)", fontSize = 13.sp, color = TextPrimary)
+        Text(t("deposer.premium_toggle"), fontSize = 13.sp, color = TextPrimary)
     }
     Spacer(Modifier.height(16.dp))
 
@@ -493,7 +502,7 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
     ) {
         Icon(Icons.Filled.AddAPhoto, contentDescription = null, tint = Primary)
         Spacer(Modifier.width(8.dp))
-        Text("Ajouter des photos", color = Primary, fontWeight = FontWeight.SemiBold)
+        Text(t("deposer.upload_hint"), color = Primary, fontWeight = FontWeight.SemiBold)
     }
 
     if (viewModel.photos.isNotEmpty()) {
@@ -517,7 +526,7 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
                         Box(
                             modifier = Modifier.align(Alignment.BottomStart).padding(4.dp)
                                 .background(Primary, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) { Text("Principale", color = Color.White, fontSize = 9.sp) }
+                        ) { Text(t("deposer.photo_main"), color = Color.White, fontSize = 9.sp) }
                     } else {
                         IconButton(
                             onClick = { viewModel.makePrimary(index) },
@@ -535,18 +544,18 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
         }
     }
     Spacer(Modifier.height(12.dp))
-    Text("Vous pouvez publier sans photo et en ajouter plus tard.", fontSize = 12.sp, color = TextMuted)
+    Text(t("deposer.skip_note"), fontSize = 12.sp, color = TextMuted)
 }
 
 @Composable
 private fun ContactStep(viewModel: DeposerAnnonceViewModel) {
     val form = viewModel.form
-    Text("Contact", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+    Text(t("deposer.contact_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(12.dp))
     OutlinedTextField(
         value = form.phone,
         onValueChange = { viewModel.updateForm { f -> f.copy(phone = it) } },
-        label = { Text("Téléphone") },
+        label = { Text(t("deposer.label_phone")) },
         placeholder = { Text("+212 6 00 00 00 00") },
         singleLine = true,
         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -557,7 +566,7 @@ private fun ContactStep(viewModel: DeposerAnnonceViewModel) {
     OutlinedTextField(
         value = form.whatsapp,
         onValueChange = { viewModel.updateForm { f -> f.copy(whatsapp = it) } },
-        label = { Text("WhatsApp") },
+        label = { Text(t("deposer.label_whatsapp")) },
         placeholder = { Text("+212 6 00 00 00 00") },
         singleLine = true,
         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -570,26 +579,27 @@ private fun ContactStep(viewModel: DeposerAnnonceViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(checked = form.showPhone, onCheckedChange = { viewModel.updateForm { f -> f.copy(showPhone = it) } }, colors = CheckboxDefaults.colors(checkedColor = Primary))
-        Text("📞 Afficher mon numéro publiquement", fontSize = 13.sp, color = TextPrimary)
+        Text(t("deposer.show_phone_toggle"), fontSize = 13.sp, color = TextPrimary)
     }
     Spacer(Modifier.height(4.dp))
-    Text("Sinon, les acheteurs devront vous contacter par chat.", fontSize = 12.sp, color = TextMuted)
+    Text(t("deposer.show_phone_hint"), fontSize = 12.sp, color = TextMuted)
 
     Spacer(Modifier.height(20.dp))
     Column(
         modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(12.dp)).border(1.dp, BorderColor, RoundedCornerShape(12.dp)).padding(14.dp)
     ) {
-        Text("Récapitulatif", fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text(t("deposer.summary_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(Modifier.height(8.dp))
         val cat = categoryConfig(form.category)
-        SummaryRow("Catégorie", "${cat?.emoji ?: ""} ${cat?.label ?: "—"}")
+        val catLabel = cat?.let { tCatalog("cats.${it.value}", it.value) } ?: "—"
+        SummaryRow(t("deposer.summary_cat"), "${cat?.emoji ?: ""} $catLabel")
         viewModel.subcategories.find { it.id == form.subcategoryId }?.let {
-            SummaryRow("Sous-catégorie", humanizeCode(it.code))
+            SummaryRow(t("deposer.summary_subcat"), tCatalog("subcats.${it.code}", it.code))
         }
-        if (form.condition.isNotEmpty()) SummaryRow("État", if (form.condition == "NEW") "Neuf" else "Occasion")
-        SummaryRow("Titre", form.title.ifEmpty { "—" })
-        SummaryRow("Prix", if (form.price.isNotEmpty()) "${form.price} ${form.currency}" else "À négocier")
-        SummaryRow("Ville", form.city.ifEmpty { "—" })
+        if (form.condition.isNotEmpty()) SummaryRow(t("deposer.label_condition"), if (form.condition == "NEW") "Neuf" else "Occasion")
+        SummaryRow(t("deposer.summary_listing_title"), form.title.ifEmpty { "—" })
+        SummaryRow(t("deposer.summary_price"), if (form.price.isNotEmpty()) "${form.price} ${form.currency}" else t("deposer.negotiate"))
+        SummaryRow(t("deposer.summary_city"), form.city.ifEmpty { "—" })
     }
 }
 

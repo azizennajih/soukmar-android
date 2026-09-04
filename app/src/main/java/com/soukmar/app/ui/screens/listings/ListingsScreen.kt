@@ -21,9 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.ListingCard
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
-import com.soukmar.app.ui.model.humanizeCode
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
@@ -54,7 +55,7 @@ fun ListingsScreen(
                         OutlinedTextField(
                             value = viewModel.query,
                             onValueChange = { viewModel.query = it },
-                            placeholder = { Text("Rechercher sur SoukMar…") },
+                            placeholder = { Text(t("nav.search_placeholder")) },
                             singleLine = true,
                             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                             shape = RoundedCornerShape(999.dp),
@@ -68,7 +69,7 @@ fun ListingsScreen(
                         IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") }
                     },
                     actions = {
-                        IconButton(onClick = { showFilters = !showFilters }) { Icon(Icons.Filled.FilterList, contentDescription = "Filtres", tint = if (showFilters) Primary else TextPrimary) }
+                        IconButton(onClick = { showFilters = !showFilters }) { Icon(Icons.Filled.FilterList, contentDescription = t("annonces.filters"), tint = if (showFilters) Primary else TextPrimary) }
                     }
                 )
                 CategoryChipsRow(selected = viewModel.selectedCategory, onSelect = { viewModel.setCategory(it) })
@@ -81,10 +82,10 @@ fun ListingsScreen(
             when {
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(viewModel.error ?: "Erreur", color = TextMuted)
+                    Text(viewModel.error ?: t("common.error"), color = TextMuted)
                 }
                 viewModel.listings.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Aucune annonce trouvée.", color = TextMuted)
+                    Text(t("annonces.empty"), color = TextMuted)
                 }
                 else -> {
                     LazyVerticalGrid(
@@ -119,11 +120,11 @@ fun ListingsScreen(
 private fun CategoryChipsRow(selected: String?, onSelect: (String?) -> Unit) {
     LazyRowChips {
         item {
-            FilterChipItem(label = "Tout", emoji = "🏷️", selected = selected == null, onClick = { onSelect(null) })
+            FilterChipItem(label = t("nav.all"), emoji = "🏷️", selected = selected == null, onClick = { onSelect(null) })
         }
         items(CATEGORIES.size) { i ->
             val c = CATEGORIES[i]
-            FilterChipItem(label = c.label, emoji = c.emoji, selected = selected == c.value, onClick = { onSelect(c.value) })
+            FilterChipItem(label = tCatalog("cats.${c.value}", c.value), emoji = c.emoji, selected = selected == c.value, onClick = { onSelect(c.value) })
         }
     }
 }
@@ -151,25 +152,25 @@ private fun FilterChipItem(label: String, emoji: String? = null, selected: Boole
 private fun SaveSearchSection(viewModel: ListingsViewModel) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
         when {
-            viewModel.searchSaved -> Text("✅ Recherche enregistrée !", color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
+            viewModel.searchSaved -> Text("✅ ${t("annonces.search_saved")}", color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
             viewModel.showSaveSearchForm -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = viewModel.newSearchName,
                         onValueChange = { viewModel.newSearchName = it },
-                        placeholder = { Text("Nom de la recherche") },
+                        placeholder = { Text(t("annonces.save_search_name")) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
                     )
                     Spacer(Modifier.width(8.dp))
-                    TextButton(onClick = { viewModel.cancelSaveSearch() }) { Text("Annuler") }
+                    TextButton(onClick = { viewModel.cancelSaveSearch() }) { Text(t("common.cancel")) }
                     Button(
                         onClick = { viewModel.saveSearch() },
                         enabled = viewModel.newSearchName.isNotBlank() && !viewModel.savingSearch,
                         colors = ButtonDefaults.buttonColors(containerColor = Primary)
                     ) {
-                        Text(if (viewModel.savingSearch) "…" else "Enregistrer")
+                        Text(if (viewModel.savingSearch) "…" else t("common.save"))
                     }
                 }
                 viewModel.saveSearchError?.let {
@@ -178,7 +179,7 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
                 }
             }
             else -> TextButton(onClick = { viewModel.showSaveSearchForm = true }) {
-                Text("🔔 Enregistrer cette recherche")
+                Text("🔔 ${t("annonces.save_search")}")
             }
         }
     }
@@ -198,38 +199,38 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         if (viewModel.subcategories.isNotEmpty()) {
-            Text("Sous-catégorie", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+            Text(t("annonces.subcategory"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
             Spacer(Modifier.height(6.dp))
             LazyRowChips {
                 items(viewModel.subcategories.size) { i ->
                     val sub = viewModel.subcategories[i]
-                    FilterChipItem(label = humanizeCode(sub.code), selected = viewModel.selectedSubcategoryId == sub.id, onClick = { viewModel.setSubcategory(sub.id) })
+                    FilterChipItem(label = tCatalog("subcats.${sub.code}", sub.code), selected = viewModel.selectedSubcategoryId == sub.id, onClick = { viewModel.setSubcategory(sub.id) })
                 }
             }
             Spacer(Modifier.height(10.dp))
         }
 
         if (viewModel.selectedCategory != null && CONDITION_CATEGORIES.contains(viewModel.selectedCategory)) {
-            Text("État", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+            Text(t("annonces.condition"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChipItem(label = "Neuf", selected = viewModel.selectedCondition == "NEW", onClick = { viewModel.setCondition("NEW") })
-                FilterChipItem(label = "Occasion", selected = viewModel.selectedCondition == "USED", onClick = { viewModel.setCondition("USED") })
+                FilterChipItem(label = t("listing.condition_new"), selected = viewModel.selectedCondition == "NEW", onClick = { viewModel.setCondition("NEW") })
+                FilterChipItem(label = t("listing.condition_used"), selected = viewModel.selectedCondition == "USED", onClick = { viewModel.setCondition("USED") })
             }
             Spacer(Modifier.height(10.dp))
         }
 
-        Text("Prix (MAD)", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+        Text(t("annonces.price"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = viewModel.minPrice, onValueChange = { viewModel.minPrice = it },
-                placeholder = { Text("Min") }, singleLine = true, modifier = Modifier.weight(1f),
+                placeholder = { Text(t("annonces.min")) }, singleLine = true, modifier = Modifier.weight(1f),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
             )
             OutlinedTextField(
                 value = viewModel.maxPrice, onValueChange = { viewModel.maxPrice = it },
-                placeholder = { Text("Max") }, singleLine = true, modifier = Modifier.weight(1f),
+                placeholder = { Text(t("annonces.max")) }, singleLine = true, modifier = Modifier.weight(1f),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
             )
         }
@@ -245,16 +246,16 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { viewModel.search() }, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-                Text("Appliquer")
+                Text(t("annonces.apply"))
             }
-            OutlinedButton(onClick = { viewModel.clearFilters() }) { Text("Réinitialiser") }
+            OutlinedButton(onClick = { viewModel.clearFilters() }) { Text(t("annonces.reset")) }
         }
     }
 }
 
 @Composable
 private fun AttributeFilter(def: com.soukmar.app.data.remote.dto.AttributeDefinitionDto, viewModel: ListingsViewModel) {
-    val label = humanizeCode(def.code)
+    val label = tCatalog("attrs.${def.code}", def.code)
     Text(label, style = MaterialTheme.typography.labelMedium, color = TextMuted)
     Spacer(Modifier.height(6.dp))
     when (def.type) {
@@ -263,13 +264,13 @@ private fun AttributeFilter(def: com.soukmar.app.data.remote.dto.AttributeDefini
                 items(def.options.size) { i ->
                     val opt = def.options[i]
                     val selected = viewModel.attrSelections[def.code]?.contains(opt) == true
-                    FilterChipItem(label = humanizeCode(opt), selected = selected, onClick = { viewModel.toggleAttrOption(def.code, opt) })
+                    FilterChipItem(label = tCatalog("attrs.opts.$opt", opt), selected = selected, onClick = { viewModel.toggleAttrOption(def.code, opt) })
                 }
             }
         }
         "BOOLEAN" -> {
             val selected = viewModel.attrSelections[def.code]?.contains("true") == true
-            FilterChipItem(label = "Oui", selected = selected, onClick = { viewModel.toggleAttrOption(def.code, "true") })
+            FilterChipItem(label = t("common.yes"), selected = selected, onClick = { viewModel.toggleAttrOption(def.code, "true") })
         }
         "NUMBER" -> {
             val current = viewModel.attrRanges[def.code] ?: ("" to "")
@@ -277,13 +278,13 @@ private fun AttributeFilter(def: com.soukmar.app.data.remote.dto.AttributeDefini
                 OutlinedTextField(
                     value = current.first,
                     onValueChange = { viewModel.setAttrRange(def.code, it, current.second) },
-                    placeholder = { Text("Min") }, singleLine = true, modifier = Modifier.weight(1f),
+                    placeholder = { Text(t("annonces.min")) }, singleLine = true, modifier = Modifier.weight(1f),
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                 )
                 OutlinedTextField(
                     value = current.second,
                     onValueChange = { viewModel.setAttrRange(def.code, current.first, it) },
-                    placeholder = { Text("Max") }, singleLine = true, modifier = Modifier.weight(1f),
+                    placeholder = { Text(t("annonces.max")) }, singleLine = true, modifier = Modifier.weight(1f),
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                 )
             }

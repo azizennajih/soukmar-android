@@ -41,7 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.soukmar.app.ui.components.LanguageSwitcher
 import com.soukmar.app.ui.components.SoukMarLogo
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Primary
@@ -81,14 +84,15 @@ fun HomeScreen(
             TopAppBar(
                 title = { SoukMarLogo() },
                 actions = {
+                    LanguageSwitcher()
                     IconButton(onClick = onOpenFavoris) {
-                        Icon(Icons.Filled.FavoriteBorder, contentDescription = "Mes favoris")
+                        Icon(Icons.Filled.FavoriteBorder, contentDescription = t("nav.my_favorites"))
                     }
                     IconButton(onClick = onOpenMesAnnonces) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Mes annonces")
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = t("nav.my_listings"))
                     }
                     IconButton(onClick = onOpenChat) {
-                        Icon(Icons.Filled.ChatBubbleOutline, contentDescription = "Messages")
+                        Icon(Icons.Filled.ChatBubbleOutline, contentDescription = t("nav.messages"))
                     }
                     IconButton(onClick = onOpenNotifications) {
                         BadgedBox(badge = {
@@ -96,33 +100,33 @@ fun HomeScreen(
                                 Badge { Text(if (viewModel.unreadNotifications > 99) "99+" else viewModel.unreadNotifications.toString()) }
                             }
                         }) {
-                            Icon(Icons.Filled.NotificationsNone, contentDescription = "Notifications")
+                            Icon(Icons.Filled.NotificationsNone, contentDescription = t("nav.notifications"))
                         }
                     }
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = "Plus")
+                            Icon(Icons.Filled.MoreVert, contentDescription = null)
                         }
                         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                             if (viewModel.user?.role == "ADMIN") {
                                 DropdownMenuItem(
-                                    text = { Text("Dashboard Admin") },
+                                    text = { Text(t("nav.admin")) },
                                     leadingIcon = { Icon(Icons.Filled.Shield, contentDescription = null) },
                                     onClick = { menuExpanded = false; onOpenAdmin() }
                                 )
                             }
                             DropdownMenuItem(
-                                text = { Text("Recherches sauvegardées") },
+                                text = { Text(t("nav.saved_searches")) },
                                 leadingIcon = { Icon(Icons.Filled.BookmarkBorder, contentDescription = null) },
                                 onClick = { menuExpanded = false; onOpenSavedSearches() }
                             )
                             DropdownMenuItem(
-                                text = { Text("Profil") },
+                                text = { Text(t("nav.profile")) },
                                 leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
                                 onClick = { menuExpanded = false; onOpenProfil() }
                             )
                             DropdownMenuItem(
-                                text = { Text("Se déconnecter") },
+                                text = { Text(t("nav.logout")) },
                                 leadingIcon = { Icon(Icons.Filled.Logout, contentDescription = null) },
                                 onClick = { menuExpanded = false; viewModel.logout(onLoggedOut) }
                             )
@@ -137,7 +141,7 @@ fun HomeScreen(
                 containerColor = Primary,
                 contentColor = WhiteColor,
                 icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                text = { Text("Déposer une annonce") }
+                text = { Text(t("nav.post_full")) }
             )
         }
     ) { padding ->
@@ -158,11 +162,11 @@ fun HomeScreen(
             ) {
                 Icon(Icons.Filled.Search, contentDescription = null, tint = TextMuted)
                 Spacer(Modifier.width(8.dp))
-                Text("Rechercher sur SoukMar…", color = TextMuted)
+                Text(t("nav.search_placeholder"), color = TextMuted)
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Catégories", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(t("nav.categories"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(Modifier.height(10.dp))
 
             LazyVerticalGrid(
@@ -182,7 +186,7 @@ fun HomeScreen(
                     ) {
                         Text(cat.emoji, fontSize = 26.sp)
                         Spacer(Modifier.height(6.dp))
-                        Text(cat.label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
                 }
             }

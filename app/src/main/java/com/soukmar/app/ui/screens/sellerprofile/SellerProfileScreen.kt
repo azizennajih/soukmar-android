@@ -26,13 +26,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ReviewWithDetailsDto
 import com.soukmar.app.ui.components.ListingCard
-import com.soukmar.app.ui.model.timeAgo
+import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
+import com.soukmar.app.ui.i18n.t
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -61,7 +62,7 @@ fun SellerProfileScreen(
             when {
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.notFound || viewModel.profile == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Utilisateur introuvable.", color = TextMuted)
+                    Text(t("seller.not_found"), color = TextMuted)
                 }
                 else -> SellerProfileContent(viewModel, onOpenListing)
             }
@@ -102,7 +103,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 }
                 memberSince(profile.createdAt)?.let {
                     Spacer(Modifier.height(4.dp))
-                    Text("Membre depuis $it", color = TextMuted, fontSize = 12.sp)
+                    Text("${t("seller.member_since")} $it", color = TextMuted, fontSize = 12.sp)
                 }
                 Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -116,7 +117,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                             fontWeight = FontWeight.SemiBold
                         )
                     } else {
-                        Text("Aucune évaluation", color = TextMuted, fontSize = 13.sp)
+                        Text(t("seller.no_reviews"), color = TextMuted, fontSize = 13.sp)
                     }
                 }
                 responseLabel(profile.avgResponseHours)?.let {
@@ -130,10 +131,10 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
 
         item {
             Spacer(Modifier.height(6.dp))
-            Text("Annonces (${profile.activeListingsCount})", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text("${t("seller.listings_title")} (${profile.activeListingsCount})", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
         }
         if (listingRows.isEmpty()) {
-            item { Text("Aucune annonce active.", color = TextMuted, fontSize = 13.sp) }
+            item { Text(t("seller.no_listings"), color = TextMuted, fontSize = 13.sp) }
         } else {
             items(listingRows) { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -147,10 +148,10 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
 
         item {
             Spacer(Modifier.height(6.dp))
-            Text("Évaluations (${viewModel.reviews.size})", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text("${t("seller.reviews_title")} (${viewModel.reviews.size})", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
         }
         if (viewModel.reviews.isEmpty()) {
-            item { Text("Aucune évaluation pour le moment.", color = TextMuted, fontSize = 13.sp) }
+            item { Text(t("seller.no_reviews_yet"), color = TextMuted, fontSize = 13.sp) }
         } else {
             items(viewModel.reviews, key = { it.id }) { ReviewRow(it) }
         }
@@ -191,7 +192,7 @@ private fun ReviewRow(review: ReviewWithDetailsDto) {
         Spacer(Modifier.height(6.dp))
         val listingTitle = review.listing?.title
         Text(
-            if (listingTitle != null) "📌 $listingTitle · ${timeAgo(review.createdAt)}" else timeAgo(review.createdAt),
+            if (listingTitle != null) "📌 $listingTitle · ${timeAgoT(review.createdAt)}" else timeAgoT(review.createdAt),
             color = TextMuted,
             fontSize = 11.sp
         )
@@ -210,11 +211,12 @@ private fun memberSince(iso: String?): String? {
 }
 
 /** Mirrors the web's seller.responds_minutes/_hours/_days copy thresholds. */
+@Composable
 private fun responseLabel(hours: Double?): String? {
     if (hours == null) return null
     return when {
-        hours < 1 -> "Répond en quelques minutes"
-        hours < 24 -> "Répond généralement en ${hours.roundToInt()} h"
-        else -> "Répond généralement en ${(hours / 24).roundToInt()} j"
+        hours < 1 -> t("seller.responds_minutes")
+        hours < 24 -> t("seller.responds_hours", "hours" to hours.roundToInt().toString())
+        else -> t("seller.responds_days", "days" to (hours / 24).roundToInt().toString())
     }
 }

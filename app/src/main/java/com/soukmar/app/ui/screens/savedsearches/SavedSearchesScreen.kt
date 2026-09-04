@@ -29,6 +29,8 @@ import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.tCatalog
 
 @Composable
 fun SavedSearchesScreen(
@@ -41,7 +43,7 @@ fun SavedSearchesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Recherches sauvegardées (${viewModel.searches.size})") },
+                title = { Text("${t("saved_searches.title")} (${viewModel.searches.size})") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
             )
         }
@@ -71,6 +73,8 @@ fun SavedSearchesScreen(
 @Composable
 private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onDelete: () -> Unit) {
     val cat = search.category?.let { categoryConfig(it) }
+    val catLabel = cat?.let { tCatalog("cats.${it.value}", it.value) }
+    val madLabel = t("common.mad")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -84,12 +88,12 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onDelete:
             Text(search.name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
             Spacer(Modifier.height(4.dp))
             val meta = buildList {
-                cat?.let { add("${it.emoji} ${it.label}") }
+                if (cat != null && catLabel != null) add("${cat.emoji} $catLabel")
                 search.city?.let { add("📍 $it") }
                 if (search.minPrice != null || search.maxPrice != null) {
                     val min = search.minPrice?.let { formatPlain(it) } ?: "0"
                     val max = search.maxPrice?.let { formatPlain(it) } ?: "∞"
-                    add("$min–$max MAD")
+                    add("$min–$max $madLabel")
                 }
             }
             if (meta.isNotEmpty()) {
@@ -97,7 +101,7 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onDelete:
             }
         }
         IconButton(onClick = onDelete) {
-            Icon(Icons.Filled.Close, contentDescription = "Supprimer", tint = TextMuted)
+            Icon(Icons.Filled.Close, contentDescription = t("common.delete"), tint = TextMuted)
         }
     }
 }
@@ -114,10 +118,10 @@ private fun EmptyState() {
     ) {
         Text("🔔", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Aucune recherche sauvegardée", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+        Text(t("saved_searches.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
         Text(
-            "Enregistrez une recherche pour être averti des nouvelles annonces correspondantes.",
+            t("saved_searches.empty_sub"),
             color = TextMuted,
             textAlign = TextAlign.Center
         )

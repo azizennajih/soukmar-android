@@ -14,8 +14,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.AppTextField
 import com.soukmar.app.ui.components.ErrorBanner
+import com.soukmar.app.ui.components.LanguageSwitcher
 import com.soukmar.app.ui.components.PrimaryButton
 import com.soukmar.app.ui.components.SuccessBanner
+import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 
@@ -33,11 +35,15 @@ fun LoginScreen(
             .padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            LanguageSwitcher()
+        }
+        Spacer(Modifier.height(8.dp))
         com.soukmar.app.ui.components.SoukMarLogo()
         Spacer(Modifier.height(24.dp))
-        Text("Bon retour !", style = MaterialTheme.typography.headlineMedium)
+        Text(t("auth.login_title"), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(4.dp))
-        Text("Connectez-vous à votre compte", color = TextMuted, style = MaterialTheme.typography.bodyMedium)
+        Text(t("auth.login_sub"), color = TextMuted, style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(24.dp))
 
         viewModel.error?.let {
@@ -47,10 +53,10 @@ fun LoginScreen(
 
         viewModel.unverifiedEmail?.let {
             if (viewModel.resendOk) {
-                SuccessBanner("Email renvoyé !")
+                SuccessBanner(t("auth.verify_resend_ok"))
             } else {
                 TextButton(onClick = { viewModel.resendVerification() }, enabled = !viewModel.resendLoading) {
-                    Text(if (viewModel.resendLoading) "Envoi..." else "Renvoyer l'email de confirmation")
+                    Text(if (viewModel.resendLoading) "…" else t("auth.unverified_resend"))
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -59,33 +65,33 @@ fun LoginScreen(
         AppTextField(
             value = viewModel.email,
             onValueChange = { viewModel.email = it },
-            label = "Email",
+            label = t("auth.email"),
             keyboardType = KeyboardType.Email
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
-            label = "Mot de passe",
+            label = t("auth.password"),
             isPassword = true
         )
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             TextButton(onClick = onNavigateToForgotPassword) {
-                Text("Mot de passe oublié ?", color = Primary)
+                Text(t("auth.forgot"), color = Primary)
             }
         }
         Spacer(Modifier.height(8.dp))
         PrimaryButton(
-            text = "Se connecter",
+            text = t("auth.login_btn"),
             onClick = { viewModel.submit(onLoginSuccess) },
             loading = viewModel.loading
         )
         Spacer(Modifier.height(20.dp))
         Row {
-            Text("Pas encore de compte ? ", color = TextMuted)
+            Text("${t("auth.no_account")} ", color = TextMuted)
             TextButton(onClick = onNavigateToRegister, contentPadding = PaddingValues(0.dp)) {
-                Text("S'inscrire gratuitement", color = Primary, fontWeight = FontWeight.Bold)
+                Text(t("auth.register_link"), color = Primary, fontWeight = FontWeight.Bold)
             }
         }
     }

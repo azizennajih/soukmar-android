@@ -28,7 +28,7 @@ import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.formatPriceParts
-import com.soukmar.app.ui.model.timeAgo
+import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
 import com.soukmar.app.ui.theme.Primary
@@ -36,16 +36,18 @@ import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
+import com.soukmar.app.ui.i18n.t
 
 private data class StatusStyle(val label: String, val bg: Color, val fg: Color)
 
+@Composable
 private fun statusStyle(status: String): StatusStyle = when (status) {
-    "ACTIVE" -> StatusStyle("Active", Color(0xFFDCFCE7), Color(0xFF15803D))
-    "RESERVED" -> StatusStyle("Réservée", Color(0xFFFEF9C3), Color(0xFFA16207))
-    "PENDING" -> StatusStyle("En attente", Color(0xFFFEF9C3), Color(0xFFA16207))
-    "SOLD" -> StatusStyle("Vendue", Color(0xFFDBEAFE), Color(0xFF1D4ED8))
-    "REJECTED" -> StatusStyle("Rejetée", Color(0xFFFEE2E2), Color(0xFFB91C1C))
-    "EXPIRED" -> StatusStyle("Expirée", Color(0xFFFEE2E2), Color(0xFFB91C1C))
+    "ACTIVE" -> StatusStyle(t("annonces.active"), Color(0xFFDCFCE7), Color(0xFF15803D))
+    "RESERVED" -> StatusStyle(t("annonces.reserved"), Color(0xFFFEF9C3), Color(0xFFA16207))
+    "PENDING" -> StatusStyle(t("annonces.pending"), Color(0xFFFEF9C3), Color(0xFFA16207))
+    "SOLD" -> StatusStyle(t("annonces.sold"), Color(0xFFDBEAFE), Color(0xFF1D4ED8))
+    "REJECTED" -> StatusStyle(t("annonces.rejected"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
+    "EXPIRED" -> StatusStyle(t("annonces.expired"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
     else -> StatusStyle(status, BorderColor, TextMuted)
 }
 
@@ -70,10 +72,10 @@ fun MesAnnoncesScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Mes annonces (${viewModel.listings.size})") },
+                title = { Text("${t("mes_annonces.title")} (${viewModel.listings.size})") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } },
                 actions = {
-                    IconButton(onClick = onNewListing) { Icon(Icons.Filled.Add, contentDescription = "Nouvelle annonce") }
+                    IconButton(onClick = onNewListing) { Icon(Icons.Filled.Add, contentDescription = t("mes_annonces.new")) }
                 }
             )
         }
@@ -110,10 +112,10 @@ fun MesAnnoncesScreen(
     if (viewModel.deleteConfirmId != null) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissDelete() },
-            title = { Text("Supprimer cette annonce ?") },
+            title = { Text(t("mes_annonces.confirm_delete")) },
             text = { Text("Cette action est irréversible.") },
-            confirmButton = { TextButton(onClick = { viewModel.confirmDelete() }) { Text("Supprimer", color = ErrorColor) } },
-            dismissButton = { TextButton(onClick = { viewModel.dismissDelete() }) { Text("Annuler") } }
+            confirmButton = { TextButton(onClick = { viewModel.confirmDelete() }) { Text(t("mes_annonces.delete"), color = ErrorColor) } },
+            dismissButton = { TextButton(onClick = { viewModel.dismissDelete() }) { Text(t("common.cancel")) } }
         )
     }
 }
@@ -127,12 +129,12 @@ private fun EmptyMesAnnonces(onNewListing: () -> Unit) {
     ) {
         Text("📋", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
-        Text("Aucune annonce", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+        Text(t("mes_annonces.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
-        Text("Vous n'avez pas encore publié d'annonce.", color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(t("mes_annonces.empty_sub"), color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         Spacer(Modifier.height(16.dp))
         Button(onClick = onNewListing, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-            Text("Déposer une annonce")
+            Text(t("mes_annonces.post_btn"))
         }
     }
 }
@@ -185,30 +187,30 @@ private fun ListingRow(
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    if (priceParts != null) "${priceParts.first} ${priceParts.second}" else "À négocier",
+                    if (priceParts != null) "${priceParts.first} ${priceParts.second}" else t("listing.negotiate"),
                     color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp
                 )
                 Spacer(Modifier.height(2.dp))
-                Text("👁 ${listing.views} vues · 🕐 ${timeAgo(listing.createdAt)} · 📍 ${listing.city}", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · 📍 ${listing.city}", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            RowActionButton(Icons.Filled.Visibility, "Voir", onClick = onOpen)
+            RowActionButton(Icons.Filled.Visibility, t("mes_annonces.see"), onClick = onOpen)
             if (canToggleReserve) {
                 RowActionButton(
                     if (listing.status == "RESERVED") Icons.Filled.LockOpen else Icons.Filled.Lock,
-                    if (listing.status == "RESERVED") "Remettre en vente" else "Réserver",
+                    if (listing.status == "RESERVED") t("mes_annonces.unreserve") else t("mes_annonces.reserve"),
                     active = listing.status == "RESERVED",
                     onClick = onToggleReserve
                 )
             }
-            RowActionButton(Icons.Filled.Edit, "Modifier", onClick = onEdit)
+            RowActionButton(Icons.Filled.Edit, t("mes_annonces.edit"), onClick = onEdit)
             if (canToggleReserve) {
-                RowActionButton(Icons.Filled.ArrowUpward, if (canBump) "Remonter" else "Déjà remontée aujourd'hui", enabled = canBump && !bumping, onClick = onBump)
+                RowActionButton(Icons.Filled.ArrowUpward, if (canBump) t("mes_annonces.bump") else t("mes_annonces.bump_cooldown"), enabled = canBump && !bumping, onClick = onBump)
             }
-            RowActionButton(Icons.Filled.BarChart, "Statistiques", active = statsOpen, onClick = onToggleStats)
-            RowActionButton(Icons.Filled.Delete, "Supprimer", danger = true, onClick = onDelete)
+            RowActionButton(Icons.Filled.BarChart, t("mes_annonces.stats"), active = statsOpen, onClick = onToggleStats)
+            RowActionButton(Icons.Filled.Delete, t("mes_annonces.delete"), danger = true, onClick = onDelete)
         }
     }
 }
@@ -241,7 +243,7 @@ private fun StatsPanel(days: List<com.soukmar.app.data.remote.dto.ViewStatDayDto
             .background(PrimaryLight, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        Text("Vues des 14 derniers jours", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+        Text(t("mes_annonces.stats_title"), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
         Spacer(Modifier.height(8.dp))
         if (days == null) {
             Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.*
+import com.soukmar.app.ui.i18n.t
 import kotlinx.coroutines.delay
 
 @Composable
@@ -27,18 +28,18 @@ fun ResetPasswordScreen(
         Spacer(Modifier.height(24.dp))
 
         if (token.isNullOrBlank()) {
-            Text("Lien invalide", style = MaterialTheme.typography.headlineMedium)
+            Text(t("auth.reset_invalid_title"), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(8.dp))
-            Text("Ce lien de réinitialisation est invalide ou a expiré. Demandez-en un nouveau.")
+            Text(t("auth.reset_invalid_sub"))
             Spacer(Modifier.height(16.dp))
-            PrimaryButton(text = "Mot de passe oublié", onClick = onRequestNewLink)
+            PrimaryButton(text = t("auth.forgot_title"), onClick = onRequestNewLink)
             return@Column
         }
 
         if (viewModel.success) {
-            Text("Réinitialiser le mot de passe", style = MaterialTheme.typography.headlineMedium)
+            Text(t("auth.reset_title"), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(16.dp))
-            SuccessBanner("Mot de passe réinitialisé ! Redirection vers la connexion...")
+            SuccessBanner(t("auth.reset_success"))
             LaunchedEffect(Unit) {
                 delay(2000)
                 onDone()
@@ -46,17 +47,17 @@ fun ResetPasswordScreen(
             return@Column
         }
 
-        Text("Réinitialiser le mot de passe", style = MaterialTheme.typography.headlineMedium)
+        Text(t("auth.reset_title"), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(4.dp))
-        Text("Choisissez un nouveau mot de passe.")
+        Text(t("auth.reset_sub"))
         Spacer(Modifier.height(24.dp))
 
         viewModel.error?.let { ErrorBanner(it); Spacer(Modifier.height(12.dp)) }
 
-        AppTextField(value = viewModel.password, onValueChange = { viewModel.password = it }, label = "Nouveau mot de passe", isPassword = true)
+        AppTextField(value = viewModel.password, onValueChange = { viewModel.password = it }, label = t("auth.reset_new_password"), isPassword = true)
         Spacer(Modifier.height(12.dp))
-        AppTextField(value = viewModel.confirmPassword, onValueChange = { viewModel.confirmPassword = it }, label = "Confirmer le mot de passe", isPassword = true)
+        AppTextField(value = viewModel.confirmPassword, onValueChange = { viewModel.confirmPassword = it }, label = t("auth.reset_confirm_password"), isPassword = true)
         Spacer(Modifier.height(20.dp))
-        PrimaryButton(text = "Réinitialiser le mot de passe", onClick = { viewModel.submit(token) }, loading = viewModel.loading)
+        PrimaryButton(text = t("auth.reset_btn"), onClick = { viewModel.submit(token) }, loading = viewModel.loading)
     }
 }

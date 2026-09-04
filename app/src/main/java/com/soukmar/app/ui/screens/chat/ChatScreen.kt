@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.MessageDto
+import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.model.formatPriceParts
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
@@ -48,8 +49,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-
-private val quickReplies = listOf("Toujours disponible ?", "Dernier prix ?", "Toujours intéressé(e) ?", "Merci !")
 
 @Composable
 fun ChatScreen(
@@ -68,7 +67,7 @@ fun ChatScreen(
                         ChatHeaderContent(viewModel, onOpenListing)
                     }
                 },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     if (viewModel.conversation != null) {
                         IconButton(onClick = { viewModel.reportOpen = true }) {
@@ -93,10 +92,10 @@ fun ChatScreen(
     if (viewModel.confirmCancelReservation) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissCancelReservation() },
-            title = { Text("Annuler la réservation ?") },
+            title = { Text("${t("chat.cancel_reservation")} ?") },
             text = { Text("L'annonce redevient active.") },
             confirmButton = { TextButton(onClick = { viewModel.confirmCancelReservation() }) { Text("Confirmer", color = ErrorColor) } },
-            dismissButton = { TextButton(onClick = { viewModel.dismissCancelReservation() }) { Text("Annuler") } }
+            dismissButton = { TextButton(onClick = { viewModel.dismissCancelReservation() }) { Text(t("chat.cancel")) } }
         )
     }
     if (viewModel.confirmCancelOfferId != null) {
@@ -104,7 +103,7 @@ fun ChatScreen(
             onDismissRequest = { viewModel.dismissCancelOffer() },
             title = { Text("Annuler votre offre ?") },
             confirmButton = { TextButton(onClick = { viewModel.confirmCancelOffer() }) { Text("Confirmer", color = ErrorColor) } },
-            dismissButton = { TextButton(onClick = { viewModel.dismissCancelOffer() }) { Text("Annuler") } }
+            dismissButton = { TextButton(onClick = { viewModel.dismissCancelOffer() }) { Text(t("chat.cancel")) } }
         )
     }
     if (viewModel.reportOpen) {
@@ -124,7 +123,7 @@ private fun ChatHeaderContent(viewModel: ChatViewModel, onOpenListing: (String) 
             Column {
                 Text(viewModel.partnerName(), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (viewModel.partnerTyping) {
-                    Text("en train d'écrire…", fontSize = 11.sp, color = Primary)
+                    Text(t("chat.typing"), fontSize = 11.sp, color = Primary)
                 } else {
                     Text(
                         conv.listing.title,
@@ -154,8 +153,8 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 modifier = Modifier.fillMaxWidth().background(GoldLight).padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("🔒 Cette annonce est réservée", fontSize = 13.sp, color = Gold, modifier = Modifier.weight(1f))
-                TextButton(onClick = { viewModel.requestCancelReservation() }) { Text("Annuler", fontSize = 12.sp) }
+                Text("🔒 ${t("chat.reserved_msg")} ${t("chat.reserved_word")}", fontSize = 13.sp, color = Gold, modifier = Modifier.weight(1f))
+                TextButton(onClick = { viewModel.requestCancelReservation() }) { Text(t("chat.cancel"), fontSize = 12.sp) }
             }
         }
 
@@ -208,11 +207,12 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
                 )
                 Spacer(Modifier.width(8.dp))
-                TextButton(onClick = { viewModel.sendOffer() }, enabled = viewModel.offerAmount.isNotBlank()) { Text("Envoyer") }
-                TextButton(onClick = { viewModel.showOfferInput = false }) { Text("Annuler") }
+                TextButton(onClick = { viewModel.sendOffer() }, enabled = viewModel.offerAmount.isNotBlank()) { Text(t("chat.send_offer")) }
+                TextButton(onClick = { viewModel.showOfferInput = false }) { Text(t("chat.cancel")) }
             }
         }
 
+        val quickReplies = listOf(t("chat.quick_available"), t("chat.quick_last_price"), t("chat.quick_still_interested"), t("chat.quick_thanks"))
         Row(
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -235,7 +235,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
             OutlinedTextField(
                 value = viewModel.messageText,
                 onValueChange = { viewModel.messageText = it; viewModel.onTyping() },
-                placeholder = { Text("Écrivez un message…") },
+                placeholder = { Text(t("chat.placeholder")) },
                 modifier = Modifier.weight(1f),
                 maxLines = 4,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
@@ -301,32 +301,32 @@ private fun OfferBubble(
                 .padding(12.dp)
                 .fillMaxWidth(0.75f)
         ) {
-            Text("💰 Offre de prix", fontSize = 11.sp, color = Gold, fontWeight = FontWeight.SemiBold)
+            Text("💰 ${t("chat.offer_price")}", fontSize = 11.sp, color = Gold, fontWeight = FontWeight.SemiBold)
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(amountText, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(Modifier.width(4.dp))
-                Text("MAD", fontSize = 11.sp, color = TextMuted)
+                Text(t("common.mad"), fontSize = 11.sp, color = TextMuted)
             }
             when (msg.offerStatus) {
-                "PENDING" -> Text("⏳ En attente", fontSize = 11.sp, color = TextMuted)
-                "ACCEPTED" -> Text("✅ Acceptée", fontSize = 11.sp, color = SuccessColor)
-                "REJECTED" -> if (mine) Text("🚫 Annulée", fontSize = 11.sp, color = ErrorColor) else Text("❌ Refusée", fontSize = 11.sp, color = ErrorColor)
+                "PENDING" -> Text("⏳ ${t("chat.pending")}", fontSize = 11.sp, color = TextMuted)
+                "ACCEPTED" -> Text("✅ ${t("chat.accepted")}", fontSize = 11.sp, color = SuccessColor)
+                "REJECTED" -> if (mine) Text("🚫 ${t("chat.cancelled")}", fontSize = 11.sp, color = ErrorColor) else Text("❌ ${t("chat.rejected")}", fontSize = 11.sp, color = ErrorColor)
             }
             if (canRespond) {
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = onAccept, colors = ButtonDefaults.buttonColors(containerColor = SuccessColor), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text("✅ Accepter", fontSize = 12.sp)
+                        Text("✅ ${t("chat.accept")}", fontSize = 12.sp)
                     }
                     Button(onClick = onReject, colors = ButtonDefaults.buttonColors(containerColor = ErrorColor), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text("❌ Refuser", fontSize = 12.sp)
+                        Text("❌ ${t("chat.reject")}", fontSize = 12.sp)
                     }
                 }
             }
             if (canCancel) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = onCancel, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                    Text("🚫 Annuler mon offre", fontSize = 12.sp)
+                    Text("🚫 ${t("chat.cancel_offer")}", fontSize = 12.sp)
                 }
             }
         }
@@ -356,10 +356,10 @@ private fun ReportDialog(viewModel: ChatViewModel) {
         },
         confirmButton = {
             TextButton(onClick = { viewModel.submitReport() }, enabled = !viewModel.reportSubmitting) {
-                Text(if (viewModel.reportSubmitting) "Envoi…" else "Envoyer")
+                Text(if (viewModel.reportSubmitting) "Envoi…" else t("report.submit"))
             }
         },
-        dismissButton = { TextButton(onClick = { viewModel.cancelReport() }) { Text("Annuler") } }
+        dismissButton = { TextButton(onClick = { viewModel.cancelReport() }) { Text(t("chat.cancel")) } }
     )
 }
 

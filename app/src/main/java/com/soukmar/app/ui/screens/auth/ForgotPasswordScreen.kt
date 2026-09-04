@@ -10,6 +10,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.*
+import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 
@@ -24,22 +25,22 @@ fun ForgotPasswordScreen(
     ) {
         SoukMarLogo()
         Spacer(Modifier.height(24.dp))
-        Text("Mot de passe oublié ?", style = MaterialTheme.typography.headlineMedium)
+        Text(t("auth.forgot_title"), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(4.dp))
-        Text("Entrez votre email, nous vous enverrons un lien de réinitialisation.", color = TextMuted, style = MaterialTheme.typography.bodyMedium)
+        Text(t("auth.forgot_sub"), color = TextMuted, style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(24.dp))
 
         if (viewModel.sent) {
-            SuccessBanner("Si un compte existe pour ${viewModel.email}, un email avec un lien de réinitialisation vient d'être envoyé.")
+            SuccessBanner(t("auth.forgot_sent", "email" to viewModel.email))
             Spacer(Modifier.height(16.dp))
-            PrimaryButton(text = "Retour à la connexion", onClick = onBackToLogin)
+            PrimaryButton(text = t("auth.back_to_login"), onClick = onBackToLogin)
         } else {
             viewModel.error?.let { ErrorBanner(it); Spacer(Modifier.height(12.dp)) }
-            AppTextField(value = viewModel.email, onValueChange = { viewModel.email = it }, label = "Email", keyboardType = KeyboardType.Email)
+            AppTextField(value = viewModel.email, onValueChange = { viewModel.email = it }, label = t("auth.email"), keyboardType = KeyboardType.Email)
             Spacer(Modifier.height(16.dp))
-            PrimaryButton(text = "Envoyer le lien", onClick = { viewModel.submit() }, loading = viewModel.loading)
+            PrimaryButton(text = t("auth.forgot_btn"), onClick = { viewModel.submit() }, loading = viewModel.loading)
             Spacer(Modifier.height(16.dp))
-            TextButton(onClick = onBackToLogin) { Text("Retour à la connexion", color = Primary) }
+            TextButton(onClick = onBackToLogin) { Text(t("auth.back_to_login"), color = Primary) }
         }
     }
 }

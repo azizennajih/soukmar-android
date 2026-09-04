@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.i18n.tCatalog
+import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.model.HIGHLIGHT_ATTR_CODES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.formatPriceParts
-import com.soukmar.app.ui.model.timeAgo
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
 import com.soukmar.app.ui.theme.GoldLight
@@ -83,7 +85,7 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                         .background(GoldLight, RoundedCornerShape(6.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    Text(if (listing.isFeatured) "⭐ Vedette" else "Premium", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(if (listing.isFeatured) "⭐ ${t("listing.premium_badge")}" else "Pro", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -96,7 +98,7 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                     Text(priceParts.second, color = TextMuted, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
                 }
             } else {
-                Text("À négocier", color = TextMuted, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                Text(t("listing.negotiate"), color = TextMuted, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
             }
             Spacer(Modifier.height(4.dp))
             Text(
@@ -117,7 +119,7 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                 Spacer(Modifier.width(2.dp))
                 Text(listing.city, color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 Spacer(Modifier.width(4.dp))
-                Text(timeAgo(listing.createdAt), color = TextMuted, fontSize = 11.sp)
+                Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 11.sp)
             }
             cat?.let {
                 Spacer(Modifier.height(6.dp))
@@ -126,7 +128,7 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                         .background(it.bg, RoundedCornerShape(999.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    Text("${it.emoji} ${it.label}", color = it.fg, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                    Text("${it.emoji} ${tCatalog("cats.${it.value}", it.value)}", color = it.fg, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

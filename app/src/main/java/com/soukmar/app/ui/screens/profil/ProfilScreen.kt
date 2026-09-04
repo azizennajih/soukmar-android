@@ -36,6 +36,7 @@ import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
+import com.soukmar.app.ui.i18n.t
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -114,12 +115,12 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             Text(profile.email, color = TextMuted, fontSize = 13.sp)
             memberSince(profile.createdAt)?.let {
                 Spacer(Modifier.height(4.dp))
-                Text("Membre depuis $it", color = TextMuted, fontSize = 12.sp)
+                Text("${t("profil.member_since")} $it", color = TextMuted, fontSize = 12.sp)
             }
             if (profile.role == "ADMIN") {
                 Spacer(Modifier.height(8.dp))
                 Box(modifier = Modifier.background(GoldLight, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                    Text("Administrateur", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(t("profil.role_admin"), color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -130,7 +131,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
         Column(
             modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
         ) {
-            Text("Modifier le profil", fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(t("profil.edit_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(Modifier.height(12.dp))
             viewModel.successMessage?.let { SuccessBanner(it); Spacer(Modifier.height(10.dp)) }
             viewModel.errorMessage?.let { ErrorBanner(it); Spacer(Modifier.height(10.dp)) }
@@ -138,7 +139,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             OutlinedTextField(
                 value = viewModel.name,
                 onValueChange = { viewModel.name = it },
-                label = { Text("Nom complet") },
+                label = { Text(t("profil.name")) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
@@ -156,7 +157,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             OutlinedTextField(
                 value = viewModel.phone,
                 onValueChange = { viewModel.phone = it },
-                label = { Text("Téléphone") },
+                label = { Text(t("profil.phone")) },
                 placeholder = { Text("+212 6 00 00 00 00") },
                 singleLine = true,
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -167,7 +168,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             OutlinedTextField(
                 value = viewModel.city,
                 onValueChange = { viewModel.city = it },
-                label = { Text("Ville") },
+                label = { Text(t("profil.city")) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
@@ -182,7 +183,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
                 if (viewModel.saving) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
                 } else {
-                    Text("Enregistrer")
+                    Text(t("profil.save"))
                 }
             }
         }
@@ -193,7 +194,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
         Column(
             modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
         ) {
-            Text("Changer le mot de passe", fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text(t("profil.change_password_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(Modifier.height(12.dp))
             viewModel.pwSuccessMessage?.let { SuccessBanner(it); Spacer(Modifier.height(10.dp)) }
             viewModel.pwErrorMessage?.let { ErrorBanner(it); Spacer(Modifier.height(10.dp)) }
@@ -201,7 +202,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             OutlinedTextField(
                 value = viewModel.currentPassword,
                 onValueChange = { viewModel.currentPassword = it },
-                label = { Text("Mot de passe actuel") },
+                label = { Text(t("profil.current_password")) },
                 singleLine = true,
                 visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -211,7 +212,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             OutlinedTextField(
                 value = viewModel.newPassword,
                 onValueChange = { viewModel.newPassword = it },
-                label = { Text("Nouveau mot de passe") },
+                label = { Text(t("profil.new_password")) },
                 singleLine = true,
                 visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -221,7 +222,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             OutlinedTextField(
                 value = viewModel.confirmPassword,
                 onValueChange = { viewModel.confirmPassword = it },
-                label = { Text("Confirmer le mot de passe") },
+                label = { Text(t("profil.confirm_password")) },
                 singleLine = true,
                 visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -237,7 +238,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
                 if (viewModel.pwSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
                 } else {
-                    Text("Changer le mot de passe")
+                    Text(t("profil.change_password_btn"))
                 }
             }
         }
