@@ -314,20 +314,17 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
         )
         var currencyExpanded by remember { mutableStateOf(false) }
-        Box(modifier = Modifier.weight(1f)) {
+        ExposedDropdownMenuBox(expanded = currencyExpanded, onExpandedChange = { currencyExpanded = it }, modifier = Modifier.weight(1f)) {
             OutlinedTextField(
                 value = form.currency,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Devise") },
-                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
+                modifier = Modifier.fillMaxWidth().menuAnchor(),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
             )
-            // A readOnly OutlinedTextField still consumes taps for its own
-            // focus/cursor handling, so a clickable on the field itself never
-            // fires — an invisible overlay on top is what actually gets the tap.
-            Box(modifier = Modifier.matchParentSize().clickable { currencyExpanded = true })
-            DropdownMenu(expanded = currencyExpanded, onDismissRequest = { currencyExpanded = false }) {
+            ExposedDropdownMenu(expanded = currencyExpanded, onDismissRequest = { currencyExpanded = false }) {
                 listOf("MAD", "EUR", "USD").forEach { cur ->
                     DropdownMenuItem(text = { Text(cur) }, onClick = { viewModel.updateForm { f -> f.copy(currency = cur) }; currencyExpanded = false })
                 }
@@ -372,18 +369,18 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
 private fun CityDropdown(selected: String, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
-    Box {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
             value = selected,
             onValueChange = {},
             readOnly = true,
             label = { Text("Ville") },
             placeholder = { Text("Choisir une ville") },
-            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(),
             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
         )
-        Box(modifier = Modifier.matchParentSize().clickable { expanded = true })
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 320.dp)) {
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 320.dp)) {
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
@@ -443,17 +440,17 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
             "SELECT" -> {
                 var expanded by remember { mutableStateOf(false) }
                 val value = viewModel.attrTextValue(def.code)
-                Box {
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                     OutlinedTextField(
                         value = if (value.isEmpty()) "" else humanizeCode(value),
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text("Sélectionner…") },
-                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
                     )
-                    Box(modifier = Modifier.matchParentSize().clickable { expanded = true })
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         def.options.forEach { opt ->
                             DropdownMenuItem(text = { Text(humanizeCode(opt)) }, onClick = { viewModel.setAttrText(def.code, opt); expanded = false })
                         }
