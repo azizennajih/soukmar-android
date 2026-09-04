@@ -34,4 +34,28 @@ interface ApiService {
 
     @GET("catalog/categories/{category}/full")
     suspend fun getCategoryFull(@Path("category") category: String): Response<CategoryFullResponse>
+
+    @GET("listings/{id}")
+    suspend fun getListing(@Path("id") id: String): Response<ListingDto>
+
+    @GET("favorites")
+    suspend fun getFavorites(): Response<List<ListingDto>>
+
+    @POST("favorites/{id}")
+    suspend fun addFavorite(@Path("id") id: String): Response<FavoriteRecordDto>
+
+    @DELETE("favorites/{id}")
+    suspend fun removeFavorite(@Path("id") id: String): Response<SuccessDto>
+
+    @GET("reviews/can-review/{listingId}")
+    suspend fun canReview(@Path("listingId") listingId: String): Response<CanReviewResponse>
+
+    @POST("reviews")
+    suspend fun submitReview(@Body body: ReviewSubmitRequest): Response<ReviewDto>
+
+    @POST("reports")
+    suspend fun submitReport(@Body body: ReportRequest): Response<ReportRecordDto>
+
+    @POST("chat/conversations")
+    suspend fun createConversation(@Body body: CreateConversationRequest): Response<ConversationDto>
 }

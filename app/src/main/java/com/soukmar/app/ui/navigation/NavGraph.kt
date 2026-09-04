@@ -12,6 +12,7 @@ import com.soukmar.app.ui.screens.auth.LoginScreen
 import com.soukmar.app.ui.screens.auth.RegisterScreen
 import com.soukmar.app.ui.screens.auth.ResetPasswordScreen
 import com.soukmar.app.ui.screens.home.HomeScreen
+import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
 import com.soukmar.app.ui.screens.listings.ListingsScreen
 
 @Composable
@@ -68,8 +69,17 @@ fun SoukMarNavGraph(startDestination: String) {
             ListingsScreen(
                 initialCategory = backStackEntry.arguments?.getString("category"),
                 onBack = { navController.popBackStack() },
-                // Listing detail lands in the next phase — tapping a card is a no-op for now.
-                onOpenListing = {}
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+            )
+        }
+        composable(
+            route = Routes.LISTING_DETAIL,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            ListingDetailScreen(
+                listingId = backStackEntry.arguments?.getString("id") ?: "",
+                onBack = { navController.popBackStack() },
+                onRequireLogin = { navController.navigate(Routes.LOGIN) }
             )
         }
     }

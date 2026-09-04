@@ -9,4 +9,6 @@ object Routes {
     const val HOME = "home"
     const val LISTINGS = "listings?category={category}"
     fun listings(category: String? = null) = if (category != null) "listings?category=$category" else "listings"
+    const val LISTING_DETAIL = "listing/{id}"
+    fun listingDetail(id: String) = "listing/$id"
 }

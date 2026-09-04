@@ -2,6 +2,7 @@ package com.soukmar.app.data.repository
 
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.ListingsResponseDto
 import kotlinx.serialization.json.Json
 import retrofit2.Response
@@ -31,5 +32,33 @@ class ListingRepository @Inject constructor(
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
         }
+    }
+
+    suspend fun getListing(id: String): ApiResult<ListingDto> {
+        return try {
+            val res = api.getListing(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    /** Mirrors the web app's favorite check: fetch the full list and test
+     * membership (there's no dedicated "is this favorited" endpoint). */
+    suspend fun getFavoriteIds(): Set<String> {
+        return try {
+            val res = api.getFavorites()
+            if (res.isSuccessful) res.body()?.map { it.id }?.toSet() ?: emptySet() else emptySet()
+        } catch (e: Exception) {
+            emptySet()
+        }
+    }
+
+    suspend fun addFavorite(listingId: String): Boolean {
+        return try { api.addFavorite(listingId).isSuccessful } catch (e: Exception) { false }
+    }
+
+    suspend fun removeFavorite(listingId: String): Boolean {
+        return try { api.removeFavorite(listingId).isSuccessful } catch (e: Exception) { false }
     }
 }

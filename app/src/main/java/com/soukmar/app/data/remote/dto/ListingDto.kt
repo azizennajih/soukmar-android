@@ -54,3 +54,10 @@ data class ListingsResponseDto(
     val page: Int = 1,
     val pages: Int = 1
 )
+
+@Serializable
+data class FavoriteRecordDto(
+    val id: String? = null,
+    val userId: String? = null,
+    val listingId: String? = null
+)
