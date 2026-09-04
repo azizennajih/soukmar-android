@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
@@ -21,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.ListingCard
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
+import com.soukmar.app.ui.model.humanizeCode
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
@@ -140,14 +143,24 @@ private fun FilterChipItem(label: String, emoji: String? = null, selected: Boole
 
 @Composable
 private fun FiltersPanel(viewModel: ListingsViewModel) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+    // FiltersPanel lives inside Scaffold's topBar, which doesn't scroll — a
+    // category with many EAV attributes (e.g. Véhicules) can otherwise push
+    // "Appliquer"/"Réinitialiser" off the bottom of the screen with no way
+    // to reach them. Bound the height and scroll internally instead.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 420.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
         if (viewModel.subcategories.isNotEmpty()) {
             Text("Sous-catégorie", style = MaterialTheme.typography.labelMedium, color = TextMuted)
             Spacer(Modifier.height(6.dp))
             LazyRowChips {
                 items(viewModel.subcategories.size) { i ->
                     val sub = viewModel.subcategories[i]
-                    FilterChipItem(label = sub.code.lowercase().replaceFirstChar { it.uppercase() }, selected = viewModel.selectedSubcategoryId == sub.id, onClick = { viewModel.setSubcategory(sub.id) })
+                    FilterChipItem(label = humanizeCode(sub.code), selected = viewModel.selectedSubcategoryId == sub.id, onClick = { viewModel.setSubcategory(sub.id) })
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -198,7 +211,7 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
 
 @Composable
 private fun AttributeFilter(def: com.soukmar.app.data.remote.dto.AttributeDefinitionDto, viewModel: ListingsViewModel) {
-    val label = def.code.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
+    val label = humanizeCode(def.code)
     Text(label, style = MaterialTheme.typography.labelMedium, color = TextMuted)
     Spacer(Modifier.height(6.dp))
     when (def.type) {
@@ -207,7 +220,7 @@ private fun AttributeFilter(def: com.soukmar.app.data.remote.dto.AttributeDefini
                 items(def.options.size) { i ->
                     val opt = def.options[i]
                     val selected = viewModel.attrSelections[def.code]?.contains(opt) == true
-                    FilterChipItem(label = opt.lowercase().replaceFirstChar { it.uppercase() }, selected = selected, onClick = { viewModel.toggleAttrOption(def.code, opt) })
+                    FilterChipItem(label = humanizeCode(opt), selected = selected, onClick = { viewModel.toggleAttrOption(def.code, opt) })
                 }
             }
         }
