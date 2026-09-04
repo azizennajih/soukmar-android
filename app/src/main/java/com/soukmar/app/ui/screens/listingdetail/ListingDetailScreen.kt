@@ -36,6 +36,7 @@ import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingAttributeValueDto
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.model.humanizeCode
 import com.soukmar.app.ui.model.timeAgo
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
@@ -235,11 +236,14 @@ private fun ImageGallery(images: List<String>) {
 @Composable
 private fun SpecRow(av: ListingAttributeValueDto) {
     val def = av.attributeDefinition!!
-    val label = def.code.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
+    val label = humanizeCode(def.code)
     val value = when (def.type) {
         "BOOLEAN" -> if (av.valueBoolean == true) "Oui" else "Non"
         "NUMBER" -> av.valueNumber?.let { if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString() } ?: ""
-        else -> av.valueText?.lowercase()?.replaceFirstChar { c -> c.uppercase() } ?: ""
+        // SELECT stores a fixed option code (needs humanizing); TEXT is
+        // free-form user input and must be shown exactly as entered.
+        "SELECT" -> av.valueText?.let { humanizeCode(it) } ?: ""
+        else -> av.valueText ?: ""
     }
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
