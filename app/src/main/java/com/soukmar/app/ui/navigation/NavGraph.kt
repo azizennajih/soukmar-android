@@ -16,6 +16,7 @@ import com.soukmar.app.ui.screens.chat.ChatScreen
 import com.soukmar.app.ui.screens.deposerannonce.DeposerAnnonceScreen
 import com.soukmar.app.ui.screens.favoris.FavorisScreen
 import com.soukmar.app.ui.screens.home.HomeScreen
+import com.soukmar.app.ui.screens.profil.ProfilScreen
 import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
 import com.soukmar.app.ui.screens.listings.ListingsScreen
 import com.soukmar.app.ui.screens.mesannonces.MesAnnoncesScreen
@@ -68,7 +69,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) },
                 onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
-                onOpenFavoris = { navController.navigate(Routes.FAVORIS) }
+                onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
+                onOpenProfil = { navController.navigate(Routes.PROFIL) }
             )
         }
         composable(
@@ -141,6 +143,9 @@ fun SoukMarNavGraph(startDestination: String) {
                     }
                 }
             )
+        }
+        composable(Routes.PROFIL) {
+            ProfilScreen(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -85,6 +85,33 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun getMe(): ApiResult<UserDto> {
+        return try {
+            val res = api.me()
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun updateProfile(name: String, phone: String?, city: String?): ApiResult<UserDto> {
+        return try {
+            val res = api.updateProfile(ProfileUpdateRequest(name, phone, city))
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun updateProfileImage(imageUrl: String): ApiResult<UserDto> {
+        return try {
+            val res = api.updateProfileImage(ProfileImageUpdateRequest(imageUrl))
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun isLoggedIn(): Boolean = tokenManager.isLoggedIn()
 
     suspend fun logout() = tokenManager.clear()

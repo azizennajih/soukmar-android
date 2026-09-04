@@ -11,8 +11,20 @@ data class UserDto(
     val role: String = "USER",
     val phone: String? = null,
     val city: String? = null,
-    val image: String? = null
+    val image: String? = null,
+    val createdAt: String? = null
 )
+
+/** Body for the "edit profile" form — name/phone/city only. Deliberately a
+ * separate type from [ProfileImageUpdateRequest]: the backend only touches
+ * fields present in the JSON body, so mixing the two into one nullable DTO
+ * would send an explicit `image: null` on every name/phone/city save and
+ * silently wipe the user's avatar. */
+@Serializable
+data class ProfileUpdateRequest(val name: String, val phone: String? = null, val city: String? = null)
+
+@Serializable
+data class ProfileImageUpdateRequest(val image: String)
 
 @Serializable
 data class LoginRequest(val email: String, val password: String)

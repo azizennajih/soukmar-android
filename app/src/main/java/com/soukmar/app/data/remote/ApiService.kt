@@ -30,6 +30,12 @@ interface ApiService {
     @GET("auth/me")
     suspend fun me(): Response<UserDto>
 
+    @PUT("auth/profile")
+    suspend fun updateProfile(@Body body: ProfileUpdateRequest): Response<UserDto>
+
+    @PUT("auth/profile")
+    suspend fun updateProfileImage(@Body body: ProfileImageUpdateRequest): Response<UserDto>
+
     @GET("listings")
     suspend fun getListings(@QueryMap params: Map<String, String>): Response<ListingsResponseDto>
 

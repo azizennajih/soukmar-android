@@ -16,10 +16,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +48,11 @@ fun HomeScreen(
     onOpenChat: () -> Unit,
     onOpenMesAnnonces: () -> Unit,
     onOpenFavoris: () -> Unit,
+    onOpenProfil: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,8 +67,22 @@ fun HomeScreen(
                     IconButton(onClick = onOpenChat) {
                         Icon(Icons.Filled.ChatBubbleOutline, contentDescription = "Messages")
                     }
-                    IconButton(onClick = { viewModel.logout(onLoggedOut) }) {
-                        Icon(Icons.Filled.Logout, contentDescription = "Se déconnecter")
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = "Plus")
+                        }
+                        DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Profil") },
+                                leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
+                                onClick = { menuExpanded = false; onOpenProfil() }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Se déconnecter") },
+                                leadingIcon = { Icon(Icons.Filled.Logout, contentDescription = null) },
+                                onClick = { menuExpanded = false; viewModel.logout(onLoggedOut) }
+                            )
+                        }
                     }
                 }
             )
