@@ -27,6 +27,7 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     val tokenFlow: Flow<String?> = context.dataStore.data.map { it[Keys.TOKEN] }
+    val roleFlow: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ROLE] }
 
     suspend fun getToken(): String? = context.dataStore.data.first()[Keys.TOKEN]
 
@@ -41,6 +42,8 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     suspend fun currentUserId(): String? = context.dataStore.data.first()[Keys.USER_ID]
+
+    suspend fun currentUserRole(): String? = context.dataStore.data.first()[Keys.USER_ROLE]
 
     suspend fun isLoggedIn(): Boolean = getToken() != null
 

@@ -29,4 +29,5 @@ object Routes {
     fun sellerProfile(id: String) = "vendeur/$id"
     const val SAVED_SEARCHES = "recherches_sauvegardees"
     const val NOTIFICATIONS = "notifications"
+    const val ADMIN = "admin"
 }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -60,6 +61,7 @@ fun HomeScreen(
     onOpenProfil: () -> Unit,
     onOpenSavedSearches: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenAdmin: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -102,6 +104,13 @@ fun HomeScreen(
                             Icon(Icons.Filled.MoreVert, contentDescription = "Plus")
                         }
                         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                            if (viewModel.user?.role == "ADMIN") {
+                                DropdownMenuItem(
+                                    text = { Text("Dashboard Admin") },
+                                    leadingIcon = { Icon(Icons.Filled.Shield, contentDescription = null) },
+                                    onClick = { menuExpanded = false; onOpenAdmin() }
+                                )
+                            }
                             DropdownMenuItem(
                                 text = { Text("Recherches sauvegardées") },
                                 leadingIcon = { Icon(Icons.Filled.BookmarkBorder, contentDescription = null) },

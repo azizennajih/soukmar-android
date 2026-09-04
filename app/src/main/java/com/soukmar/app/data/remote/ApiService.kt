@@ -97,6 +97,12 @@ interface ApiService {
     @POST("reports")
     suspend fun submitReport(@Body body: ReportRequest): Response<ReportRecordDto>
 
+    @GET("reports/admin")
+    suspend fun getAdminReports(): Response<List<AdminReportDto>>
+
+    @PATCH("reports/admin/{id}")
+    suspend fun updateAdminReport(@Path("id") id: String, @Body body: AdminReportUpdateRequest): Response<AdminReportDto>
+
     @POST("chat/conversations")
     suspend fun createConversation(@Body body: CreateConversationRequest): Response<ConversationDto>
 

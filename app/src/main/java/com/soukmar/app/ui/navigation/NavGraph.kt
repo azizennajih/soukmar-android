@@ -23,6 +23,7 @@ import com.soukmar.app.ui.screens.mesannonces.MesAnnoncesScreen
 import com.soukmar.app.ui.screens.sellerprofile.SellerProfileScreen
 import com.soukmar.app.ui.screens.savedsearches.SavedSearchesScreen
 import com.soukmar.app.ui.screens.notifications.NotificationsScreen
+import com.soukmar.app.ui.screens.admin.AdminScreen
 
 @Composable
 fun SoukMarNavGraph(startDestination: String) {
@@ -75,7 +76,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
                 onOpenProfil = { navController.navigate(Routes.PROFIL) },
                 onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) },
-                onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
+                onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onOpenAdmin = { navController.navigate(Routes.ADMIN) }
             )
         }
         composable(
@@ -179,6 +181,12 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
                 onOpenProfil = { navController.navigate(Routes.PROFIL) }
+            )
+        }
+        composable(Routes.ADMIN) {
+            AdminScreen(
+                onBack = { navController.popBackStack() },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
             )
         }
     }
