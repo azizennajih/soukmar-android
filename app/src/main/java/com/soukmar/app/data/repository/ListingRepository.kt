@@ -3,8 +3,10 @@ package com.soukmar.app.data.repository
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.data.remote.dto.ListingStatusUpdateRequest
 import com.soukmar.app.data.remote.dto.ListingUpsertRequest
 import com.soukmar.app.data.remote.dto.ListingsResponseDto
+import com.soukmar.app.data.remote.dto.ViewStatsDto
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import javax.inject.Inject
@@ -68,6 +70,51 @@ class ListingRepository @Inject constructor(
         return try {
             val res = api.updateListing(id, body)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun getMyListings(): ApiResult<List<ListingDto>> {
+        return try {
+            val res = api.getMyListings()
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun getViewStats(id: String): ApiResult<ViewStatsDto> {
+        return try {
+            val res = api.getViewStats(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun bump(id: String): ApiResult<ListingDto> {
+        return try {
+            val res = api.bumpListing(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun updateStatus(id: String, status: String): ApiResult<ListingDto> {
+        return try {
+            val res = api.updateListingStatus(id, ListingStatusUpdateRequest(status))
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun deleteListing(id: String): ApiResult<Boolean> {
+        return try {
+            val res = api.deleteListing(id)
+            if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
         }

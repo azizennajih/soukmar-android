@@ -16,4 +16,5 @@ object Routes {
     const val CHAT_LIST = "chat"
     const val CHAT_DETAIL = "chat/{conversationId}"
     fun chatDetail(conversationId: String) = "chat/$conversationId"
+    const val MES_ANNONCES = "mes_annonces"
 }

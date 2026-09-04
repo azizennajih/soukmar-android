@@ -45,6 +45,21 @@ interface ApiService {
     @PUT("listings/{id}")
     suspend fun updateListing(@Path("id") id: String, @Body body: ListingUpsertRequest): Response<ListingDto>
 
+    @PUT("listings/{id}")
+    suspend fun updateListingStatus(@Path("id") id: String, @Body body: ListingStatusUpdateRequest): Response<ListingDto>
+
+    @GET("listings/user/mine")
+    suspend fun getMyListings(): Response<List<ListingDto>>
+
+    @GET("listings/{id}/view-stats")
+    suspend fun getViewStats(@Path("id") id: String): Response<ViewStatsDto>
+
+    @POST("listings/{id}/bump")
+    suspend fun bumpListing(@Path("id") id: String): Response<ListingDto>
+
+    @DELETE("listings/{id}")
+    suspend fun deleteListing(@Path("id") id: String): Response<SuccessDto>
+
     @Multipart
     @POST("upload")
     suspend fun uploadImages(@Part images: List<MultipartBody.Part>): Response<UploadResponseDto>

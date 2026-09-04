@@ -85,3 +85,15 @@ data class ListingUpsertRequest(
 
 @Serializable
 data class UploadResponseDto(val urls: List<String> = emptyList())
+
+/** Partial PUT body for a status-only change (e.g. mes-annonces' réserver/
+ * mettre en vente toggle) — the backend applies whichever fields are
+ * present, so this avoids re-sending the full listing form. */
+@Serializable
+data class ListingStatusUpdateRequest(val status: String)
+
+@Serializable
+data class ViewStatDayDto(val date: String, val count: Int)
+
+@Serializable
+data class ViewStatsDto(val days: List<ViewStatDayDto> = emptyList(), val total: Int = 0)
