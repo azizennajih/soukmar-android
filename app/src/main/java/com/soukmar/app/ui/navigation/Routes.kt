@@ -19,4 +19,6 @@ object Routes {
     const val MES_ANNONCES = "mes_annonces"
     const val FAVORIS = "favoris"
     const val PROFIL = "profil"
+    const val SELLER_PROFILE = "vendeur/{id}"
+    fun sellerProfile(id: String) = "vendeur/$id"
 }

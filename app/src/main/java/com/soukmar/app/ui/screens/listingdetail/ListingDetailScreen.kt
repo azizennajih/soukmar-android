@@ -52,6 +52,7 @@ fun ListingDetailScreen(
     onBack: () -> Unit,
     onRequireLogin: () -> Unit,
     onOpenChat: (String) -> Unit,
+    onOpenSeller: (String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -180,7 +181,11 @@ fun ListingDetailScreen(
 
                         listing.user?.let { seller ->
                             Spacer(Modifier.height(14.dp))
-                            SellerCard(name = seller.name, city = seller.city)
+                            SellerCard(
+                                name = seller.name,
+                                city = seller.city,
+                                onSeeListings = { onOpenSeller(listing.userId) }
+                            )
                         }
 
                         if (viewModel.isLoggedIn && viewModel.currentUserId != listing.userId) {
@@ -305,21 +310,26 @@ private fun ContactCard(
 }
 
 @Composable
-private fun SellerCard(name: String, city: String?) {
-    Row(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun SellerCard(name: String, city: String?, onSeeListings: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
     ) {
-        Box(
-            modifier = Modifier.size(44.dp).background(Primary, RoundedCornerShape(999.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(name.firstOrNull()?.uppercase() ?: "?", color = Color.White, fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(44.dp).background(Primary, RoundedCornerShape(999.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(name.firstOrNull()?.uppercase() ?: "?", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                city?.let { Text("📍 $it", color = TextMuted, fontSize = 12.sp) }
+            }
         }
-        Spacer(Modifier.width(12.dp))
-        Column {
-            Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            city?.let { Text("📍 $it", color = TextMuted, fontSize = 12.sp) }
+        Spacer(Modifier.height(10.dp))
+        OutlinedButton(onClick = onSeeListings, modifier = Modifier.fillMaxWidth()) {
+            Text("Voir ses annonces", fontSize = 13.sp)
         }
     }
 }

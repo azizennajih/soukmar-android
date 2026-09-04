@@ -20,6 +20,7 @@ import com.soukmar.app.ui.screens.profil.ProfilScreen
 import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
 import com.soukmar.app.ui.screens.listings.ListingsScreen
 import com.soukmar.app.ui.screens.mesannonces.MesAnnoncesScreen
+import com.soukmar.app.ui.screens.sellerprofile.SellerProfileScreen
 
 @Composable
 fun SoukMarNavGraph(startDestination: String) {
@@ -91,7 +92,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 listingId = backStackEntry.arguments?.getString("id") ?: "",
                 onBack = { navController.popBackStack() },
                 onRequireLogin = { navController.navigate(Routes.LOGIN) },
-                onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) }
+                onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) },
+                onOpenSeller = { sellerId -> navController.navigate(Routes.sellerProfile(sellerId)) }
             )
         }
         composable(
@@ -146,6 +148,16 @@ fun SoukMarNavGraph(startDestination: String) {
         }
         composable(Routes.PROFIL) {
             ProfilScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = Routes.SELLER_PROFILE,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            SellerProfileScreen(
+                sellerId = backStackEntry.arguments?.getString("id") ?: "",
+                onBack = { navController.popBackStack() },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+            )
         }
     }
 }

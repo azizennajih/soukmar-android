@@ -2,17 +2,16 @@ package com.soukmar.app.data.repository
 
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
-import com.soukmar.app.data.remote.dto.CanReviewResponse
-import com.soukmar.app.data.remote.dto.ReviewDto
-import com.soukmar.app.data.remote.dto.ReviewSubmitRequest
-import com.soukmar.app.data.remote.dto.ReviewsForUserResponse
+import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.data.remote.dto.SellerProfileDto
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/** Mirrors soukmar-backend's /api/users routes — public seller-profile data. */
 @Singleton
-class ReviewRepository @Inject constructor(
+class UserRepository @Inject constructor(
     private val api: ApiService,
     private val json: Json
 ) {
@@ -24,27 +23,18 @@ class ReviewRepository @Inject constructor(
         return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
     }
 
-    suspend fun canReview(listingId: String): ApiResult<CanReviewResponse> {
+    suspend fun getSellerProfile(id: String): ApiResult<SellerProfileDto> {
         return try {
-            val res = api.canReview(listingId)
+            val res = api.getSellerProfile(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
         }
     }
 
-    suspend fun submitReview(listingId: String, revieweeId: String, rating: Int, comment: String?): ApiResult<ReviewDto> {
+    suspend fun getSellerListings(id: String): ApiResult<List<ListingDto>> {
         return try {
-            val res = api.submitReview(ReviewSubmitRequest(listingId, revieweeId, rating, comment?.takeIf { it.isNotBlank() }))
-            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
-        }
-    }
-
-    suspend fun getForUser(userId: String): ApiResult<ReviewsForUserResponse> {
-        return try {
-            val res = api.getReviewsForUser(userId)
+            val res = api.getSellerListings(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

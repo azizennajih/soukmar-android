@@ -85,6 +85,15 @@ interface ApiService {
     @POST("reviews")
     suspend fun submitReview(@Body body: ReviewSubmitRequest): Response<ReviewDto>
 
+    @GET("reviews/user/{userId}")
+    suspend fun getReviewsForUser(@Path("userId") userId: String): Response<ReviewsForUserResponse>
+
+    @GET("users/{id}/profile")
+    suspend fun getSellerProfile(@Path("id") id: String): Response<SellerProfileDto>
+
+    @GET("users/{id}/listings")
+    suspend fun getSellerListings(@Path("id") id: String): Response<List<ListingDto>>
+
     @POST("reports")
     suspend fun submitReport(@Body body: ReportRequest): Response<ReportRecordDto>
 
