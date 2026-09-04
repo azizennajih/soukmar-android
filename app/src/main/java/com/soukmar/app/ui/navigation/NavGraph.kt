@@ -22,6 +22,7 @@ import com.soukmar.app.ui.screens.listings.ListingsScreen
 import com.soukmar.app.ui.screens.mesannonces.MesAnnoncesScreen
 import com.soukmar.app.ui.screens.sellerprofile.SellerProfileScreen
 import com.soukmar.app.ui.screens.savedsearches.SavedSearchesScreen
+import com.soukmar.app.ui.screens.notifications.NotificationsScreen
 
 @Composable
 fun SoukMarNavGraph(startDestination: String) {
@@ -73,7 +74,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
                 onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
                 onOpenProfil = { navController.navigate(Routes.PROFIL) },
-                onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) }
+                onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) },
+                onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         }
         composable(
@@ -169,6 +171,14 @@ fun SoukMarNavGraph(startDestination: String) {
             SavedSearchesScreen(
                 onBack = { navController.popBackStack() },
                 onOpenSearch = { savedSearchId -> navController.navigate(Routes.listings(savedSearchId = savedSearchId)) }
+            )
+        }
+        composable(Routes.NOTIFICATIONS) {
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onOpenProfil = { navController.navigate(Routes.PROFIL) }
             )
         }
     }

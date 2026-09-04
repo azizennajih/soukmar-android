@@ -106,6 +106,24 @@ interface ApiService {
     @GET("chat/conversations/{id}/messages")
     suspend fun getMessages(@Path("id") id: String): Response<List<MessageDto>>
 
+    @GET("notifications")
+    suspend fun getNotifications(): Response<List<NotificationDto>>
+
+    @GET("notifications/unread-count")
+    suspend fun getUnreadNotificationCount(): Response<UnreadCountResponse>
+
+    @PATCH("notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: String): Response<NotificationDto>
+
+    @PATCH("notifications/read-all")
+    suspend fun markAllNotificationsRead(): Response<SuccessDto>
+
+    @POST("push/fcm-register")
+    suspend fun registerFcmToken(@Body body: FcmTokenRequest): Response<OkDto>
+
+    @POST("push/fcm-unregister")
+    suspend fun unregisterFcmToken(@Body body: FcmTokenRequest): Response<OkDto>
+
     @GET("saved-searches")
     suspend fun getSavedSearches(): Response<List<SavedSearchDto>>
 

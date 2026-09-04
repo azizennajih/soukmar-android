@@ -32,7 +32,11 @@ class MainActivity : ComponentActivity() {
                     var startDestination by remember { mutableStateOf<String?>(null) }
 
                     LaunchedEffect(Unit) {
-                        startDestination = if (tokenManager.isLoggedIn()) Routes.HOME else Routes.LOGIN
+                        startDestination = when {
+                            !tokenManager.isLoggedIn() -> Routes.LOGIN
+                            intent?.getBooleanExtra("open_notifications", false) == true -> Routes.NOTIFICATIONS
+                            else -> Routes.HOME
+                        }
                     }
 
                     val dest = startDestination

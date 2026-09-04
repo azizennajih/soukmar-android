@@ -2,6 +2,10 @@
 
 package com.soukmar.app.ui.screens.home
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Logout
@@ -22,15 +27,18 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.SoukMarLogo
 import com.soukmar.app.ui.model.CATEGORIES
@@ -51,9 +59,20 @@ fun HomeScreen(
     onOpenFavoris: () -> Unit,
     onOpenProfil: () -> Unit,
     onOpenSavedSearches: () -> Unit,
+    onOpenNotifications: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -69,6 +88,15 @@ fun HomeScreen(
                     IconButton(onClick = onOpenChat) {
                         Icon(Icons.Filled.ChatBubbleOutline, contentDescription = "Messages")
                     }
+                    IconButton(onClick = onOpenNotifications) {
+                        BadgedBox(badge = {
+                            if (viewModel.unreadNotifications > 0) {
+                                Badge { Text(if (viewModel.unreadNotifications > 99) "99+" else viewModel.unreadNotifications.toString()) }
+                            }
+                        }) {
+                            Icon(Icons.Filled.NotificationsNone, contentDescription = "Notifications")
+                        }
+                    }
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "Plus")
@@ -76,7 +104,7 @@ fun HomeScreen(
                         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                             DropdownMenuItem(
                                 text = { Text("Recherches sauvegardées") },
-                                leadingIcon = { Icon(Icons.Filled.NotificationsNone, contentDescription = null) },
+                                leadingIcon = { Icon(Icons.Filled.BookmarkBorder, contentDescription = null) },
                                 onClick = { menuExpanded = false; onOpenSavedSearches() }
                             )
                             DropdownMenuItem(
