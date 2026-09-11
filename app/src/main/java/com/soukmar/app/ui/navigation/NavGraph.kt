@@ -180,7 +180,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onBack = { navController.popBackStack() },
                 onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
-                onOpenProfil = { navController.navigate(Routes.PROFIL) }
+                onOpenProfil = { navController.navigate(Routes.PROFIL) },
+                onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) }
             )
         }
         composable(Routes.ADMIN) {

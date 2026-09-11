@@ -75,6 +75,7 @@ fun MesAnnoncesScreen(
                 title = { Text("${t("mes_annonces.title")} (${viewModel.listings.size})") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } },
                 actions = {
+                    if (viewModel.listings.isNotEmpty()) SortMenu(sortBy = viewModel.sortBy, onSelect = { viewModel.sortBy = it })
                     IconButton(onClick = onNewListing) { Icon(Icons.Filled.Add, contentDescription = t("mes_annonces.new")) }
                 }
             )
@@ -85,17 +86,22 @@ fun MesAnnoncesScreen(
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.listings.isEmpty() -> EmptyMesAnnonces(onNewListing)
                 else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(viewModel.listings, key = { it.id }) { listing ->
+                    items(viewModel.sortedListings, key = { it.id }) { listing ->
                         Column {
                             ListingRow(
                                 listing = listing,
                                 canBump = viewModel.canBump(listing),
                                 bumping = viewModel.bumpingId == listing.id,
+                                daysUntilExpiry = viewModel.daysUntilExpiry(listing),
+                                expiringSoon = viewModel.isExpiringSoon(listing),
+                                canExtend = viewModel.canExtend(listing),
+                                extending = viewModel.extendingId == listing.id,
                                 statsOpen = viewModel.statsOpenId == listing.id,
                                 onOpen = { onOpenListing(listing.id) },
                                 onEdit = { onEditListing(listing.id) },
                                 onToggleReserve = { viewModel.toggleReserve(listing) },
                                 onBump = { viewModel.bump(listing) },
+                                onExtend = { viewModel.extend(listing) },
                                 onToggleStats = { viewModel.toggleStats(listing) },
                                 onDelete = { viewModel.requestDelete(listing.id) }
                             )
@@ -117,6 +123,28 @@ fun MesAnnoncesScreen(
             confirmButton = { TextButton(onClick = { viewModel.confirmDelete() }) { Text(t("mes_annonces.delete"), color = ErrorColor) } },
             dismissButton = { TextButton(onClick = { viewModel.dismissDelete() }) { Text(t("common.cancel")) } }
         )
+    }
+}
+
+@Composable
+private fun SortMenu(sortBy: SortKey, onSelect: (SortKey) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) { Icon(Icons.Filled.Sort, contentDescription = t("annonces.sort")) }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            val options = listOf(
+                SortKey.NEWEST to t("annonces.newest"),
+                SortKey.OLDEST to t("annonces.oldest"),
+                SortKey.PRICE_ASC to t("annonces.price_asc"),
+                SortKey.PRICE_DESC to t("annonces.price_desc"),
+            )
+            options.forEach { (key, label) ->
+                DropdownMenuItem(
+                    text = { Text(label, fontWeight = if (key == sortBy) FontWeight.Bold else FontWeight.Normal, color = if (key == sortBy) Primary else TextPrimary) },
+                    onClick = { onSelect(key); open = false }
+                )
+            }
+        }
     }
 }
 
@@ -144,11 +172,16 @@ private fun ListingRow(
     listing: ListingDto,
     canBump: Boolean,
     bumping: Boolean,
+    daysUntilExpiry: Long?,
+    expiringSoon: Boolean,
+    canExtend: Boolean,
+    extending: Boolean,
     statsOpen: Boolean,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
     onToggleReserve: () -> Unit,
     onBump: () -> Unit,
+    onExtend: () -> Unit,
     onToggleStats: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -192,6 +225,15 @@ private fun ListingRow(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · 📍 ${listing.city}", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (daysUntilExpiry != null) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "⏳ " + if (daysUntilExpiry == 0L) t("mes_annonces.expires_today") else t("mes_annonces.expires_in_days", "n" to daysUntilExpiry.toString()),
+                        color = if (expiringSoon) Primary else TextMuted,
+                        fontSize = 11.sp,
+                        fontWeight = if (expiringSoon) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
             }
         }
         Spacer(Modifier.height(10.dp))
@@ -208,6 +250,9 @@ private fun ListingRow(
             RowActionButton(Icons.Filled.Edit, t("mes_annonces.edit"), onClick = onEdit)
             if (canToggleReserve) {
                 RowActionButton(Icons.Filled.ArrowUpward, if (canBump) t("mes_annonces.bump") else t("mes_annonces.bump_cooldown"), enabled = canBump && !bumping, onClick = onBump)
+            }
+            if (canToggleReserve && canExtend) {
+                RowActionButton(Icons.Filled.DateRange, t("mes_annonces.extend"), enabled = !extending, onClick = onExtend)
             }
             RowActionButton(Icons.Filled.BarChart, t("mes_annonces.stats"), active = statsOpen, onClick = onToggleStats)
             RowActionButton(Icons.Filled.Delete, t("mes_annonces.delete"), danger = true, onClick = onDelete)

@@ -37,6 +37,7 @@ fun NotificationsScreen(
     onOpenChat: (String) -> Unit,
     onOpenListing: (String) -> Unit,
     onOpenProfil: () -> Unit,
+    onOpenMesAnnonces: () -> Unit,
     viewModel: NotificationsViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) { viewModel.load() }
@@ -73,6 +74,7 @@ fun NotificationsScreen(
                                         onOpenChat(n.conversationId)
                                     n.type == "NEW_REVIEW" -> onOpenProfil()
                                     n.type == "SAVED_SEARCH_MATCH" && n.listingId != null -> onOpenListing(n.listingId)
+                                    n.type == "LISTING_EXPIRING_SOON" || n.type == "LISTING_EXPIRED" -> onOpenMesAnnonces()
                                     else -> { /* REPORT_RESOLVED and anything else: stay put */ }
                                 }
                             }
@@ -93,6 +95,8 @@ private fun templateFor(n: NotificationDto, i18n: I18nRepository): String {
         "NEW_REVIEW" -> i18n.t("notifications.new_review", mapOf("name" to name))
         "SAVED_SEARCH_MATCH" -> i18n.t("notifications.saved_search_match", mapOf("name" to name))
         "REPORT_RESOLVED" -> i18n.t("notifications.report_resolved")
+        "LISTING_EXPIRING_SOON" -> i18n.t("notifications.listing_expiring_soon")
+        "LISTING_EXPIRED" -> i18n.t("notifications.listing_expired")
         else -> "Nouvelle notification."
     }
 }

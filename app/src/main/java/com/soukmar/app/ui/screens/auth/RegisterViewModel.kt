@@ -22,6 +22,7 @@ class RegisterViewModel @Inject constructor(
     var city by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
+    var accountType by mutableStateOf("")
     var loading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     var registeredEmail by mutableStateOf<String?>(null)
@@ -30,6 +31,7 @@ class RegisterViewModel @Inject constructor(
     var resendOk by mutableStateOf(false)
 
     fun submit() {
+        if (accountType.isBlank()) { error = "Veuillez sélectionner un type de compte."; return }
         if (password != confirmPassword) { error = "Les mots de passe ne correspondent pas."; return }
         if (password.length < 6) { error = "Le mot de passe doit contenir au moins 6 caractères."; return }
         if (name.isBlank() || email.isBlank()) { error = "Champs requis manquants."; return }
@@ -37,7 +39,7 @@ class RegisterViewModel @Inject constructor(
         loading = true
         error = null
         viewModelScope.launch {
-            val result = authRepository.register(name.trim(), email.trim(), password, phone.ifBlank { null }, city.ifBlank { null })
+            val result = authRepository.register(name.trim(), email.trim(), password, phone.ifBlank { null }, city.ifBlank { null }, accountType)
             loading = false
             when (result) {
                 is ApiResult.Success -> {

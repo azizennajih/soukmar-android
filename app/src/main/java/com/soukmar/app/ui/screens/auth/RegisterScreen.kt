@@ -68,9 +68,17 @@ fun RegisterScreen(
         Spacer(Modifier.height(12.dp))
         AppTextField(value = viewModel.email, onValueChange = { viewModel.email = it }, label = t("auth.email"), keyboardType = KeyboardType.Email)
         Spacer(Modifier.height(12.dp))
-        AppTextField(value = viewModel.phone, onValueChange = { viewModel.phone = it }, label = t("auth.phone"), keyboardType = KeyboardType.Phone)
+        PhoneInputField(value = viewModel.phone, onValueChange = { viewModel.phone = it })
         Spacer(Modifier.height(12.dp))
         AppTextField(value = viewModel.city, onValueChange = { viewModel.city = it }, label = t("auth.city"))
+        Spacer(Modifier.height(12.dp))
+        Text(t("auth.account_type"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+        Spacer(Modifier.height(6.dp))
+        AccountTypeSelector(
+            selected = viewModel.accountType,
+            onSelect = { viewModel.accountType = it },
+            options = listOf("PRIVATE" to t("auth.account_type_private"), "BUSINESS" to t("auth.account_type_business")),
+        )
         Spacer(Modifier.height(12.dp))
         AppTextField(value = viewModel.password, onValueChange = { viewModel.password = it }, label = t("auth.password"), isPassword = true)
         Spacer(Modifier.height(12.dp))

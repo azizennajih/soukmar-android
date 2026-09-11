@@ -30,6 +30,13 @@ val CATEGORIES: List<CategoryConfig> = listOf(
     CategoryConfig("BABY_KIDS", "Bébé & Enfants", "🧸", Color(0xFFCCFBF1), Color(0xFF0F766E)),
     CategoryConfig("PETS", "Animaux", "🐾", Color(0xFFF5E9D9), Color(0xFF92603A)),
     CategoryConfig("SPORTS_LEISURE", "Sport & Loisirs", "⚽", Color(0xFFE0E7FF), Color(0xFF4338CA)),
+    CategoryConfig("LESSONS_COURSES", "Cours & Leçons", "📚", Color(0xFFCFFAFE), Color(0xFF0E7490)),
+    CategoryConfig("CARPOOLING", "Covoiturage", "🚕", Color(0xFFDBEAFE), Color(0xFF1D4ED8)),
+    CategoryConfig("TRANSPORT", "Transport", "🚛", Color(0xFFFFEDD5), Color(0xFFC2410C)),
+    CategoryConfig("RENTAL", "Location", "🚙", Color(0xFFF3E8FF), Color(0xFF7E22CE)),
+    CategoryConfig("TICKETS", "Billets & Tickets", "🎫", Color(0xFFFEF9C3), Color(0xFFA16207)),
+    CategoryConfig("GIVEAWAY_SWAP", "Dons & Échanges", "🎁", Color(0xFFDCFCE7), Color(0xFF15803D)),
+    CategoryConfig("MOVING", "Déménagement", "🚚", Color(0xFFF5E9D9), Color(0xFF92603A)),
 )
 
 fun categoryConfig(value: String): CategoryConfig? = CATEGORIES.find { it.value == value }
@@ -39,8 +46,15 @@ fun categoryConfig(value: String): CategoryConfig? = CATEGORIES.find { it.value 
  * -> "Fuel type". Same convention already used ad hoc in ListingDetailScreen. */
 fun humanizeCode(code: String): String = code.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
 
+/** Mirrors listing.model.ts's isNewListing() — true for the first 24h after creation. */
+fun isNewListing(createdAt: String, hours: Long = 24): Boolean {
+    val created = try { Instant.parse(createdAt) } catch (e: DateTimeParseException) { return false }
+    val ms = Duration.between(created, Instant.now()).toMillis()
+    return ms in 0 until hours * 3_600_000
+}
+
 val CONDITION_CATEGORIES: Set<String> = setOf(
-    "VEHICLES", "ELECTRONICS", "HOME_GARDEN", "FASHION", "BABY_KIDS", "SPORTS_LEISURE"
+    "VEHICLES", "ELECTRONICS", "HOME_GARDEN", "FASHION", "BABY_KIDS", "SPORTS_LEISURE", "GIVEAWAY_SWAP"
 )
 
 /** Mirrors MOROCCO_CITIES in listing.model.ts (deduplicated + sorted there via
@@ -147,6 +161,7 @@ val HIGHLIGHT_ATTR_CODES: Map<String, List<String>> = mapOf(
     "REAL_ESTATE" to listOf("LIVING_AREA_SQM", "ROOMS"),
     "FASHION" to listOf("SIZE", "SIZE_EU"),
     "HOME_GARDEN" to listOf("FURNITURE_TYPE"),
+    "TICKETS" to listOf("EVENT_DATE", "TICKET_COUNT"),
 )
 
 /** Splits a formatted price into amount/currency so the currency can be

@@ -63,6 +63,9 @@ interface ApiService {
     @POST("listings/{id}/bump")
     suspend fun bumpListing(@Path("id") id: String): Response<ListingDto>
 
+    @POST("listings/{id}/extend")
+    suspend fun extendListing(@Path("id") id: String): Response<ListingDto>
+
     @DELETE("listings/{id}")
     suspend fun deleteListing(@Path("id") id: String): Response<SuccessDto>
 

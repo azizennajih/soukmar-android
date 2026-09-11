@@ -154,16 +154,9 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
-                value = viewModel.phone,
-                onValueChange = { viewModel.phone = it },
-                label = { Text(t("profil.phone")) },
-                placeholder = { Text("+212 6 00 00 00 00") },
-                singleLine = true,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-            )
+            Text(t("profil.phone"), style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.height(4.dp))
+            com.soukmar.app.ui.components.PhoneInputField(value = viewModel.phone, onValueChange = { viewModel.phone = it })
             Spacer(Modifier.height(10.dp))
             OutlinedTextField(
                 value = viewModel.city,

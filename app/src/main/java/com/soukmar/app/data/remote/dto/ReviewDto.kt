@@ -71,5 +71,7 @@ data class SellerProfileDto(
     val avgRating: Double? = null,
     val reviewCount: Int = 0,
     val activeListingsCount: Int = 0,
-    val avgResponseHours: Double? = null
+    val avgResponseHours: Double? = null,
+    val emailVerified: Boolean = false,
+    val phoneVerified: Boolean = false
 )

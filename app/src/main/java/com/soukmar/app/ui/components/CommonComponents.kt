@@ -54,6 +54,17 @@ fun AppTextField(
     singleLine: Boolean = true,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    if (isPassword) {
+        // Mirrors the web app's password-input component: revealing the value
+        // auto-hides it again after a few seconds instead of staying in
+        // plaintext indefinitely.
+        LaunchedEffect(passwordVisible) {
+            if (passwordVisible) {
+                kotlinx.coroutines.delay(8000)
+                passwordVisible = false
+            }
+        }
+    }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -119,6 +130,59 @@ fun OutlineButtonSoukMar(
         colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+/** Two-way Privat/Gewerblich picker, mirrors the web's `account-type-choice`
+ * pill row (register + profil forms). [options] is (value, label) pairs. */
+@Composable
+fun AccountTypeSelector(
+    selected: String,
+    onSelect: (String) -> Unit,
+    options: List<Pair<String, String>>,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        options.forEach { (value, label) ->
+            val isSelected = selected == value
+            OutlinedButton(
+                onClick = { onSelect(value) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = if (isSelected) {
+                    ButtonDefaults.outlinedButtonColors(containerColor = PrimaryLight, contentColor = Primary)
+                } else {
+                    ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
+                },
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, if (isSelected) Primary else Color(0xFFE5E9EE)),
+            ) {
+                Text(label, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+            }
+        }
+    }
+}
+
+/** Trust-signal badge mirroring the web's `app-verified-badge`: renders
+ * nothing if neither flag is set, so an unverified account just shows no
+ * badge rather than a warning. */
+@Composable
+fun VerifiedBadge(emailVerified: Boolean, phoneVerified: Boolean, modifier: Modifier = Modifier) {
+    if (!emailVerified && !phoneVerified) return
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (emailVerified) VerifiedPill(com.soukmar.app.ui.i18n.t("seller.email_verified_short"))
+        if (phoneVerified) VerifiedPill(com.soukmar.app.ui.i18n.t("seller.phone_verified_short"))
+    }
+}
+
+@Composable
+private fun VerifiedPill(label: String) {
+    Row(
+        modifier = Modifier
+            .background(SuccessColor.copy(alpha = 0.12f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("✓ $label", color = SuccessColor, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

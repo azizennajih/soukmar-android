@@ -40,9 +40,9 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun register(name: String, email: String, password: String, phone: String?, city: String?): ApiResult<Boolean> {
+    suspend fun register(name: String, email: String, password: String, phone: String?, city: String?, accountType: String): ApiResult<Boolean> {
         return try {
-            val res = api.register(RegisterRequest(name, email, password, phone, city))
+            val res = api.register(RegisterRequest(name, email, password, phone, city, accountType))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

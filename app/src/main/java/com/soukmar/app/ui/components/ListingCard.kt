@@ -27,6 +27,9 @@ import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.model.HIGHLIGHT_ATTR_CODES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.model.isNewListing
+import com.soukmar.app.ui.theme.Primary
+import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
 import com.soukmar.app.ui.theme.GoldLight
@@ -86,6 +89,17 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(if (listing.isFeatured) "⭐ ${t("listing.premium_badge")}" else "Pro", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            if (listing.status != "RESERVED" && isNewListing(listing.createdAt)) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(PrimaryLight, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(t("listing.new_badge"), color = Primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

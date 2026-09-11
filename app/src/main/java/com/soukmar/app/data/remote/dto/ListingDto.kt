@@ -7,7 +7,9 @@ import kotlinx.serialization.json.JsonElement
 data class ListingUserDto(
     val id: String,
     val name: String,
-    val city: String? = null
+    val city: String? = null,
+    val emailVerified: Boolean = false,
+    val phoneVerified: Boolean = false
 )
 
 @Serializable
@@ -45,7 +47,10 @@ data class ListingDto(
     val attributeValues: List<ListingAttributeValueDto> = emptyList(),
     val avgPrice: Double? = null,
     val bumpedAt: String? = null,
-    val createdAt: String
+    val createdAt: String,
+    val expiresAt: String? = null,
+    val expiryExtended: Boolean = false,
+    val expiryWarningSent: Boolean = false
 )
 
 @Serializable

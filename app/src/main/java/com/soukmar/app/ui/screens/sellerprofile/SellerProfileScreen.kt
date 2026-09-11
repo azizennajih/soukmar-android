@@ -97,6 +97,8 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(profile.name, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = TextPrimary)
+                Spacer(Modifier.height(4.dp))
+                com.soukmar.app.ui.components.VerifiedBadge(profile.emailVerified, profile.phoneVerified)
                 profile.city?.let {
                     Spacer(Modifier.height(2.dp))
                     Text("📍 $it", color = TextMuted, fontSize = 13.sp)

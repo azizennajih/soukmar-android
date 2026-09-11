@@ -111,6 +111,15 @@ class ListingRepository @Inject constructor(
         }
     }
 
+    suspend fun extend(id: String): ApiResult<ListingDto> {
+        return try {
+            val res = api.extendListing(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun updateStatus(id: String, status: String): ApiResult<ListingDto> {
         return try {
             val res = api.updateListingStatus(id, ListingStatusUpdateRequest(status))

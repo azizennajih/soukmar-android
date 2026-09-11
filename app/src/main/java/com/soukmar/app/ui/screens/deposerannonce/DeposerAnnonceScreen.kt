@@ -552,27 +552,13 @@ private fun ContactStep(viewModel: DeposerAnnonceViewModel) {
     val form = viewModel.form
     Text(t("deposer.contact_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(12.dp))
-    OutlinedTextField(
-        value = form.phone,
-        onValueChange = { viewModel.updateForm { f -> f.copy(phone = it) } },
-        label = { Text(t("deposer.label_phone")) },
-        placeholder = { Text("+212 6 00 00 00 00") },
-        singleLine = true,
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Phone),
-        modifier = Modifier.fillMaxWidth(),
-        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-    )
+    Text(t("deposer.label_phone"), style = MaterialTheme.typography.labelLarge)
+    Spacer(Modifier.height(4.dp))
+    com.soukmar.app.ui.components.PhoneInputField(value = form.phone, onValueChange = { v -> viewModel.updateForm { f -> f.copy(phone = v) } })
     Spacer(Modifier.height(12.dp))
-    OutlinedTextField(
-        value = form.whatsapp,
-        onValueChange = { viewModel.updateForm { f -> f.copy(whatsapp = it) } },
-        label = { Text(t("deposer.label_whatsapp")) },
-        placeholder = { Text("+212 6 00 00 00 00") },
-        singleLine = true,
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Phone),
-        modifier = Modifier.fillMaxWidth(),
-        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-    )
+    Text(t("deposer.label_whatsapp"), style = MaterialTheme.typography.labelLarge)
+    Spacer(Modifier.height(4.dp))
+    com.soukmar.app.ui.components.PhoneInputField(value = form.whatsapp, onValueChange = { v -> viewModel.updateForm { f -> f.copy(whatsapp = v) } })
     Spacer(Modifier.height(12.dp))
     Row(
         modifier = Modifier.fillMaxWidth().clickable { viewModel.updateForm { f -> f.copy(showPhone = !f.showPhone) } },

@@ -15,6 +15,8 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
+enum class SortKey { NEWEST, OLDEST, PRICE_ASC, PRICE_DESC }
+
 @HiltViewModel
 class MesAnnoncesViewModel @Inject constructor(
     private val listingRepository: ListingRepository
@@ -25,7 +27,19 @@ class MesAnnoncesViewModel @Inject constructor(
     var loading by mutableStateOf(true)
         private set
 
+    var sortBy by mutableStateOf(SortKey.NEWEST)
+
+    val sortedListings: List<ListingDto>
+        get() = when (sortBy) {
+            SortKey.NEWEST -> listings.sortedByDescending { parseInstantOrNull(it.createdAt) }
+            SortKey.OLDEST -> listings.sortedBy { parseInstantOrNull(it.createdAt) }
+            SortKey.PRICE_ASC -> listings.sortedBy { it.price ?: Double.MAX_VALUE }
+            SortKey.PRICE_DESC -> listings.sortedByDescending { it.price ?: Double.MIN_VALUE }
+        }
+
     var bumpingId by mutableStateOf<String?>(null)
+        private set
+    var extendingId by mutableStateOf<String?>(null)
         private set
     var statsOpenId by mutableStateOf<String?>(null)
         private set
@@ -65,6 +79,33 @@ class MesAnnoncesViewModel @Inject constructor(
                 is ApiResult.Error -> toastMessage = result.message
             }
             bumpingId = null
+        }
+    }
+
+    fun daysUntilExpiry(listing: ListingDto): Long? {
+        val expiresAt = listing.expiresAt?.let { parseInstantOrNull(it) } ?: return null
+        val ms = expiresAt.toEpochMilli() - System.currentTimeMillis()
+        return maxOf(0L, Math.ceil(ms / 86_400_000.0).toLong())
+    }
+
+    fun isExpiringSoon(listing: ListingDto): Boolean {
+        val days = daysUntilExpiry(listing) ?: return false
+        return days <= 7
+    }
+
+    fun canExtend(listing: ListingDto): Boolean = listing.expiresAt != null && !listing.expiryExtended
+
+    fun extend(listing: ListingDto) {
+        if (extendingId != null || !canExtend(listing)) return
+        extendingId = listing.id
+        viewModelScope.launch {
+            when (val result = listingRepository.extend(listing.id)) {
+                is ApiResult.Success -> listings = listings.map {
+                    if (it.id == listing.id) it.copy(expiresAt = result.data.expiresAt, expiryExtended = result.data.expiryExtended) else it
+                }
+                is ApiResult.Error -> toastMessage = result.message
+            }
+            extendingId = null
         }
     }
 
@@ -108,3 +149,5 @@ class MesAnnoncesViewModel @Inject constructor(
 
     fun clearToast() { toastMessage = null }
 }
+
+private fun parseInstantOrNull(value: String): Instant? = try { Instant.parse(value) } catch (e: Exception) { null }

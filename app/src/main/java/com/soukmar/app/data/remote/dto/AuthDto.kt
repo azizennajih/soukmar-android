@@ -12,7 +12,10 @@ data class UserDto(
     val phone: String? = null,
     val city: String? = null,
     val image: String? = null,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val accountType: String? = null,
+    val emailVerified: Boolean = false,
+    val phoneVerified: Boolean = false
 )
 
 /** Body for the "edit profile" form — name/phone/city only. Deliberately a
@@ -38,7 +41,8 @@ data class RegisterRequest(
     val email: String,
     val password: String,
     val phone: String? = null,
-    val city: String? = null
+    val city: String? = null,
+    val accountType: String
 )
 
 @Serializable

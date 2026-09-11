@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingAttributeValueDto
+import com.soukmar.app.ui.components.VerifiedBadge
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
@@ -185,6 +186,8 @@ fun ListingDetailScreen(
                             SellerCard(
                                 name = seller.name,
                                 city = seller.city,
+                                emailVerified = seller.emailVerified,
+                                phoneVerified = seller.phoneVerified,
                                 onSeeListings = { onOpenSeller(listing.userId) }
                             )
                         }
@@ -311,7 +314,7 @@ private fun ContactCard(
 }
 
 @Composable
-private fun SellerCard(name: String, city: String?, onSeeListings: () -> Unit) {
+private fun SellerCard(name: String, city: String?, emailVerified: Boolean, phoneVerified: Boolean, onSeeListings: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
     ) {
@@ -326,6 +329,7 @@ private fun SellerCard(name: String, city: String?, onSeeListings: () -> Unit) {
             Column {
                 Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 city?.let { Text("📍 $it", color = TextMuted, fontSize = 12.sp) }
+                VerifiedBadge(emailVerified, phoneVerified, modifier = Modifier.padding(top = 2.dp))
             }
         }
         Spacer(Modifier.height(10.dp))
