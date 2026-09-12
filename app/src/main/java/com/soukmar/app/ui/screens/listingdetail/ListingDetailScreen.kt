@@ -37,6 +37,8 @@ import com.soukmar.app.data.remote.dto.ListingAttributeValueDto
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.components.VerifiedBadge
+import com.soukmar.app.ui.i18n.cityLabelT
+import com.soukmar.app.ui.i18n.dateAttrT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
@@ -114,7 +116,7 @@ fun ListingDetailScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(2.dp))
-                            Text(listing.city, color = TextMuted, fontSize = 13.sp)
+                            Text(cityLabelT(listing.city), color = TextMuted, fontSize = 13.sp)
                             Spacer(Modifier.width(10.dp))
                             Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 13.sp)
                             Spacer(Modifier.width(10.dp))
@@ -157,16 +159,21 @@ fun ListingDetailScreen(
                         Spacer(Modifier.height(6.dp))
                         Text(listing.description, color = TextPrimary, fontSize = 14.sp, lineHeight = 20.sp)
 
-                        val specs = listing.attributeValues.filter { it.attributeDefinition != null }
-                            .sortedBy { it.attributeDefinition!!.sortOrder }
-                        if (specs.isNotEmpty()) {
+                        // MULTI_SELECT attributes produce one ListingAttributeValue row
+                        // per selected option (same attributeDefinitionId) — group them
+                        // so SpecRow renders one line per attribute, not one per value.
+                        val specGroups = listing.attributeValues.filter { it.attributeDefinition != null }
+                            .groupBy { it.attributeDefinitionId }
+                            .values
+                            .sortedBy { it.first().attributeDefinition!!.sortOrder }
+                        if (specGroups.isNotEmpty()) {
                             Spacer(Modifier.height(18.dp))
                             Text(t("listing.specs_title"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
                             Spacer(Modifier.height(8.dp))
                             Column(
                                 modifier = Modifier.fillMaxWidth().border(1.dp, BorderColor, RoundedCornerShape(12.dp)).padding(4.dp)
                             ) {
-                                specs.forEach { SpecRow(it) }
+                                specGroups.forEach { SpecRow(it) }
                             }
                         }
 
@@ -257,7 +264,8 @@ private fun ImageGallery(images: List<String>) {
 }
 
 @Composable
-private fun SpecRow(av: ListingAttributeValueDto) {
+private fun SpecRow(rows: List<ListingAttributeValueDto>) {
+    val av = rows.first()
     val def = av.attributeDefinition!!
     val label = tCatalog("attrs.${def.code}", def.code)
     val value = when (def.type) {
@@ -266,6 +274,15 @@ private fun SpecRow(av: ListingAttributeValueDto) {
         // SELECT stores a fixed option code (needs a catalog lookup); TEXT is
         // free-form user input and must be shown exactly as entered.
         "SELECT" -> av.valueText?.let { tCatalog("attrs.opts.$it", it) } ?: ""
+        // MULTI_SELECT produces one row per selected option — join their labels.
+        // (A plain loop, not .joinToString{}'s lambda param, since that param
+        // isn't a @Composable-compatible functional type.)
+        "MULTI_SELECT" -> {
+            val labels = mutableListOf<String>()
+            for (row in rows) row.valueText?.let { labels.add(tCatalog("attrs.opts.$it", it)) }
+            labels.joinToString(", ")
+        }
+        "DATE" -> av.valueText?.let { dateAttrT(it) } ?: ""
         else -> av.valueText ?: ""
     }
     Row(
@@ -356,7 +373,7 @@ private fun SellerCard(name: String, city: String?, emailVerified: Boolean, phon
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                city?.let { Text("📍 $it", color = TextMuted, fontSize = 12.sp) }
+                city?.let { Text("📍 ${cityLabelT(it)}", color = TextMuted, fontSize = 12.sp) }
                 VerifiedBadge(emailVerified, phoneVerified, modifier = Modifier.padding(top = 2.dp))
             }
         }

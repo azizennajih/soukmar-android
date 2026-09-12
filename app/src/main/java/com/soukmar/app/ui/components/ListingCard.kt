@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.ui.i18n.cityLabelT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
@@ -131,7 +132,7 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                 Spacer(Modifier.width(2.dp))
-                Text(listing.city, color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                Text(cityLabelT(listing.city), color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 Spacer(Modifier.width(4.dp))
                 Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 11.sp)
             }

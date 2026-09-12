@@ -18,6 +18,7 @@ import com.soukmar.app.data.repository.UploadRepository
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
@@ -90,6 +91,23 @@ class DeposerAnnonceViewModel @Inject constructor(
     var form by mutableStateOf(ListingFormState())
         private set
 
+    var pendingCancel by mutableStateOf(false)
+        private set
+
+    val hasProgress: Boolean
+        get() = form.category.isNotEmpty() || form.subcategoryId.isNotEmpty() || form.title.isNotBlank() ||
+            form.description.isNotBlank() || form.price.isNotBlank() || form.city.isNotEmpty() || photos.isNotEmpty()
+
+    /** Mirrors the web's cancel() — only asks for confirmation if the user
+     * has actually entered something, so closing an empty/just-opened
+     * wizard doesn't nag. */
+    fun requestClose(): Boolean {
+        if (hasProgress) { pendingCancel = true; return false }
+        return true
+    }
+
+    fun dismissCancel() { pendingCancel = false }
+
     val maxPhotos: Int get() = if (isPremium) 20 else 10
 
     fun init(id: String?) {
@@ -112,18 +130,29 @@ class DeposerAnnonceViewModel @Inject constructor(
     }
 
     private suspend fun applyListingToForm(listing: ListingDto) {
-        val attrs = listing.attributeValues.associate { av ->
-            val code = av.attributeDefinition?.code ?: ""
-            // Numbers are kept as string primitives (not JsonPrimitive(Number)) so
-            // isString stays the TEXT/NUMBER/SELECT marker attrTextValue() relies on.
-            val value: JsonElement = when {
-                av.valueText != null -> JsonPrimitive(av.valueText)
-                av.valueNumber != null -> JsonPrimitive(av.valueNumber.let { if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString() })
-                av.valueBoolean != null -> JsonPrimitive(av.valueBoolean)
-                else -> JsonPrimitive("")
+        // MULTI_SELECT produces one ListingAttributeValue row per selected
+        // option (same attributeDefinitionId, several rows) — group by code
+        // first so a naive one-row-per-code map doesn't silently drop all
+        // but the last selected option when editing such a listing.
+        val attrs = listing.attributeValues
+            .filter { it.attributeDefinition?.code?.isNotEmpty() == true }
+            .groupBy { it.attributeDefinition!!.code }
+            .mapValues { (_, rows) ->
+                if (rows.first().attributeDefinition!!.type == "MULTI_SELECT") {
+                    JsonArray(rows.mapNotNull { it.valueText }.map { JsonPrimitive(it) })
+                } else {
+                    val av = rows.first()
+                    // Numbers are kept as string primitives (not JsonPrimitive(Number)) so
+                    // isString stays the TEXT/NUMBER/SELECT marker attrTextValue() relies on.
+                    val value: JsonElement = when {
+                        av.valueText != null -> JsonPrimitive(av.valueText)
+                        av.valueNumber != null -> JsonPrimitive(av.valueNumber.let { if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString() })
+                        av.valueBoolean != null -> JsonPrimitive(av.valueBoolean)
+                        else -> JsonPrimitive("")
+                    }
+                    value
+                }
             }
-            code to value
-        }.filterKeys { it.isNotEmpty() }
 
         form = ListingFormState(
             category = listing.category,
@@ -200,6 +229,17 @@ class DeposerAnnonceViewModel @Inject constructor(
         return if (prim.isString) null else prim.boolean
     }
 
+    fun attrMultiValue(code: String): List<String> {
+        val arr = form.attributes[code] as? JsonArray ?: return emptyList()
+        return arr.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content }
+    }
+
+    fun toggleAttrMulti(code: String, option: String) {
+        val current = attrMultiValue(code)
+        val updated = if (option in current) current - option else current + option
+        form = form.copy(attributes = form.attributes + (code to JsonArray(updated.map { JsonPrimitive(it) })))
+    }
+
     fun goBack() {
         step = if (step == 2 && subcategories.isEmpty()) 0 else step - 1
     }
@@ -212,8 +252,11 @@ class DeposerAnnonceViewModel @Inject constructor(
             1 -> form.subcategoryId.isNotEmpty()
             2 -> form.title.isNotBlank() && form.description.isNotBlank() && form.city.isNotEmpty() &&
                 attributeDefs.filter { it.required }.all { def ->
-                    val v = form.attributes[def.code] as? JsonPrimitive
-                    v != null && v.content.isNotEmpty()
+                    when (val v = form.attributes[def.code]) {
+                        is JsonArray -> v.isNotEmpty()
+                        is JsonPrimitive -> v.content.isNotEmpty()
+                        else -> false
+                    }
                 }
             else -> true
         }

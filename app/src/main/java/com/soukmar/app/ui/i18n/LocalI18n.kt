@@ -5,7 +5,11 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.soukmar.app.data.i18n.I18nRepository
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.time.format.FormatStyle
+import java.util.Locale
 
 val LocalI18n = staticCompositionLocalOf<I18nRepository> {
     error("LocalI18n not provided — wrap the app root in CompositionLocalProvider(LocalI18n provides ...)")
@@ -49,4 +53,33 @@ fun timeAgoT(isoDate: String): String {
         seconds < 2_592_000 -> "$ago ${seconds / 86400} ${i18n.t("common.days")}"
         else -> "$ago ${seconds / 2_592_000} mois"
     }
+}
+
+/** Locale-aware absolute date, e.g. for a DATE-type EAV attribute value
+ * (an ISO "yyyy-MM-dd" string, such as EVENT_DATE or an inspection due
+ * date) — mirrors the web's `localeForLang()` + `Intl.DateTimeFormat`. */
+@Composable
+fun dateAttrT(isoDate: String): String {
+    val i18n = LocalI18n.current
+    i18n.currentLang // read for recomposition on language change
+    val date = try { LocalDate.parse(isoDate) } catch (e: DateTimeParseException) { return isoDate }
+    val locale = when (i18n.currentLang) {
+        "ar" -> Locale("ar", "MA")
+        "en" -> Locale.US
+        "de" -> Locale.GERMAN
+        "es" -> Locale("es")
+        "it" -> Locale.ITALIAN
+        else -> Locale.FRENCH
+    }
+    return date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
+}
+
+/** Shows a Moroccan city's Arabic name when the app is in Arabic (falling
+ * back to the French/Latin spelling if none is on file), matching every
+ * other non-French language's fallback — mirrors the web's `cityLabel()`. */
+@Composable
+fun cityLabelT(city: String): String {
+    val i18n = LocalI18n.current
+    i18n.currentLang // read for recomposition on language change
+    return com.soukmar.app.ui.model.cityLabel(city, i18n.currentLang)
 }

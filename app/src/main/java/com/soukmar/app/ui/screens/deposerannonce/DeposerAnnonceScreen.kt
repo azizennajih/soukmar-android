@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -71,7 +72,11 @@ fun DeposerAnnonceScreen(
         topBar = {
             TopAppBar(
                 title = { Text(if (viewModel.isEdit) t("deposer.header_title_edit") else t("deposer.header_title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = {
+                    IconButton(onClick = { if (viewModel.requestClose()) onBack() }) {
+                        Icon(Icons.Filled.Close, contentDescription = t("common.cancel"))
+                    }
+                }
             )
         }
     ) { padding ->
@@ -83,6 +88,19 @@ fun DeposerAnnonceScreen(
                 else -> DeposerAnnonceContent(viewModel, onPickPhotos = { photoPicker.launch("image/*") }, onPublished = onPublished)
             }
         }
+    }
+
+    if (viewModel.pendingCancel) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissCancel() },
+            text = { Text(t("deposer.confirm_cancel")) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissCancel(); onBack() }) {
+                    Text(t("common.yes"), color = com.soukmar.app.ui.theme.ErrorColor)
+                }
+            },
+            dismissButton = { TextButton(onClick = { viewModel.dismissCancel() }) { Text(t("common.no")) } }
+        )
     }
 }
 
@@ -466,9 +484,65 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                     }
                 }
             }
+            "MULTI_SELECT" -> {
+                val selected = viewModel.attrMultiValue(def.code)
+                Column {
+                    def.options.forEach { opt ->
+                        val checked = opt in selected
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().clickable { viewModel.toggleAttrMulti(def.code, opt) }.padding(vertical = 4.dp)
+                        ) {
+                            Checkbox(checked = checked, onCheckedChange = { viewModel.toggleAttrMulti(def.code, opt) }, colors = CheckboxDefaults.colors(checkedColor = Primary))
+                            Text(tCatalog("attrs.opts.$opt", opt), fontSize = 13.sp, color = TextPrimary)
+                        }
+                    }
+                }
+            }
+            "DATE" -> {
+                var showPicker by remember { mutableStateOf(false) }
+                val value = viewModel.attrTextValue(def.code)
+                Box {
+                    OutlinedTextField(
+                        value = value,
+                        onValueChange = {},
+                        readOnly = true,
+                        placeholder = { Text("jj/mm/aaaa") },
+                        trailingIcon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+                    )
+                    // A .clickable{} straight on a readOnly OutlinedTextField fires
+                    // unreliably — the field consumes the tap for its own focus
+                    // first (see CLAUDE.md). A transparent overlay sibling works.
+                    Box(modifier = Modifier.matchParentSize().clickable { showPicker = true })
+                }
+                if (showPicker) {
+                    val initialMillis = value.toLocalDateOrNull()?.atStartOfDay(java.time.ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
+                    val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+                    DatePickerDialog(
+                        onDismissRequest = { showPicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                pickerState.selectedDateMillis?.let { millis ->
+                                    val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneOffset.UTC).toLocalDate()
+                                    viewModel.setAttrText(def.code, date.toString())
+                                }
+                                showPicker = false
+                            }) { Text(t("common.select")) }
+                        },
+                        dismissButton = { TextButton(onClick = { showPicker = false }) { Text(t("common.cancel")) } }
+                    ) {
+                        DatePicker(state = pickerState)
+                    }
+                }
+            }
         }
     }
 }
+
+private fun String.toLocalDateOrNull(): java.time.LocalDate? =
+    try { java.time.LocalDate.parse(this) } catch (e: java.time.format.DateTimeParseException) { null }
 
 @Composable
 private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit) {

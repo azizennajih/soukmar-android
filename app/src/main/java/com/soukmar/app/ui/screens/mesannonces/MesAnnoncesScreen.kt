@@ -28,6 +28,7 @@ import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.i18n.cityLabelT
 import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
@@ -224,7 +225,7 @@ private fun ListingRow(
                     color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp
                 )
                 Spacer(Modifier.height(2.dp))
-                Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · 📍 ${listing.city}", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · 📍 ${cityLabelT(listing.city)}", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (daysUntilExpiry != null) {
                     Spacer(Modifier.height(2.dp))
                     Text(

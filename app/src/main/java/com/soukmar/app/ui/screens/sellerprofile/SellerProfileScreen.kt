@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ReviewWithDetailsDto
 import com.soukmar.app.ui.components.ListingCard
+import com.soukmar.app.ui.i18n.cityLabelT
 import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
@@ -101,7 +102,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 com.soukmar.app.ui.components.VerifiedBadge(profile.emailVerified, profile.phoneVerified)
                 profile.city?.let {
                     Spacer(Modifier.height(2.dp))
-                    Text("📍 $it", color = TextMuted, fontSize = 13.sp)
+                    Text("📍 ${cityLabelT(it)}", color = TextMuted, fontSize = 13.sp)
                 }
                 memberSince(profile.createdAt)?.let {
                     Spacer(Modifier.height(4.dp))
