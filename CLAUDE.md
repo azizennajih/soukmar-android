@@ -21,6 +21,7 @@ Die Android-App wird **phasenweise** mit vollem Funktionsumfang aufgebaut (Nutze
 - Coil (Bilder)
 - DataStore (Session/Token, entspricht `localStorage` im Web-Frontend)
 - Navigation Compose
+- osmdroid (Karten — OpenStreetMap-Kacheln, spiegelt Webs Leaflet/OSM; kein API-Key nötig, im Gegensatz zu Google Maps)
 
 **Package:** `com.soukmar.app` · `minSdk 26` · `compileSdk`/`targetSdk 34`
 
@@ -128,6 +129,13 @@ Reihenfolge und Stand:
 14. ⬜ iOS-App (später, braucht Mac oder Cloud-CI wie Codemagic)
 
 **Jede Phase muss getestet werden**, bevor die nächste beginnt (Nutzer-Vorgabe) — Claude übernimmt das Testen selbst (Build + Emulator/adb), nicht der Nutzer manuell. Siehe Abschnitt "Testen" unten.
+
+### Web-Sync-Runden (nach Phase 13, laufend)
+
+Ab hier wächst die App nicht mehr in nummerierten Phasen, sondern in gebündelten **Tranchen**, die neue Web-Features nachziehen (siehe `[[feedback_soukmar_platform_sync]]`-Memory: "Web zuerst, Android in Runden nachziehen"). Jede Tranche: Web-Commit-Log seit dem letzten Sync durchsehen, pro Feature prüfen ob es für eine native App überhaupt Sinn ergibt (SSR/Open-Graph/etc. sind web-only), fehlende Features bauen, im Emulator gegen den echten Backend-Server end-to-end testen, dann committen+pushen.
+
+- **Tranche 1**: 7 neue Kategorien, internationaler Telefon-Vorwahl-Picker (`ui/components/PhoneInput.kt` + `ui/model/DialCodes.kt`, 196 Länder), Passwort-Sichtbarkeits-Toggle mit Auto-Ausblenden (`AppTextField` in `CommonComponents.kt`), Kontotyp-Auswahl bei der Registrierung, Mes-Annonces-Sortierung + Ablaufdatum-Anzeige + Verlängern-Button (spiegelt Backends `expiresAt`/`expiryExtended`).
+- **Tranche 2**: Nutzer im Chat blockieren/entblocken, Bewertungssterne im Chat-Header, Telefonverifizierung per SMS im Profil, vier Rechtstexte-Screens über einen generischen `LegalPageScreen` (Namespace+Sektionsanzahl, Inhalt rein aus den geteilten i18n-Assets), Standort-Karte auf der Anzeigendetailseite + Kartenansicht für die Anzeigensuche (neue `osmdroid`-Abhängigkeit, `ui/components/ListingsMapView.kt`).
 
 ---
 
