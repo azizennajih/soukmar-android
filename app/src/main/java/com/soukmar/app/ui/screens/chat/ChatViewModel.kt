@@ -8,13 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.ChatSocketEvent
 import com.soukmar.app.data.remote.ChatSocketManager
+import com.soukmar.app.data.remote.dto.ChatUserDto
 import com.soukmar.app.data.remote.dto.ConversationDto
 import com.soukmar.app.data.remote.dto.MessageDto
+import com.soukmar.app.data.remote.dto.messagingBlocked
 import com.soukmar.app.data.remote.dto.partnerId
 import com.soukmar.app.data.remote.dto.partnerName
+import com.soukmar.app.data.remote.dto.partnerUser
 import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.ChatRepository
 import com.soukmar.app.data.repository.ReportRepository
+import com.soukmar.app.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +29,7 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val reportRepository: ReportRepository,
+    private val userRepository: UserRepository,
     private val socketManager: ChatSocketManager,
     private val tokenManager: TokenManager
 ) : ViewModel() {
@@ -61,6 +66,10 @@ class ChatViewModel @Inject constructor(
 
     var confirmCancelReservation by mutableStateOf(false)
     var confirmCancelOfferId by mutableStateOf<String?>(null)
+
+    var confirmBlock by mutableStateOf(false)
+    var blockSubmitting by mutableStateOf(false)
+        private set
 
     private var typingJob: Job? = null
 
@@ -116,6 +125,8 @@ class ChatViewModel @Inject constructor(
 
     fun partnerId(): String? = conversation?.partnerId(currentUserId)
     fun partnerName(): String = conversation?.partnerName(currentUserId) ?: ""
+    fun partnerUser(): ChatUserDto? = conversation?.partnerUser(currentUserId)
+    fun messagingBlocked(): Boolean = conversation?.messagingBlocked ?: false
     fun isMine(msg: MessageDto): Boolean = msg.senderId == currentUserId
     fun isOffer(msg: MessageDto): Boolean = msg.type == "OFFER"
     fun isSystem(msg: MessageDto): Boolean = msg.type == "SYSTEM"
@@ -205,6 +216,35 @@ class ChatViewModel @Inject constructor(
     fun cancelReport() {
         reportOpen = false
         reportError = null
+    }
+
+    /** Blocking requires confirmation (mirrors the web's `confirm()` before
+     * blocking); unblocking is immediate. */
+    fun requestBlockToggle() {
+        val conv = conversation ?: return
+        if (conv.blockedByMe) toggleBlock() else confirmBlock = true
+    }
+
+    fun dismissBlockConfirm() { confirmBlock = false }
+
+    fun confirmBlockToggle() {
+        confirmBlock = false
+        toggleBlock()
+    }
+
+    private fun toggleBlock() {
+        val conv = conversation ?: return
+        val partner = partnerId() ?: return
+        if (blockSubmitting) return
+        blockSubmitting = true
+        viewModelScope.launch {
+            val result = if (conv.blockedByMe) userRepository.unblockUser(partner) else userRepository.blockUser(partner)
+            when (result) {
+                is ApiResult.Success -> conversation = conv.copy(blockedByMe = result.data.blocked)
+                is ApiResult.Error -> { /* leave state unchanged — button reflects the last known server state */ }
+            }
+            blockSubmitting = false
+        }
     }
 
     override fun onCleared() {

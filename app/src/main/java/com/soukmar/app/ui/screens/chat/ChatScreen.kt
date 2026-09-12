@@ -18,7 +18,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,7 +71,14 @@ fun ChatScreen(
                 },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
-                    if (viewModel.conversation != null) {
+                    viewModel.conversation?.let { conv ->
+                        IconButton(onClick = { viewModel.requestBlockToggle() }, enabled = !viewModel.blockSubmitting) {
+                            Icon(
+                                if (conv.blockedByMe) Icons.Filled.RemoveCircleOutline else Icons.Filled.Block,
+                                contentDescription = t(if (conv.blockedByMe) "block.unblock" else "block.block"),
+                                tint = if (conv.blockedByMe) Primary else TextMuted
+                            )
+                        }
                         IconButton(onClick = { viewModel.reportOpen = true }) {
                             Icon(Icons.Filled.Flag, contentDescription = "Signaler", tint = TextMuted)
                         }
@@ -109,6 +118,15 @@ fun ChatScreen(
     if (viewModel.reportOpen) {
         ReportDialog(viewModel)
     }
+    if (viewModel.confirmBlock) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissBlockConfirm() },
+            title = { Text(t("block.block")) },
+            text = { Text(t("block.confirm")) },
+            confirmButton = { TextButton(onClick = { viewModel.confirmBlockToggle() }) { Text(t("block.block"), color = ErrorColor) } },
+            dismissButton = { TextButton(onClick = { viewModel.dismissBlockConfirm() }) { Text(t("chat.cancel")) } }
+        )
+    }
 }
 
 @Composable
@@ -121,7 +139,15 @@ private fun ChatHeaderContent(viewModel: ChatViewModel, onOpenListing: (String) 
             }
             Spacer(Modifier.width(8.dp))
             Column {
-                Text(viewModel.partnerName(), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(viewModel.partnerName(), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    viewModel.partnerUser()?.let { partner ->
+                        if (partner.reviewCount > 0) {
+                            Spacer(Modifier.width(6.dp))
+                            CompactStars(partner.avgRating)
+                        }
+                    }
+                }
                 if (viewModel.partnerTyping) {
                     Text(t("chat.typing"), fontSize = 11.sp, color = Primary)
                 } else {
@@ -135,6 +161,16 @@ private fun ChatHeaderContent(viewModel: ChatViewModel, onOpenListing: (String) 
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CompactStars(avgRating: Double?) {
+    val rating = avgRating?.let { Math.round(it).toInt() } ?: 0
+    Row {
+        (1..5).forEach { s ->
+            Text("★", fontSize = 10.sp, color = if (s <= rating) Gold else BorderColor)
         }
     }
 }
@@ -190,60 +226,69 @@ private fun ChatContent(viewModel: ChatViewModel) {
             }
         }
 
-        if (viewModel.showOfferInput) {
-            Row(
-                modifier = Modifier.fillMaxWidth().background(PrimaryLight).padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+        if (viewModel.messagingBlocked()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().background(BorderColor.copy(alpha = 0.4f)).padding(16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text("💰", fontSize = 16.sp)
-                Spacer(Modifier.width(8.dp))
-                OutlinedTextField(
-                    value = viewModel.offerAmount,
-                    onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.offerAmount = it },
-                    placeholder = { Text("Montant en MAD") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-                )
-                Spacer(Modifier.width(8.dp))
-                TextButton(onClick = { viewModel.sendOffer() }, enabled = viewModel.offerAmount.isNotBlank()) { Text(t("chat.send_offer")) }
-                TextButton(onClick = { viewModel.showOfferInput = false }) { Text(t("chat.cancel")) }
+                Text("🚫 ${t("chat.blocked_banner")}", color = TextMuted, fontSize = 13.sp, textAlign = TextAlign.Center)
             }
-        }
-
-        val quickReplies = listOf(t("chat.quick_available"), t("chat.quick_last_price"), t("chat.quick_still_interested"), t("chat.quick_thanks"))
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            quickReplies.forEach { reply ->
-                OutlinedButton(onClick = { viewModel.useQuickReply(reply) }, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                    Text(reply, fontSize = 12.sp)
+        } else {
+            if (viewModel.showOfferInput) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().background(PrimaryLight).padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("💰", fontSize = 16.sp)
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = viewModel.offerAmount,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.offerAmount = it },
+                        placeholder = { Text("Montant en MAD") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(onClick = { viewModel.sendOffer() }, enabled = viewModel.offerAmount.isNotBlank()) { Text(t("chat.send_offer")) }
+                    TextButton(onClick = { viewModel.showOfferInput = false }) { Text(t("chat.cancel")) }
                 }
             }
-        }
 
-        HorizontalDivider(color = BorderColor)
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-            verticalAlignment = Alignment.Bottom
-        ) {
-            IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
-                Text("💰", fontSize = 20.sp)
+            val quickReplies = listOf(t("chat.quick_available"), t("chat.quick_last_price"), t("chat.quick_still_interested"), t("chat.quick_thanks"))
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                quickReplies.forEach { reply ->
+                    OutlinedButton(onClick = { viewModel.useQuickReply(reply) }, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
+                        Text(reply, fontSize = 12.sp)
+                    }
+                }
             }
-            OutlinedTextField(
-                value = viewModel.messageText,
-                onValueChange = { viewModel.messageText = it; viewModel.onTyping() },
-                placeholder = { Text(t("chat.placeholder")) },
-                modifier = Modifier.weight(1f),
-                maxLines = 4,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = { viewModel.sendMessage() }),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-            )
-            IconButton(onClick = { viewModel.sendMessage() }, enabled = viewModel.messageText.isNotBlank()) {
-                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Envoyer", tint = if (viewModel.messageText.isNotBlank()) Primary else TextMuted)
+
+            HorizontalDivider(color = BorderColor)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
+                    Text("💰", fontSize = 20.sp)
+                }
+                OutlinedTextField(
+                    value = viewModel.messageText,
+                    onValueChange = { viewModel.messageText = it; viewModel.onTyping() },
+                    placeholder = { Text(t("chat.placeholder")) },
+                    modifier = Modifier.weight(1f),
+                    maxLines = 4,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { viewModel.sendMessage() }),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+                )
+                IconButton(onClick = { viewModel.sendMessage() }, enabled = viewModel.messageText.isNotBlank()) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Envoyer", tint = if (viewModel.messageText.isNotBlank()) Primary else TextMuted)
+                }
             }
         }
     }

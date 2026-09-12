@@ -85,6 +85,24 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun sendPhoneCode(): ApiResult<Boolean> {
+        return try {
+            val res = api.sendPhoneCode()
+            if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun verifyPhoneCode(code: String): ApiResult<Boolean> {
+        return try {
+            val res = api.verifyPhoneCode(PhoneVerifyRequest(code))
+            if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun getMe(): ApiResult<UserDto> {
         return try {
             val res = api.me()

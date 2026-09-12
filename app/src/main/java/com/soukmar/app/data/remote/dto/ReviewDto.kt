@@ -75,3 +75,7 @@ data class SellerProfileDto(
     val emailVerified: Boolean = false,
     val phoneVerified: Boolean = false
 )
+
+/** Mirrors soukmar-backend's POST/DELETE /api/users/:id/block response. */
+@Serializable
+data class BlockStatusDto(val blocked: Boolean)

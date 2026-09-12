@@ -1,6 +1,13 @@
 package com.soukmar.app.ui.navigation
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -24,6 +31,10 @@ import com.soukmar.app.ui.screens.sellerprofile.SellerProfileScreen
 import com.soukmar.app.ui.screens.savedsearches.SavedSearchesScreen
 import com.soukmar.app.ui.screens.notifications.NotificationsScreen
 import com.soukmar.app.ui.screens.admin.AdminScreen
+import com.soukmar.app.ui.screens.legal.LegalLinkRow
+import com.soukmar.app.ui.screens.legal.LegalPageScreen
+import com.soukmar.app.ui.i18n.t
+import com.soukmar.app.ui.theme.TextPrimary
 
 @Composable
 fun SoukMarNavGraph(startDestination: String) {
@@ -77,7 +88,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenProfil = { navController.navigate(Routes.PROFIL) },
                 onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
-                onOpenAdmin = { navController.navigate(Routes.ADMIN) }
+                onOpenAdmin = { navController.navigate(Routes.ADMIN) },
+                onOpenLegal = { navController.navigate(Routes.LEGAL_NOTICE) }
             )
         }
         composable(
@@ -189,6 +201,30 @@ fun SoukMarNavGraph(startDestination: String) {
                 onBack = { navController.popBackStack() },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
             )
+        }
+        composable(Routes.LEGAL_NOTICE) {
+            LegalPageScreen(
+                titleKey = "legal.notice_title",
+                namespace = "legal.notice",
+                sectionCount = 6,
+                onBack = { navController.popBackStack() },
+                extraLinks = {
+                    Spacer(Modifier.height(8.dp))
+                    Text(t("parametres.legal"), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                    LegalLinkRow(t("legal.privacy_title")) { navController.navigate(Routes.LEGAL_PRIVACY) }
+                    LegalLinkRow(t("legal.terms_title")) { navController.navigate(Routes.LEGAL_TERMS) }
+                    LegalLinkRow(t("legal.withdrawal_title")) { navController.navigate(Routes.LEGAL_WITHDRAWAL) }
+                }
+            )
+        }
+        composable(Routes.LEGAL_PRIVACY) {
+            LegalPageScreen(titleKey = "legal.privacy_title", namespace = "legal.privacy", sectionCount = 11, onBack = { navController.popBackStack() })
+        }
+        composable(Routes.LEGAL_TERMS) {
+            LegalPageScreen(titleKey = "legal.terms_title", namespace = "legal.terms", sectionCount = 14, onBack = { navController.popBackStack() })
+        }
+        composable(Routes.LEGAL_WITHDRAWAL) {
+            LegalPageScreen(titleKey = "legal.withdrawal_title", namespace = "legal.withdrawal", sectionCount = 6, onBack = { navController.popBackStack() })
         }
     }
 }

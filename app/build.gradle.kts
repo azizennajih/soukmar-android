@@ -91,6 +91,10 @@ dependencies {
     // Images
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // Maps — osmdroid mirrors the web app's Leaflet+OpenStreetMap tiles
+    // (no API key needed, unlike Google Maps).
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
     // DI
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")

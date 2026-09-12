@@ -36,6 +36,12 @@ interface ApiService {
     @PUT("auth/profile")
     suspend fun updateProfileImage(@Body body: ProfileImageUpdateRequest): Response<UserDto>
 
+    @POST("auth/phone/send-code")
+    suspend fun sendPhoneCode(): Response<MessageResponse>
+
+    @POST("auth/phone/verify")
+    suspend fun verifyPhoneCode(@Body body: PhoneVerifyRequest): Response<MessageResponse>
+
     @GET("listings")
     suspend fun getListings(@QueryMap params: Map<String, String>): Response<ListingsResponseDto>
 
@@ -96,6 +102,12 @@ interface ApiService {
 
     @GET("users/{id}/listings")
     suspend fun getSellerListings(@Path("id") id: String): Response<List<ListingDto>>
+
+    @POST("users/{id}/block")
+    suspend fun blockUser(@Path("id") id: String): Response<BlockStatusDto>
+
+    @DELETE("users/{id}/block")
+    suspend fun unblockUser(@Path("id") id: String): Response<BlockStatusDto>
 
     @POST("reports")
     suspend fun submitReport(@Body body: ReportRequest): Response<ReportRecordDto>

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.ConversationDto
+import com.soukmar.app.data.remote.dto.messagingBlocked
 import com.soukmar.app.data.remote.dto.partnerName
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.BorderColor
@@ -91,7 +92,13 @@ private fun ConversationRow(conv: ConversationDto, myId: String?, onClick: () ->
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (conv.messagingBlocked) {
+                    Spacer(Modifier.width(4.dp))
+                    Text("🚫", fontSize = 12.sp)
+                }
+            }
             Text(conv.listing.title, color = TextMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(2.dp))
             Text(lastMessagePreview(conv), color = TextMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)

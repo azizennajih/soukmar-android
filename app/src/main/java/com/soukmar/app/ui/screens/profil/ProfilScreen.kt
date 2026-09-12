@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -157,6 +158,10 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             Text(t("profil.phone"), style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(4.dp))
             com.soukmar.app.ui.components.PhoneInputField(value = viewModel.phone, onValueChange = { viewModel.phone = it })
+            if (!viewModel.profile?.phone.isNullOrBlank()) {
+                Spacer(Modifier.height(6.dp))
+                PhoneVerificationRow(viewModel)
+            }
             Spacer(Modifier.height(10.dp))
             OutlinedTextField(
                 value = viewModel.city,
@@ -236,6 +241,55 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             }
         }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun PhoneVerificationRow(viewModel: ProfilViewModel) {
+    Column {
+        when {
+            viewModel.profile?.phoneVerified == true -> {
+                Text("✓ ${t("profil.phone_verified")}", color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            }
+            !viewModel.phoneCodeSent -> {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(t("profil.phone_not_verified"), color = TextMuted, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { viewModel.sendPhoneCode() }, enabled = !viewModel.phoneSendingCode) {
+                        Text(if (viewModel.phoneSendingCode) t("profil.phone_sending") else t("profil.phone_verify_btn"), fontSize = 12.sp)
+                    }
+                }
+            }
+            else -> {
+                Text(t("profil.phone_code_hint"), color = TextMuted, fontSize = 12.sp)
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = viewModel.phoneCode,
+                        onValueChange = { if (it.length <= 6 && it.all { c -> c.isDigit() }) viewModel.phoneCode = it },
+                        placeholder = { Text("000000") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(onClick = { viewModel.verifyPhoneCode() }, enabled = !viewModel.phoneVerifying && viewModel.phoneCode.isNotBlank()) {
+                        Text(if (viewModel.phoneVerifying) t("profil.phone_verifying") else t("profil.phone_confirm_btn"), fontSize = 12.sp)
+                    }
+                }
+                TextButton(onClick = { viewModel.sendPhoneCode() }, enabled = !viewModel.phoneSendingCode) {
+                    Text(t("profil.phone_resend"), fontSize = 12.sp)
+                }
+            }
+        }
+        viewModel.phoneMessage?.let {
+            Spacer(Modifier.height(4.dp))
+            SuccessBanner(it)
+        }
+        viewModel.phoneErrorMessage?.let {
+            Spacer(Modifier.height(4.dp))
+            ErrorBanner(it)
+        }
     }
 }
 

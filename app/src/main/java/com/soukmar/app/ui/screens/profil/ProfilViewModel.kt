@@ -40,6 +40,18 @@ class ProfilViewModel @Inject constructor(
     var uploadingImage by mutableStateOf(false)
         private set
 
+    var phoneCodeSent by mutableStateOf(false)
+        private set
+    var phoneCode by mutableStateOf("")
+    var phoneSendingCode by mutableStateOf(false)
+        private set
+    var phoneVerifying by mutableStateOf(false)
+        private set
+    var phoneMessage by mutableStateOf<String?>(null)
+        private set
+    var phoneErrorMessage by mutableStateOf<String?>(null)
+        private set
+
     var currentPassword by mutableStateOf("")
     var newPassword by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
@@ -78,10 +90,53 @@ class ProfilViewModel @Inject constructor(
                 is ApiResult.Success -> {
                     profile = result.data
                     successMessage = "Profil mis à jour."
+                    // A changed phone number invalidates any prior verification
+                    // server-side — drop any in-progress code entry for the old number.
+                    phoneCodeSent = false
+                    phoneCode = ""
+                    phoneMessage = null
+                    phoneErrorMessage = null
                 }
                 is ApiResult.Error -> errorMessage = result.message
             }
             saving = false
+        }
+    }
+
+    fun sendPhoneCode() {
+        if (phoneSendingCode) return
+        phoneMessage = null
+        phoneErrorMessage = null
+        phoneSendingCode = true
+        viewModelScope.launch {
+            when (val result = authRepository.sendPhoneCode()) {
+                is ApiResult.Success -> {
+                    phoneCodeSent = true
+                    phoneCode = ""
+                    phoneMessage = "Code envoyé par SMS."
+                }
+                is ApiResult.Error -> phoneErrorMessage = result.message
+            }
+            phoneSendingCode = false
+        }
+    }
+
+    fun verifyPhoneCode() {
+        if (phoneCode.isBlank() || phoneVerifying) return
+        phoneMessage = null
+        phoneErrorMessage = null
+        phoneVerifying = true
+        viewModelScope.launch {
+            when (val result = authRepository.verifyPhoneCode(phoneCode.trim())) {
+                is ApiResult.Success -> {
+                    profile = profile?.copy(phoneVerified = true)
+                    phoneCodeSent = false
+                    phoneCode = ""
+                    phoneMessage = "Numéro de téléphone vérifié avec succès !"
+                }
+                is ApiResult.Error -> phoneErrorMessage = result.message
+            }
+            phoneVerifying = false
         }
     }
 

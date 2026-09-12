@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingAttributeValueDto
+import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.components.VerifiedBadge
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
@@ -166,6 +168,11 @@ fun ListingDetailScreen(
                             ) {
                                 specs.forEach { SpecRow(it) }
                             }
+                        }
+
+                        if (listing.lat != null && listing.lng != null) {
+                            Spacer(Modifier.height(18.dp))
+                            LocationMapSection(listing)
                         }
 
                         Spacer(Modifier.height(20.dp))
@@ -309,6 +316,27 @@ private fun ContactCard(
         ) {
             if (chatStarting) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
             else Text("💬 ${t("listing.contact")}")
+        }
+    }
+}
+
+@Composable
+private fun LocationMapSection(listing: ListingDto) {
+    var showMap by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(4.dp))
+            Text(t("listing.location_title"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.weight(1f))
+            TextButton(onClick = { showMap = !showMap }) {
+                Text(t(if (showMap) "listing.hide_map" else "listing.show_map"), fontSize = 12.sp)
+            }
+        }
+        if (showMap) {
+            Spacer(Modifier.height(8.dp))
+            ListingsMapView(listings = listOf(listing), heightDp = 220, onMarkerClick = {})
         }
     }
 }

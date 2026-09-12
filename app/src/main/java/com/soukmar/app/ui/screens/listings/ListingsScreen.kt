@@ -12,7 +12,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.List as ListIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.ListingCard
+import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
@@ -39,6 +42,7 @@ fun ListingsScreen(
     viewModel: ListingsViewModel = hiltViewModel()
 ) {
     var showFilters by remember { mutableStateOf(false) }
+    var showMapView by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (savedSearchId != null) {
             viewModel.applySavedSearchById(savedSearchId)
@@ -69,6 +73,13 @@ fun ListingsScreen(
                         IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") }
                     },
                     actions = {
+                        IconButton(onClick = { showMapView = !showMapView }) {
+                            Icon(
+                                if (showMapView) Icons.AutoMirrored.Filled.ListIcon else Icons.Filled.Map,
+                                contentDescription = t(if (showMapView) "annonces.view_list" else "annonces.view_map"),
+                                tint = if (showMapView) Primary else TextPrimary
+                            )
+                        }
                         IconButton(onClick = { showFilters = !showFilters }) { Icon(Icons.Filled.FilterList, contentDescription = t("annonces.filters"), tint = if (showFilters) Primary else TextPrimary) }
                     }
                 )
@@ -86,6 +97,13 @@ fun ListingsScreen(
                 }
                 viewModel.listings.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(t("annonces.empty"), color = TextMuted)
+                }
+                showMapView -> {
+                    ListingsMapView(
+                        listings = viewModel.listings,
+                        modifier = Modifier.fillMaxSize(),
+                        onMarkerClick = onOpenListing
+                    )
                 }
                 else -> {
                     LazyVerticalGrid(

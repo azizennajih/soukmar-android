@@ -6,7 +6,14 @@ import kotlinx.serialization.Serializable
 data class CreateConversationRequest(val listingId: String)
 
 @Serializable
-data class ChatUserDto(val id: String, val name: String)
+data class ChatUserDto(
+    val id: String,
+    val name: String,
+    val avgRating: Double? = null,
+    val reviewCount: Int = 0,
+    val emailVerified: Boolean = false,
+    val phoneVerified: Boolean = false
+)
 
 @Serializable
 data class ChatListingDto(
@@ -48,8 +55,14 @@ data class ConversationDto(
     val updatedAt: String = "",
     val listing: ChatListingDto,
     val buyer: ChatUserDto,
-    val messages: List<MessageDto> = emptyList()
+    val messages: List<MessageDto> = emptyList(),
+    val blockedByMe: Boolean = false,
+    val blockedByThem: Boolean = false
 )
+
+/** Either side has blocked the other — messaging is disabled and the web
+ * app shows a banner instead of the input row. */
+val ConversationDto.messagingBlocked: Boolean get() = blockedByMe || blockedByThem
 
 /** True when the signed-in user (their id passed as [myId]) is the listing's
  * seller — the conversation's "other side" is then the buyer, and vice versa.
@@ -59,3 +72,6 @@ fun ConversationDto.partnerId(myId: String?): String =
 
 fun ConversationDto.partnerName(myId: String?): String =
     if (listing.userId == myId) buyer.name else listing.user.name
+
+fun ConversationDto.partnerUser(myId: String?): ChatUserDto =
+    if (listing.userId == myId) buyer else listing.user

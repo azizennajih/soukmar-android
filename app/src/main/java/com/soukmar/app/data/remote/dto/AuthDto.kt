@@ -58,4 +58,7 @@ data class ResetPasswordRequest(val token: String, val password: String)
 data class ChangePasswordRequest(val currentPassword: String, val newPassword: String)
 
 @Serializable
+data class PhoneVerifyRequest(val code: String)
+
+@Serializable
 data class ApiErrorDto(val error: String? = null, val unverified: Boolean = false)

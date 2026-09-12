@@ -30,4 +30,8 @@ object Routes {
     const val SAVED_SEARCHES = "recherches_sauvegardees"
     const val NOTIFICATIONS = "notifications"
     const val ADMIN = "admin"
+    const val LEGAL_NOTICE = "legal_notice"
+    const val LEGAL_PRIVACY = "legal_privacy"
+    const val LEGAL_TERMS = "legal_terms"
+    const val LEGAL_WITHDRAWAL = "legal_withdrawal"
 }

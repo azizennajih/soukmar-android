@@ -2,6 +2,7 @@ package com.soukmar.app.data.repository
 
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.BlockStatusDto
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.SellerProfileDto
 import kotlinx.serialization.json.Json
@@ -35,6 +36,24 @@ class UserRepository @Inject constructor(
     suspend fun getSellerListings(id: String): ApiResult<List<ListingDto>> {
         return try {
             val res = api.getSellerListings(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun blockUser(id: String): ApiResult<BlockStatusDto> {
+        return try {
+            val res = api.blockUser(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun unblockUser(id: String): ApiResult<BlockStatusDto> {
+        return try {
+            val res = api.unblockUser(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

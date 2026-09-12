@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -65,6 +66,7 @@ fun HomeScreen(
     onOpenSavedSearches: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenAdmin: () -> Unit,
+    onOpenLegal: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -124,6 +126,11 @@ fun HomeScreen(
                                 text = { Text(t("nav.profile")) },
                                 leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
                                 onClick = { menuExpanded = false; onOpenProfil() }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(t("parametres.legal")) },
+                                leadingIcon = { Icon(Icons.Filled.Gavel, contentDescription = null) },
+                                onClick = { menuExpanded = false; onOpenLegal() }
                             )
                             DropdownMenuItem(
                                 text = { Text(t("nav.logout")) },

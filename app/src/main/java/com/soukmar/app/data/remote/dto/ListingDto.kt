@@ -34,6 +34,8 @@ data class ListingDto(
     val condition: String? = null,
     val city: String,
     val region: String? = null,
+    val lat: Double? = null,
+    val lng: Double? = null,
     val images: List<String> = emptyList(),
     val status: String = "ACTIVE",
     val isPremium: Boolean = false,
