@@ -130,6 +130,15 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteAccount(password: String): ApiResult<Boolean> {
+        return try {
+            val res = api.deleteAccount(DeleteAccountRequest(password))
+            if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun isLoggedIn(): Boolean = tokenManager.isLoggedIn()
 
     suspend fun logout() = tokenManager.clear()

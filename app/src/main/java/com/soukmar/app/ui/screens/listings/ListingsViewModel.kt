@@ -76,6 +76,11 @@ class ListingsViewModel @Inject constructor(
         private set
     var saveSearchError by mutableStateOf<String?>(null)
         private set
+    // Set when the screen was opened via SavedSearchesScreen's "Modifier" —
+    // saveSearch() then PATCHes this id instead of POSTing a new search,
+    // mirroring the web's editSearch/editSearchName query params.
+    var editSearchId by mutableStateOf<String?>(null)
+        private set
 
     init {
         search()
@@ -226,10 +231,13 @@ class ListingsViewModel @Inject constructor(
                 condition = selectedCondition,
                 attrs = attrs
             )
-            when (val result = savedSearchRepository.create(body)) {
+            val editing = editSearchId
+            val result = if (editing != null) savedSearchRepository.update(editing, body) else savedSearchRepository.create(body)
+            when (result) {
                 is ApiResult.Success -> {
                     showSaveSearchForm = false
                     newSearchName = ""
+                    editSearchId = null
                     searchSaved = true
                     delay(3000)
                     searchSaved = false
@@ -244,6 +252,7 @@ class ListingsViewModel @Inject constructor(
         showSaveSearchForm = false
         saveSearchError = null
         newSearchName = ""
+        editSearchId = null
     }
 
     /** Re-fetches the user's saved searches to find [id] and re-applies its
@@ -252,6 +261,23 @@ class ListingsViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = savedSearchRepository.getAll()) {
                 is ApiResult.Success -> result.data.find { it.id == id }?.let { applySavedSearch(it) }
+                is ApiResult.Error -> { /* fall back to whatever filters are already set */ }
+            }
+        }
+    }
+
+    /** Same as [applySavedSearchById] but also opens the save-search form
+     * pre-filled with the existing name and marks it for update-in-place —
+     * entered from SavedSearchesScreen's "Modifier" action. */
+    fun applySavedSearchForEdit(id: String) {
+        viewModelScope.launch {
+            when (val result = savedSearchRepository.getAll()) {
+                is ApiResult.Success -> result.data.find { it.id == id }?.let { saved ->
+                    applySavedSearch(saved)
+                    editSearchId = saved.id
+                    newSearchName = saved.name
+                    showSaveSearchForm = true
+                }
                 is ApiResult.Error -> { /* fall back to whatever filters are already set */ }
             }
         }

@@ -35,3 +35,9 @@ data class SavedSearchCreateRequest(
     val condition: String? = null,
     val attrs: Map<String, List<String>>? = null
 )
+
+/** GET /api/listings/interests response entry — a recency-weighted top
+ * category (search=2/view=3/favorite=4 pts, weighted by 1/(1+daysAgo)),
+ * capped at the top 3 with at least one new listing in the last 7 days. */
+@Serializable
+data class InterestDto(val category: String, val newListingsCount: Int)

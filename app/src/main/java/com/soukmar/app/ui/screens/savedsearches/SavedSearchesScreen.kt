@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +37,7 @@ import com.soukmar.app.ui.i18n.tCatalog
 fun SavedSearchesScreen(
     onBack: () -> Unit,
     onOpenSearch: (String) -> Unit,
+    onEditSearch: (String) -> Unit,
     viewModel: SavedSearchesViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) { viewModel.load() }
@@ -61,6 +63,7 @@ fun SavedSearchesScreen(
                         SavedSearchRow(
                             search = search,
                             onOpen = { onOpenSearch(search.id) },
+                            onEdit = { onEditSearch(search.id) },
                             onDelete = { viewModel.remove(search.id) }
                         )
                     }
@@ -71,7 +74,7 @@ fun SavedSearchesScreen(
 }
 
 @Composable
-private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onDelete: () -> Unit) {
+private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
     val cat = search.category?.let { categoryConfig(it) }
     val catLabel = cat?.let { tCatalog("cats.${it.value}", it.value) }
     val madLabel = t("common.mad")
@@ -99,6 +102,9 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onDelete:
             if (meta.isNotEmpty()) {
                 Text(meta.joinToString(" · "), color = TextMuted, fontSize = 12.sp)
             }
+        }
+        IconButton(onClick = onEdit) {
+            Icon(Icons.Filled.Edit, contentDescription = t("annonces.edit_search_title"), tint = TextMuted)
         }
         IconButton(onClick = onDelete) {
             Icon(Icons.Filled.Close, contentDescription = t("common.delete"), tint = TextMuted)

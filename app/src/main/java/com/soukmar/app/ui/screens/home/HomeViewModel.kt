@@ -6,9 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
-import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.ApiService
+import com.soukmar.app.data.remote.dto.InterestDto
 import com.soukmar.app.data.remote.dto.UserDto
+import com.soukmar.app.data.repository.ListingRepository
 import com.soukmar.app.data.repository.NotificationRepository
 import com.soukmar.app.data.repository.PushRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,14 +21,16 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val api: ApiService,
-    private val tokenManager: TokenManager,
     private val notificationRepository: NotificationRepository,
-    private val pushRepository: PushRepository
+    private val pushRepository: PushRepository,
+    private val listingRepository: ListingRepository
 ) : ViewModel() {
 
     var user by mutableStateOf<UserDto?>(null)
     var loading by mutableStateOf(true)
     var unreadNotifications by mutableStateOf(0)
+        private set
+    var interests by mutableStateOf<List<InterestDto>>(emptyList())
         private set
 
     init {
@@ -35,7 +38,10 @@ class HomeViewModel @Inject constructor(
             loading = true
             try {
                 val res = api.me()
-                if (res.isSuccessful) user = res.body()
+                if (res.isSuccessful) {
+                    user = res.body()
+                    interests = listingRepository.getInterests()
+                }
             } catch (_: Exception) { }
             loading = false
         }
@@ -68,10 +74,4 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun logout(onDone: () -> Unit) {
-        viewModelScope.launch {
-            tokenManager.clear()
-            onDone()
-        }
-    }
 }

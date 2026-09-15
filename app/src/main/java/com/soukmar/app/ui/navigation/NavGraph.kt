@@ -33,6 +33,8 @@ import com.soukmar.app.ui.screens.notifications.NotificationsScreen
 import com.soukmar.app.ui.screens.admin.AdminScreen
 import com.soukmar.app.ui.screens.legal.LegalLinkRow
 import com.soukmar.app.ui.screens.legal.LegalPageScreen
+import com.soukmar.app.ui.screens.settings.SettingsScreen
+import com.soukmar.app.ui.screens.settings.DeleteAccountScreen
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.TextPrimary
 
@@ -74,34 +76,30 @@ fun SoukMarNavGraph(startDestination: String) {
         }
         composable(Routes.HOME) {
             HomeScreen(
-                onLoggedOut = {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.HOME) { inclusive = true }
-                    }
-                },
                 onOpenCategory = { category -> navController.navigate(Routes.listings(category)) },
                 onOpenSearch = { navController.navigate(Routes.listings()) },
                 onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) },
                 onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
                 onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
-                onOpenProfil = { navController.navigate(Routes.PROFIL) },
                 onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onOpenAdmin = { navController.navigate(Routes.ADMIN) },
-                onOpenLegal = { navController.navigate(Routes.LEGAL_NOTICE) }
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) }
             )
         }
         composable(
             route = Routes.LISTINGS,
             arguments = listOf(
                 navArgument("category") { type = NavType.StringType; nullable = true; defaultValue = null },
-                navArgument("savedSearchId") { type = NavType.StringType; nullable = true; defaultValue = null }
+                navArgument("savedSearchId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("editSearchId") { type = NavType.StringType; nullable = true; defaultValue = null }
             )
         ) { backStackEntry ->
             ListingsScreen(
                 initialCategory = backStackEntry.arguments?.getString("category"),
                 savedSearchId = backStackEntry.arguments?.getString("savedSearchId"),
+                editSearchId = backStackEntry.arguments?.getString("editSearchId"),
                 onBack = { navController.popBackStack() },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
             )
@@ -115,7 +113,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 onBack = { navController.popBackStack() },
                 onRequireLogin = { navController.navigate(Routes.LOGIN) },
                 onOpenChat = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) },
-                onOpenSeller = { sellerId -> navController.navigate(Routes.sellerProfile(sellerId)) }
+                onOpenSeller = { sellerId -> navController.navigate(Routes.sellerProfile(sellerId)) },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
             )
         }
         composable(
@@ -184,7 +183,8 @@ fun SoukMarNavGraph(startDestination: String) {
         composable(Routes.SAVED_SEARCHES) {
             SavedSearchesScreen(
                 onBack = { navController.popBackStack() },
-                onOpenSearch = { savedSearchId -> navController.navigate(Routes.listings(savedSearchId = savedSearchId)) }
+                onOpenSearch = { savedSearchId -> navController.navigate(Routes.listings(savedSearchId = savedSearchId)) },
+                onEditSearch = { id -> navController.navigate(Routes.listings(editSearchId = id)) }
             )
         }
         composable(Routes.NOTIFICATIONS) {
@@ -225,6 +225,30 @@ fun SoukMarNavGraph(startDestination: String) {
         }
         composable(Routes.LEGAL_WITHDRAWAL) {
             LegalPageScreen(titleKey = "legal.withdrawal_title", namespace = "legal.withdrawal", sectionCount = 6, onBack = { navController.popBackStack() })
+        }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenProfil = { navController.navigate(Routes.PROFIL) },
+                onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onOpenLegal = { navController.navigate(Routes.LEGAL_NOTICE) },
+                onOpenDeleteAccount = { navController.navigate(Routes.DELETE_ACCOUNT) },
+                onLoggedOut = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Routes.DELETE_ACCOUNT) {
+            DeleteAccountScreen(
+                onBack = { navController.popBackStack() },
+                onLoggedOut = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

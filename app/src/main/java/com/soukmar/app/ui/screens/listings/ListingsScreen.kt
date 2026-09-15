@@ -37,6 +37,7 @@ import com.soukmar.app.ui.theme.TextPrimary
 fun ListingsScreen(
     initialCategory: String?,
     savedSearchId: String?,
+    editSearchId: String? = null,
     onBack: () -> Unit,
     onOpenListing: (String) -> Unit,
     viewModel: ListingsViewModel = hiltViewModel()
@@ -44,7 +45,9 @@ fun ListingsScreen(
     var showFilters by remember { mutableStateOf(false) }
     var showMapView by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (savedSearchId != null) {
+        if (editSearchId != null) {
+            viewModel.applySavedSearchForEdit(editSearchId)
+        } else if (savedSearchId != null) {
             viewModel.applySavedSearchById(savedSearchId)
         } else if (initialCategory != null && viewModel.selectedCategory == null) {
             viewModel.setCategory(initialCategory)
@@ -172,6 +175,10 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
         when {
             viewModel.searchSaved -> Text("✅ ${t("annonces.search_saved")}", color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
             viewModel.showSaveSearchForm -> {
+                if (viewModel.editSearchId != null) {
+                    Text(t("annonces.edit_search_title"), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Spacer(Modifier.height(4.dp))
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = viewModel.newSearchName,
@@ -188,7 +195,7 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
                         enabled = viewModel.newSearchName.isNotBlank() && !viewModel.savingSearch,
                         colors = ButtonDefaults.buttonColors(containerColor = Primary)
                     ) {
-                        Text(if (viewModel.savingSearch) "…" else t("common.save"))
+                        Text(if (viewModel.savingSearch) "…" else if (viewModel.editSearchId != null) t("annonces.update_search") else t("common.save"))
                     }
                 }
                 viewModel.saveSearchError?.let {

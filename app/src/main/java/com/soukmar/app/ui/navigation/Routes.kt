@@ -7,11 +7,12 @@ object Routes {
     const val RESET_PASSWORD = "reset_password?token={token}"
     fun resetPassword(token: String) = "reset_password?token=$token"
     const val HOME = "home"
-    const val LISTINGS = "listings?category={category}&savedSearchId={savedSearchId}"
-    fun listings(category: String? = null, savedSearchId: String? = null): String {
+    const val LISTINGS = "listings?category={category}&savedSearchId={savedSearchId}&editSearchId={editSearchId}"
+    fun listings(category: String? = null, savedSearchId: String? = null, editSearchId: String? = null): String {
         val params = buildList {
             category?.let { add("category=$it") }
             savedSearchId?.let { add("savedSearchId=$it") }
+            editSearchId?.let { add("editSearchId=$it") }
         }
         return if (params.isEmpty()) "listings" else "listings?" + params.joinToString("&")
     }
@@ -34,4 +35,6 @@ object Routes {
     const val LEGAL_PRIVACY = "legal_privacy"
     const val LEGAL_TERMS = "legal_terms"
     const val LEGAL_WITHDRAWAL = "legal_withdrawal"
+    const val SETTINGS = "settings"
+    const val DELETE_ACCOUNT = "delete_account"
 }

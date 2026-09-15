@@ -20,11 +20,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -47,6 +45,7 @@ import com.soukmar.app.ui.components.SoukMarLogo
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.TextMuted
@@ -55,18 +54,16 @@ import com.soukmar.app.ui.theme.WhiteColor
 
 @Composable
 fun HomeScreen(
-    onLoggedOut: () -> Unit,
     onOpenCategory: (String) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenDeposerAnnonce: () -> Unit,
     onOpenChat: () -> Unit,
     onOpenMesAnnonces: () -> Unit,
     onOpenFavoris: () -> Unit,
-    onOpenProfil: () -> Unit,
     onOpenSavedSearches: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenAdmin: () -> Unit,
-    onOpenLegal: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -123,19 +120,9 @@ fun HomeScreen(
                                 onClick = { menuExpanded = false; onOpenSavedSearches() }
                             )
                             DropdownMenuItem(
-                                text = { Text(t("nav.profile")) },
-                                leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
-                                onClick = { menuExpanded = false; onOpenProfil() }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(t("parametres.legal")) },
-                                leadingIcon = { Icon(Icons.Filled.Gavel, contentDescription = null) },
-                                onClick = { menuExpanded = false; onOpenLegal() }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(t("nav.logout")) },
-                                leadingIcon = { Icon(Icons.Filled.Logout, contentDescription = null) },
-                                onClick = { menuExpanded = false; viewModel.logout(onLoggedOut) }
+                                text = { Text(t("nav.settings")) },
+                                leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                                onClick = { menuExpanded = false; onOpenSettings() }
                             )
                         }
                     }
@@ -172,6 +159,11 @@ fun HomeScreen(
                 Text(t("nav.search_placeholder"), color = TextMuted)
             }
 
+            if (viewModel.interests.isNotEmpty()) {
+                Spacer(Modifier.height(20.dp))
+                InterestsSection(viewModel.interests, onOpenCategory)
+            }
+
             Spacer(Modifier.height(20.dp))
             Text(t("nav.categories"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(Modifier.height(10.dp))
@@ -195,6 +187,49 @@ fun HomeScreen(
                         Spacer(Modifier.height(6.dp))
                         Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
+                }
+            }
+        }
+    }
+}
+
+/** Mirrors the web home page's personalized "Vos centres d'intérêt actuels"
+ * section — top 3 recency-weighted categories from GET /listings/interests,
+ * only shown when there's at least one (a fresh account or one with no
+ * recent activity just won't see the section, same as the web). */
+@Composable
+private fun InterestsSection(interests: List<com.soukmar.app.data.remote.dto.InterestDto>, onOpenCategory: (String) -> Unit) {
+    Column {
+        Text("👋 ${t("home.welcome_back")}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text(t("home.your_interests"), color = TextMuted, fontSize = 12.sp)
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            interests.forEach { interest ->
+                val cat = categoryConfig(interest.category)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onOpenCategory(interest.category) }
+                        .background(cat?.bg ?: WhiteColor, RoundedCornerShape(14.dp))
+                        .padding(vertical = 14.dp, horizontal = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(cat?.emoji ?: "🏷️", fontSize = 22.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        tCatalog("cats.${interest.category}", interest.category),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = cat?.fg ?: TextPrimary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        maxLines = 1
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        t("home.new_listings_count", "count" to interest.newListingsCount.toString()),
+                        fontSize = 9.sp,
+                        color = (cat?.fg ?: TextMuted).copy(alpha = 0.8f)
+                    )
                 }
             }
         }

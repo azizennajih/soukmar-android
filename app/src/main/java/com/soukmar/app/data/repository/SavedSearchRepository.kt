@@ -40,6 +40,15 @@ class SavedSearchRepository @Inject constructor(
         }
     }
 
+    suspend fun update(id: String, body: SavedSearchCreateRequest): ApiResult<SavedSearchDto> {
+        return try {
+            val res = api.updateSavedSearch(id, body)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun delete(id: String): ApiResult<Boolean> {
         return try {
             val res = api.deleteSavedSearch(id)

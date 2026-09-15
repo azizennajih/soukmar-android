@@ -61,4 +61,7 @@ data class ChangePasswordRequest(val currentPassword: String, val newPassword: S
 data class PhoneVerifyRequest(val code: String)
 
 @Serializable
+data class DeleteAccountRequest(val password: String)
+
+@Serializable
 data class ApiErrorDto(val error: String? = null, val unverified: Boolean = false)

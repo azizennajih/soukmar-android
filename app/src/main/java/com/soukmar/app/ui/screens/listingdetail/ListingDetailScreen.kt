@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingAttributeValueDto
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.ui.components.ListingCard
 import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.components.VerifiedBadge
 import com.soukmar.app.ui.i18n.cityLabelT
@@ -59,6 +60,7 @@ fun ListingDetailScreen(
     onRequireLogin: () -> Unit,
     onOpenChat: (String) -> Unit,
     onOpenSeller: (String) -> Unit,
+    onOpenListing: (String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -219,10 +221,37 @@ fun ListingDetailScreen(
                             ReportSection(viewModel)
                         }
 
+                        if (viewModel.similarListings.isNotEmpty()) {
+                            Spacer(Modifier.height(20.dp))
+                            SimilarListingsSection(viewModel.similarListings, onOpenListing)
+                        }
+
                         Spacer(Modifier.height(24.dp))
                     }
                 }
             }
+        }
+    }
+}
+
+/** Mirrors the web's "Cela pourrait aussi vous intéresser" section (same
+ * subcategory first, padded out with the same category) — chunked into
+ * pairs of Rows rather than a nested LazyVerticalGrid, since this section
+ * lives inside the screen's outer verticalScroll Column and a nested
+ * lazy grid there would have unbounded height. */
+@Composable
+private fun SimilarListingsSection(listings: List<com.soukmar.app.data.remote.dto.ListingDto>, onOpenListing: (String) -> Unit) {
+    Column {
+        Text(t("listing.similar"), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+        Spacer(Modifier.height(10.dp))
+        listings.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                row.forEach { item ->
+                    ListingCard(listing = item, onClick = { onOpenListing(item.id) }, modifier = Modifier.weight(1f))
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(10.dp))
         }
     }
 }

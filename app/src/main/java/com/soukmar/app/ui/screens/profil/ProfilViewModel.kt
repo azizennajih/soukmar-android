@@ -145,7 +145,7 @@ class ProfilViewModel @Inject constructor(
         uploadingImage = true
         errorMessage = null
         viewModelScope.launch {
-            when (val uploadResult = uploadRepository.uploadImages(listOf(uri))) {
+            when (val uploadResult = uploadRepository.uploadImages(listOf(uri), type = "avatar")) {
                 is ApiResult.Success -> {
                     val url = uploadResult.data.firstOrNull()
                     if (url != null) {

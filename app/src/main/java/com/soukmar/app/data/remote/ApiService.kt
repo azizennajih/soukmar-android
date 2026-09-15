@@ -42,6 +42,9 @@ interface ApiService {
     @POST("auth/phone/verify")
     suspend fun verifyPhoneCode(@Body body: PhoneVerifyRequest): Response<MessageResponse>
 
+    @HTTP(method = "DELETE", path = "auth/account", hasBody = true)
+    suspend fun deleteAccount(@Body body: DeleteAccountRequest): Response<MessageResponse>
+
     @GET("listings")
     suspend fun getListings(@QueryMap params: Map<String, String>): Response<ListingsResponseDto>
 
@@ -50,6 +53,12 @@ interface ApiService {
 
     @GET("listings/{id}")
     suspend fun getListing(@Path("id") id: String): Response<ListingDto>
+
+    @GET("listings/{id}/similar")
+    suspend fun getSimilarListings(@Path("id") id: String): Response<List<ListingDto>>
+
+    @GET("listings/interests")
+    suspend fun getInterests(): Response<List<InterestDto>>
 
     @POST("listings")
     suspend fun createListing(@Body body: ListingUpsertRequest): Response<ListingDto>
@@ -77,7 +86,10 @@ interface ApiService {
 
     @Multipart
     @POST("upload")
-    suspend fun uploadImages(@Part images: List<MultipartBody.Part>): Response<UploadResponseDto>
+    suspend fun uploadImages(
+        @Part images: List<MultipartBody.Part>,
+        @Part("type") type: okhttp3.RequestBody
+    ): Response<UploadResponseDto>
 
     @GET("favorites")
     suspend fun getFavorites(): Response<List<ListingDto>>
@@ -150,6 +162,9 @@ interface ApiService {
 
     @POST("saved-searches")
     suspend fun createSavedSearch(@Body body: SavedSearchCreateRequest): Response<SavedSearchDto>
+
+    @PATCH("saved-searches/{id}")
+    suspend fun updateSavedSearch(@Path("id") id: String, @Body body: SavedSearchCreateRequest): Response<SavedSearchDto>
 
     @DELETE("saved-searches/{id}")
     suspend fun deleteSavedSearch(@Path("id") id: String): Response<SuccessDto>

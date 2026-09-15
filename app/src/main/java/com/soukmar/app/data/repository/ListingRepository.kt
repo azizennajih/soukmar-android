@@ -2,6 +2,7 @@ package com.soukmar.app.data.repository
 
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.InterestDto
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.ListingStatusUpdateRequest
 import com.soukmar.app.data.remote.dto.ListingUpsertRequest
@@ -135,6 +136,26 @@ class ListingRepository @Inject constructor(
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun getSimilar(id: String): ApiResult<List<ListingDto>> {
+        return try {
+            val res = api.getSimilarListings(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    /** Non-essential home-screen section — the web equivalent fails
+     * silently on error too, so callers just get an empty list here. */
+    suspend fun getInterests(): List<InterestDto> {
+        return try {
+            val res = api.getInterests()
+            if (res.isSuccessful) res.body() ?: emptyList() else emptyList()
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 

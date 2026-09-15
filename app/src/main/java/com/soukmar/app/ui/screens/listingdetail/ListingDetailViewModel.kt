@@ -31,6 +31,8 @@ class ListingDetailViewModel @Inject constructor(
         private set
     var loadError by mutableStateOf(false)
         private set
+    var similarListings by mutableStateOf<List<ListingDto>>(emptyList())
+        private set
 
     var isLoggedIn by mutableStateOf(false)
         private set
@@ -73,6 +75,7 @@ class ListingDetailViewModel @Inject constructor(
         viewModelScope.launch {
             loading = true
             loadError = false
+            similarListings = emptyList()
             isLoggedIn = tokenManager.isLoggedIn()
             currentUserId = tokenManager.currentUserId()
             when (val result = listingRepository.getListing(id)) {
@@ -82,10 +85,20 @@ class ListingDetailViewModel @Inject constructor(
                         favorited = listingRepository.getFavoriteIds().contains(id)
                         checkCanReview(id)
                     }
+                    loadSimilar(id)
                 }
                 is ApiResult.Error -> loadError = true
             }
             loading = false
+        }
+    }
+
+    private fun loadSimilar(id: String) {
+        viewModelScope.launch {
+            when (val result = listingRepository.getSimilar(id)) {
+                is ApiResult.Success -> similarListings = result.data
+                is ApiResult.Error -> { /* non-essential section — fail silently, mirrors the web */ }
+            }
         }
     }
 
