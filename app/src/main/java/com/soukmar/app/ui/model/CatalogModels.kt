@@ -26,17 +26,17 @@ val CATEGORIES: List<CategoryConfig> = listOf(
     CategoryConfig("HOME_GARDEN", "Maison & Jardin", "🌿", Color(0xFFD1FAE5), Color(0xFF065F46)),
     CategoryConfig("FASHION", "Mode", "👗", Color(0xFFFCE7F3), Color(0xFFBE185D)),
     CategoryConfig("SERVICES", "Services", "🔧", Color(0xFFFFEDD5), Color(0xFFC2410C)),
-    CategoryConfig("OTHER", "Autres", "📦", Color(0xFFF1F5F9), Color(0xFF475569)),
     CategoryConfig("BABY_KIDS", "Bébé & Enfants", "🧸", Color(0xFFCCFBF1), Color(0xFF0F766E)),
+    CategoryConfig("LESSONS_COURSES", "Cours & Leçons", "📚", Color(0xFFCFFAFE), Color(0xFF0E7490)),
     CategoryConfig("PETS", "Animaux", "🐾", Color(0xFFF5E9D9), Color(0xFF92603A)),
     CategoryConfig("SPORTS_LEISURE", "Sport & Loisirs", "⚽", Color(0xFFE0E7FF), Color(0xFF4338CA)),
-    CategoryConfig("LESSONS_COURSES", "Cours & Leçons", "📚", Color(0xFFCFFAFE), Color(0xFF0E7490)),
     CategoryConfig("CARPOOLING", "Covoiturage", "🚕", Color(0xFFDBEAFE), Color(0xFF1D4ED8)),
     CategoryConfig("TRANSPORT", "Transport", "🚛", Color(0xFFFFEDD5), Color(0xFFC2410C)),
     CategoryConfig("RENTAL", "Location", "🚙", Color(0xFFF3E8FF), Color(0xFF7E22CE)),
     CategoryConfig("TICKETS", "Billets & Tickets", "🎫", Color(0xFFFEF9C3), Color(0xFFA16207)),
     CategoryConfig("GIVEAWAY_SWAP", "Dons & Échanges", "🎁", Color(0xFFDCFCE7), Color(0xFF15803D)),
     CategoryConfig("MOVING", "Déménagement", "🚚", Color(0xFFF5E9D9), Color(0xFF92603A)),
+    CategoryConfig("OTHER", "Autres", "📦", Color(0xFFF1F5F9), Color(0xFF475569)),
 )
 
 fun categoryConfig(value: String): CategoryConfig? = CATEGORIES.find { it.value == value }

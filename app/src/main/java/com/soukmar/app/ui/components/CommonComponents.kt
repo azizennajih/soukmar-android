@@ -40,8 +40,8 @@ fun SoukMarLogo(modifier: Modifier = Modifier) {
         }
         Spacer(Modifier.width(8.dp))
         Row {
-            Text("Souk", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 20.sp)
-            Text("Mar", color = Primary, fontWeight = FontWeight.Black, fontSize = 20.sp)
+            Text("SouqMar", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 20.sp)
+            Text("24", color = Primary, fontWeight = FontWeight.Black, fontSize = 20.sp)
         }
     }
 }

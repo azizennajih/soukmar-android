@@ -312,20 +312,31 @@ private fun SystemMessageRow(msg: MessageDto) {
 }
 
 @Composable
+private fun MsgTimeLabel(iso: String) {
+    val (date, time) = formatMsgTimeParts(iso)
+    Column(horizontalAlignment = Alignment.Start) {
+        Text(date, fontSize = 10.sp, color = TextMuted, lineHeight = 12.sp)
+        Text(time, fontSize = 10.sp, color = TextMuted, lineHeight = 12.sp)
+    }
+}
+
+@Composable
 private fun TextBubble(msg: MessageDto, mine: Boolean) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (mine) Alignment.End else Alignment.Start
     ) {
-        Text(formatMsgTime(msg.createdAt), fontSize = 10.sp, color = TextMuted)
-        Box(
-            modifier = Modifier
-                .background(if (mine) Primary else WhiteColor, RoundedCornerShape(14.dp))
-                .border(if (mine) 0.dp else 1.dp, BorderColor, RoundedCornerShape(14.dp))
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .fillMaxWidth(0.8f)
-        ) {
-            Text(msg.content, color = if (mine) Color.White else TextPrimary, fontSize = 14.sp)
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            MsgTimeLabel(msg.createdAt)
+            Box(
+                modifier = Modifier
+                    .background(if (mine) Primary else WhiteColor, RoundedCornerShape(14.dp))
+                    .border(if (mine) 0.dp else 1.dp, BorderColor, RoundedCornerShape(14.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .fillMaxWidth(0.72f)
+            ) {
+                Text(msg.content, color = if (mine) Color.White else TextPrimary, fontSize = 14.sp)
+            }
         }
     }
 }
@@ -342,13 +353,14 @@ private fun OfferBubble(
 ) {
     val amountText = msg.offerAmount?.let { formatPriceParts(it).first } ?: "—"
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
-        Text(formatMsgTime(msg.createdAt), fontSize = 10.sp, color = TextMuted)
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        MsgTimeLabel(msg.createdAt)
         Column(
             modifier = Modifier
                 .background(GoldLight, RoundedCornerShape(14.dp))
                 .border(1.dp, Gold, RoundedCornerShape(14.dp))
                 .padding(12.dp)
-                .fillMaxWidth(0.75f)
+                .fillMaxWidth(0.68f)
         ) {
             Text("💰 ${t("chat.offer_price")}", fontSize = 11.sp, color = Gold, fontWeight = FontWeight.SemiBold)
             Row(verticalAlignment = Alignment.Bottom) {
@@ -378,6 +390,7 @@ private fun OfferBubble(
                     Text("🚫 ${t("chat.cancel_offer")}", fontSize = 12.sp)
                 }
             }
+        }
         }
     }
 }
@@ -412,12 +425,14 @@ private fun ReportDialog(viewModel: ChatViewModel) {
     )
 }
 
-private val msgTimeFormatter = DateTimeFormatter.ofPattern("dd.MM. HH:mm").withZone(ZoneId.systemDefault())
+private val msgDateFormatter = DateTimeFormatter.ofPattern("dd.MM.").withZone(ZoneId.systemDefault())
+private val msgHourFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
 
-private fun formatMsgTime(iso: String): String {
+private fun formatMsgTimeParts(iso: String): Pair<String, String> {
     return try {
-        msgTimeFormatter.format(Instant.parse(iso))
+        val instant = Instant.parse(iso)
+        msgDateFormatter.format(instant) to msgHourFormatter.format(instant)
     } catch (e: DateTimeParseException) {
-        ""
+        "" to ""
     }
 }
