@@ -57,6 +57,13 @@ val CONDITION_CATEGORIES: Set<String> = setOf(
     "VEHICLES", "ELECTRONICS", "HOME_GARDEN", "FASHION", "BABY_KIDS", "SPORTS_LEISURE", "GIVEAWAY_SWAP"
 )
 
+/** Subcategories that opt out of "Neuf/Occasion" even though their category
+ * is otherwise in CONDITION_CATEGORIES — for services offered within an
+ * otherwise physical-goods category (e.g. Sport & Loisirs also hosts
+ * "Cours particuliers", coaching, which isn't a "new or used" item).
+ * Mirrors listing.model.ts's NO_CONDITION_SUBCATEGORIES. */
+val NO_CONDITION_SUBCATEGORIES: Set<String> = setOf("TRAINING_OFFERS")
+
 /** Mirrors listing.model.ts's JOB_PROFESSIONS_BY_SECTOR — job profession
  * codes grouped by the Jobs category's INDUSTRY attribute, used to narrow
  * the PROFESSION autocomplete's suggestions once a sector is picked. */

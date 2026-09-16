@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.MessageDto
+import com.soukmar.app.ui.components.VerifiedBadge
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.model.formatPriceParts
 import com.soukmar.app.ui.theme.BorderColor
@@ -147,6 +148,9 @@ private fun ChatHeaderContent(viewModel: ChatViewModel, onOpenListing: (String) 
                             CompactStars(partner.avgRating)
                         }
                     }
+                }
+                viewModel.partnerUser()?.let { partner ->
+                    VerifiedBadge(partner.emailVerified, partner.phoneVerified, modifier = Modifier.padding(vertical = 1.dp))
                 }
                 if (viewModel.partnerTyping) {
                     Text(t("chat.typing"), fontSize = 11.sp, color = Primary)

@@ -16,6 +16,7 @@ import com.soukmar.app.data.repository.CatalogRepository
 import com.soukmar.app.data.repository.ListingRepository
 import com.soukmar.app.data.repository.UploadRepository
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
+import com.soukmar.app.ui.model.NO_CONDITION_SUBCATEGORIES
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
@@ -184,7 +185,12 @@ class DeposerAnnonceViewModel @Inject constructor(
         step = 2
     }
 
-    val showCondition: Boolean get() = form.category.isNotEmpty() && CONDITION_CATEGORIES.contains(form.category)
+    val showCondition: Boolean
+        get() {
+            if (form.category.isEmpty() || !CONDITION_CATEGORIES.contains(form.category)) return false
+            val subCode = subcategories.find { it.id == form.subcategoryId }?.code ?: return true
+            return subCode !in NO_CONDITION_SUBCATEGORIES
+        }
 
     fun selectCategory(value: String) {
         form = form.copy(category = value, subcategoryId = "", attributes = emptyMap())

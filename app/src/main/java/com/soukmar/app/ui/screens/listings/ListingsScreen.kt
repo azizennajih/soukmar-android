@@ -28,7 +28,6 @@ import com.soukmar.app.ui.components.TextAutocompleteField
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
-import com.soukmar.app.ui.model.CONDITION_CATEGORIES
 import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
 import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.theme.Primary
@@ -238,7 +237,7 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
             Spacer(Modifier.height(10.dp))
         }
 
-        if (viewModel.selectedCategory != null && CONDITION_CATEGORIES.contains(viewModel.selectedCategory)) {
+        if (viewModel.showCondition) {
             Text(t("annonces.condition"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -317,6 +317,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         value = form.title,
         onValueChange = { if (it.length <= 100) viewModel.updateForm { f -> f.copy(title = it) } },
         label = { Text(t("deposer.label_title")) },
+        placeholder = { Text(t("deposer.placeholder_title_${form.category.lowercase()}")) },
         supportingText = { Text("${form.title.length}/100 ${t("deposer.chars")}") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
@@ -327,6 +328,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         value = form.description,
         onValueChange = { viewModel.updateForm { f -> f.copy(description = it) } },
         label = { Text(t("deposer.label_desc")) },
+        placeholder = { Text(t("deposer.placeholder_desc_${form.category.lowercase()}")) },
         minLines = 4,
         modifier = Modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)

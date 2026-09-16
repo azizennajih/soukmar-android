@@ -25,6 +25,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.ConversationDto
 import com.soukmar.app.data.remote.dto.messagingBlocked
 import com.soukmar.app.data.remote.dto.partnerName
+import com.soukmar.app.data.remote.dto.partnerUser
+import com.soukmar.app.ui.components.VerifiedBadge
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Primary
@@ -99,6 +101,7 @@ private fun ConversationRow(conv: ConversationDto, myId: String?, onClick: () ->
                     Text("🚫", fontSize = 12.sp)
                 }
             }
+            VerifiedBadge(conv.partnerUser(myId).emailVerified, conv.partnerUser(myId).phoneVerified, modifier = Modifier.padding(vertical = 2.dp))
             Text(conv.listing.title, color = TextMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(2.dp))
             Text(lastMessagePreview(conv), color = TextMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)

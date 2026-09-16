@@ -153,6 +153,17 @@ class ListingsViewModel @Inject constructor(
         search()
     }
 
+    /** Mirrors DeposerAnnonceViewModel.showCondition — hides "Neuf/Occasion"
+     * for subcategories that opt out even within an otherwise physical-goods
+     * category (e.g. Sport & Loisirs' "Cours particuliers" coaching). */
+    val showCondition: Boolean
+        get() {
+            val category = selectedCategory ?: return false
+            if (!com.soukmar.app.ui.model.CONDITION_CATEGORIES.contains(category)) return false
+            val subCode = subcategories.find { it.id == selectedSubcategoryId }?.code ?: return true
+            return subCode !in com.soukmar.app.ui.model.NO_CONDITION_SUBCATEGORIES
+        }
+
     fun clearFilters() {
         selectedSubcategoryId = null
         selectedCondition = null
