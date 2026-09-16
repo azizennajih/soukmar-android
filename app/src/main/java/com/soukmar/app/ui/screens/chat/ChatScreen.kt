@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -243,7 +244,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     modifier = Modifier.fillMaxWidth().background(PrimaryLight).padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("💰", fontSize = 16.sp)
+                    Icon(Icons.Filled.LocalOffer, contentDescription = null, tint = Gold, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     OutlinedTextField(
                         value = viewModel.offerAmount,
@@ -278,7 +279,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
-                    Text("💰", fontSize = 20.sp)
+                    Icon(Icons.Filled.LocalOffer, contentDescription = t("chat.send_offer"), tint = Gold)
                 }
                 OutlinedTextField(
                     value = viewModel.messageText,
@@ -362,7 +363,11 @@ private fun OfferBubble(
                 .padding(12.dp)
                 .fillMaxWidth(0.68f)
         ) {
-            Text("💰 ${t("chat.offer_price")}", fontSize = 11.sp, color = Gold, fontWeight = FontWeight.SemiBold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.LocalOffer, contentDescription = null, tint = Gold, modifier = Modifier.size(13.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(t("chat.offer_price"), fontSize = 11.sp, color = Gold, fontWeight = FontWeight.SemiBold)
+            }
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(amountText, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(Modifier.width(4.dp))

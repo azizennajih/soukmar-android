@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.SavedSearchDto
+import com.soukmar.app.ui.i18n.cityLabelT
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Primary
@@ -92,15 +94,24 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onEdit: (
             Spacer(Modifier.height(4.dp))
             val meta = buildList {
                 if (cat != null && catLabel != null) add("${cat.emoji} $catLabel")
-                search.city?.let { add("📍 $it") }
                 if (search.minPrice != null || search.maxPrice != null) {
                     val min = search.minPrice?.let { formatPlain(it) } ?: "0"
                     val max = search.maxPrice?.let { formatPlain(it) } ?: "∞"
                     add("$min–$max $madLabel")
                 }
             }
-            if (meta.isNotEmpty()) {
-                Text(meta.joinToString(" · "), color = TextMuted, fontSize = 12.sp)
+            if (meta.isNotEmpty() || search.city != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (meta.isNotEmpty()) {
+                        Text(meta.joinToString(" · "), color = TextMuted, fontSize = 12.sp)
+                    }
+                    search.city?.let {
+                        if (meta.isNotEmpty()) Text(" · ", color = TextMuted, fontSize = 12.sp)
+                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
+                        Spacer(Modifier.width(2.dp))
+                        Text(cityLabelT(it), color = TextMuted, fontSize = 12.sp)
+                    }
+                }
             }
         }
         IconButton(onClick = onEdit) {

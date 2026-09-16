@@ -428,6 +428,21 @@ private fun CityDropdown(selected: String, onSelect: (String) -> Unit) {
     }
 }
 
+/** A small icon per option makes it much faster to spot the right entry in a
+ * 20-item dropdown than reading text alone — scoped to this one attribute
+ * (not baked into the shared attrs.opts.* strings) since MACHINE_TYPE is the
+ * only attribute that needs it. Mirrors web's machineTypeIcon(). */
+private val MACHINE_TYPE_ICONS = mapOf(
+    "FORKLIFT" to "📦", "EXCAVATOR" to "⛏️", "BULLDOZER" to "🚜", "CRANE" to "🏗️",
+    "CONCRETE_MIXER" to "🧱", "CONCRETE_PUMP" to "🚰", "ROAD_ROLLER" to "🛣️",
+    "PLATE_COMPACTOR" to "🚧", "AERIAL_PLATFORM" to "🪜", "SCISSOR_LIFT" to "⬆️",
+    "SCAFFOLDING" to "🧗", "GENERATOR" to "🔌", "COMPRESSOR" to "💨",
+    "WELDING_MACHINE" to "🔥", "WATER_PUMP" to "💧", "CHAINSAW" to "🪚",
+    "LAWN_MOWER" to "🌱", "POWER_TOOLS" to "🛠️", "CLEANING_MACHINE" to "🧹", "OTHER" to "🔩"
+)
+
+private fun machineTypeIcon(code: String): String = MACHINE_TYPE_ICONS[code]?.let { "$it " } ?: ""
+
 @Composable
 private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonceViewModel) {
     Column {
@@ -475,6 +490,26 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                                 .padding(horizontal = 18.dp, vertical = 8.dp)
                         ) {
                             Text(label, color = if (selected) Primary else TextPrimary, fontSize = 13.sp)
+                        }
+                    }
+                }
+            }
+            def.code == "MACHINE_TYPE" -> {
+                var expanded by remember { mutableStateOf(false) }
+                val value = viewModel.attrTextValue(def.code)
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+                    OutlinedTextField(
+                        value = if (value.isEmpty()) "" else "${machineTypeIcon(value)}${tCatalog("attrs.opts.$value", value)}",
+                        onValueChange = {},
+                        readOnly = true,
+                        placeholder = { Text("Sélectionner…") },
+                        modifier = Modifier.fillMaxWidth().menuAnchor(),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+                    )
+                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        def.options.forEach { opt ->
+                            DropdownMenuItem(text = { Text("${machineTypeIcon(opt)}${tCatalog("attrs.opts.$opt", opt)}") }, onClick = { viewModel.setAttrText(def.code, opt); expanded = false })
                         }
                     }
                 }

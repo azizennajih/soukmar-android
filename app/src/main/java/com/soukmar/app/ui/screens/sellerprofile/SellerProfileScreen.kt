@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -102,7 +103,11 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 com.soukmar.app.ui.components.VerifiedBadge(profile.emailVerified, profile.phoneVerified)
                 profile.city?.let {
                     Spacer(Modifier.height(2.dp))
-                    Text("📍 ${cityLabelT(it)}", color = TextMuted, fontSize = 13.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(2.dp))
+                        Text(cityLabelT(it), color = TextMuted, fontSize = 13.sp)
+                    }
                 }
                 memberSince(profile.createdAt)?.let {
                     Spacer(Modifier.height(4.dp))

@@ -403,7 +403,13 @@ private fun SellerCard(name: String, city: String?, accountType: String?, emailV
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                city?.let { Text("📍 ${cityLabelT(it)}", color = TextMuted, fontSize = 12.sp) }
+                city?.let {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(13.dp))
+                        Spacer(Modifier.width(2.dp))
+                        Text(cityLabelT(it), color = TextMuted, fontSize = 12.sp)
+                    }
+                }
                 accountType?.let {
                     com.soukmar.app.ui.components.AccountTypeLabel(it, modifier = Modifier.padding(top = 2.dp))
                 }

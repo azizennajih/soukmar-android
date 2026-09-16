@@ -225,7 +225,12 @@ private fun ListingRow(
                     color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp
                 )
                 Spacer(Modifier.height(2.dp))
-                Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · 📍 ${cityLabelT(listing.city)}", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · ", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Spacer(Modifier.width(1.dp))
+                    Text(cityLabelT(listing.city), color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
                 if (daysUntilExpiry != null) {
                     Spacer(Modifier.height(2.dp))
                     Text(
