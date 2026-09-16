@@ -40,9 +40,12 @@ import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
 import com.soukmar.app.data.remote.dto.SubcategoryWithAttributesDto
 import com.soukmar.app.ui.components.ErrorBanner
 import com.soukmar.app.ui.components.PrimaryButton
+import com.soukmar.app.ui.components.TextAutocompleteField
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
+import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.model.MOROCCO_CITIES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.theme.BorderColor
@@ -431,15 +434,25 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
             if (def.required) Text(" *", fontSize = 13.sp, color = Primary)
         }
         Spacer(Modifier.height(4.dp))
-        when (def.type) {
-            "TEXT" -> OutlinedTextField(
+        when {
+            def.code == "PROFESSION" -> {
+                val industry = viewModel.attrTextValue("INDUSTRY")
+                val options = JOB_PROFESSIONS_BY_SECTOR[industry] ?: JOB_PROFESSION_CODES
+                TextAutocompleteField(
+                    value = viewModel.attrTextValue(def.code),
+                    onValueChange = { viewModel.setAttrText(def.code, it) },
+                    options = options,
+                    labelPrefix = "job_professions."
+                )
+            }
+            def.type == "TEXT" -> OutlinedTextField(
                 value = viewModel.attrTextValue(def.code),
                 onValueChange = { viewModel.setAttrText(def.code, it) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
             )
-            "NUMBER" -> OutlinedTextField(
+            def.type == "NUMBER" -> OutlinedTextField(
                 value = viewModel.attrTextValue(def.code),
                 onValueChange = { if (it.all { c -> c.isDigit() || c == '.' }) viewModel.setAttrText(def.code, it) },
                 singleLine = true,
@@ -447,7 +460,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
             )
-            "BOOLEAN" -> {
+            def.type == "BOOLEAN" -> {
                 val value = viewModel.attrBoolValue(def.code)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf(true to t("common.yes"), false to t("common.no")).forEach { (v, label) ->
@@ -464,7 +477,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                     }
                 }
             }
-            "SELECT" -> {
+            def.type == "SELECT" -> {
                 var expanded by remember { mutableStateOf(false) }
                 val value = viewModel.attrTextValue(def.code)
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -484,7 +497,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                     }
                 }
             }
-            "MULTI_SELECT" -> {
+            def.type == "MULTI_SELECT" -> {
                 val selected = viewModel.attrMultiValue(def.code)
                 Column {
                     def.options.forEach { opt ->
@@ -499,7 +512,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                     }
                 }
             }
-            "DATE" -> {
+            def.type == "DATE" -> {
                 var showPicker by remember { mutableStateOf(false) }
                 val value = viewModel.attrTextValue(def.code)
                 Box {

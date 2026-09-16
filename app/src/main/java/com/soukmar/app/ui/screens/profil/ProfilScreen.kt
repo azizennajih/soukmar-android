@@ -172,6 +172,14 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
             )
             Spacer(Modifier.height(14.dp))
+            Text(t("auth.account_type"), style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+            Spacer(Modifier.height(6.dp))
+            com.soukmar.app.ui.components.AccountTypeSelector(
+                selected = viewModel.accountType,
+                onSelect = { viewModel.accountType = it },
+                options = listOf("PRIVATE" to t("auth.account_type_private"), "BUSINESS" to t("auth.account_type_business"))
+            )
+            Spacer(Modifier.height(14.dp))
             Button(
                 onClick = { viewModel.saveProfile() },
                 enabled = !viewModel.saving,

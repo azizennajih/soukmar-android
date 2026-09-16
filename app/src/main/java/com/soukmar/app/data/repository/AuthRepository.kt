@@ -112,9 +112,9 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun updateProfile(name: String, phone: String?, city: String?): ApiResult<UserDto> {
+    suspend fun updateProfile(name: String, phone: String?, city: String?, accountType: String? = null): ApiResult<UserDto> {
         return try {
-            val res = api.updateProfile(ProfileUpdateRequest(name, phone, city))
+            val res = api.updateProfile(ProfileUpdateRequest(name, phone, city, accountType))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

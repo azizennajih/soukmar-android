@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -17,10 +19,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.theme.ErrorColor
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.SuccessColor
+import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 
 @Composable
@@ -207,5 +211,27 @@ fun SuccessBanner(message: String, modifier: Modifier = Modifier) {
             .padding(12.dp)
     ) {
         Text("✅ $message", color = SuccessColor, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** Small icon+label row for a seller's account type (Privat/Gewerblich),
+ * mirrors the web's business/private icon+text pairing on the seller
+ * profile and listing detail pages. Renders nothing for a null type. */
+@Composable
+fun AccountTypeLabel(accountType: String?, modifier: Modifier = Modifier, fontSize: androidx.compose.ui.unit.TextUnit = 12.sp) {
+    if (accountType == null) return
+    val isBusiness = accountType == "BUSINESS"
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Icon(
+            imageVector = if (isBusiness) Icons.Filled.Business else Icons.Filled.Person,
+            contentDescription = null,
+            tint = TextMuted,
+            modifier = Modifier.size(13.dp)
+        )
+        Text(
+            t(if (isBusiness) "auth.account_type_business" else "auth.account_type_private"),
+            color = TextMuted,
+            fontSize = fontSize
+        )
     }
 }

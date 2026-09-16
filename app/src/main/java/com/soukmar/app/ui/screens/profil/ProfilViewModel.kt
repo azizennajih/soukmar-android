@@ -30,6 +30,7 @@ class ProfilViewModel @Inject constructor(
     var name by mutableStateOf("")
     var phone by mutableStateOf("")
     var city by mutableStateOf("")
+    var accountType by mutableStateOf("PRIVATE")
     var saving by mutableStateOf(false)
         private set
     var successMessage by mutableStateOf<String?>(null)
@@ -72,6 +73,7 @@ class ProfilViewModel @Inject constructor(
                     name = result.data.name
                     phone = result.data.phone ?: ""
                     city = result.data.city ?: ""
+                    accountType = result.data.accountType ?: "PRIVATE"
                 }
                 is ApiResult.Error -> loadError = true
             }
@@ -86,7 +88,7 @@ class ProfilViewModel @Inject constructor(
         successMessage = null
         errorMessage = null
         viewModelScope.launch {
-            when (val result = authRepository.updateProfile(name.trim(), phone.trim().ifBlank { null }, city.trim().ifBlank { null })) {
+            when (val result = authRepository.updateProfile(name.trim(), phone.trim().ifBlank { null }, city.trim().ifBlank { null }, accountType)) {
                 is ApiResult.Success -> {
                     profile = result.data
                     successMessage = "Profil mis à jour."

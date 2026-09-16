@@ -8,6 +8,7 @@ data class ListingUserDto(
     val id: String,
     val name: String,
     val city: String? = null,
+    val accountType: String? = null,
     val emailVerified: Boolean = false,
     val phoneVerified: Boolean = false
 )

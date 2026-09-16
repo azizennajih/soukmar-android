@@ -24,7 +24,7 @@ data class UserDto(
  * would send an explicit `image: null` on every name/phone/city save and
  * silently wipe the user's avatar. */
 @Serializable
-data class ProfileUpdateRequest(val name: String, val phone: String? = null, val city: String? = null)
+data class ProfileUpdateRequest(val name: String, val phone: String? = null, val city: String? = null, val accountType: String? = null)
 
 @Serializable
 data class ProfileImageUpdateRequest(val image: String)

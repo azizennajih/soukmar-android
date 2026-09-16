@@ -108,6 +108,10 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                     Spacer(Modifier.height(4.dp))
                     Text("${t("seller.member_since")} $it", color = TextMuted, fontSize = 12.sp)
                 }
+                profile.accountType?.let {
+                    Spacer(Modifier.height(4.dp))
+                    com.soukmar.app.ui.components.AccountTypeLabel(it)
+                }
                 Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (profile.avgRating != null && profile.avgRating > 0) {

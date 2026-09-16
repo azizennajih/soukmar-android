@@ -67,6 +67,7 @@ data class SellerProfileDto(
     val name: String,
     val city: String? = null,
     val image: String? = null,
+    val accountType: String? = null,
     val createdAt: String,
     val avgRating: Double? = null,
     val reviewCount: Int = 0,

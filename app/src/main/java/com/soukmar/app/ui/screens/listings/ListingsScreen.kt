@@ -24,10 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.ListingCard
 import com.soukmar.app.ui.components.ListingsMapView
+import com.soukmar.app.ui.components.TextAutocompleteField
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
+import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
+import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
@@ -261,6 +264,14 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
         }
         Spacer(Modifier.height(8.dp))
 
+        Text(t("auth.account_type"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChipItem(label = t("auth.account_type_private"), selected = viewModel.selectedAccountType == "PRIVATE", onClick = { viewModel.setAccountType("PRIVATE") })
+            FilterChipItem(label = t("auth.account_type_business"), selected = viewModel.selectedAccountType == "BUSINESS", onClick = { viewModel.setAccountType("BUSINESS") })
+        }
+        Spacer(Modifier.height(8.dp))
+
         if (viewModel.filterableAttributes.isNotEmpty()) {
             for (def in viewModel.filterableAttributes) {
                 Spacer(Modifier.height(8.dp))
@@ -283,6 +294,17 @@ private fun AttributeFilter(def: com.soukmar.app.data.remote.dto.AttributeDefini
     val label = tCatalog("attrs.${def.code}", def.code)
     Text(label, style = MaterialTheme.typography.labelMedium, color = TextMuted)
     Spacer(Modifier.height(6.dp))
+    if (def.code == "PROFESSION") {
+        val sectors = viewModel.attrSelections["INDUSTRY"].orEmpty()
+        val options = if (sectors.isEmpty()) JOB_PROFESSION_CODES else sectors.flatMap { JOB_PROFESSIONS_BY_SECTOR[it].orEmpty() }.distinct()
+        TextAutocompleteField(
+            value = viewModel.attrTextFilters[def.code] ?: "",
+            onValueChange = { viewModel.setAttrText(def.code, it) },
+            options = options,
+            labelPrefix = "job_professions."
+        )
+        return
+    }
     when (def.type) {
         "SELECT" -> {
             LazyRowChips {

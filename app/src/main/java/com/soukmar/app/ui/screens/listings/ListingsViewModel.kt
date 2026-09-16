@@ -53,6 +53,12 @@ class ListingsViewModel @Inject constructor(
     // code -> (min, max) raw text for NUMBER attributes
     var attrRanges by mutableStateOf<Map<String, Pair<String, String>>>(emptyMap())
         private set
+    // code -> raw text for TEXT attributes (currently only PROFESSION uses this)
+    var attrTextFilters by mutableStateOf<Map<String, String>>(emptyMap())
+        private set
+
+    var selectedAccountType by mutableStateOf<String?>(null)
+        private set
 
     var listings by mutableStateOf<List<ListingDto>>(emptyList())
         private set
@@ -94,6 +100,7 @@ class ListingsViewModel @Inject constructor(
         selectedCondition = null
         attrSelections = emptyMap()
         attrRanges = emptyMap()
+        attrTextFilters = emptyMap()
         subcategories = emptyList()
         filterableAttributes = emptyList()
         if (value != null) loadCategoryFilters(value)
@@ -104,6 +111,7 @@ class ListingsViewModel @Inject constructor(
         selectedSubcategoryId = if (selectedSubcategoryId == id) null else id
         attrSelections = emptyMap()
         attrRanges = emptyMap()
+        attrTextFilters = emptyMap()
         filterableAttributes = if (selectedSubcategoryId != null) {
             subcategories.find { it.id == selectedSubcategoryId }?.attributeDefinitions?.filter { it.filterable } ?: emptyList()
         } else {
@@ -132,13 +140,28 @@ class ListingsViewModel @Inject constructor(
 
     fun applyAttrRange() = search()
 
+    fun setAttrText(code: String, value: String) {
+        attrTextFilters = attrTextFilters.toMutableMap().apply {
+            if (value.isBlank()) remove(code) else put(code, value)
+        }
+    }
+
+    fun applyAttrText() = search()
+
+    fun setAccountType(value: String?) {
+        selectedAccountType = if (selectedAccountType == value) null else value
+        search()
+    }
+
     fun clearFilters() {
         selectedSubcategoryId = null
         selectedCondition = null
+        selectedAccountType = null
         minPrice = ""
         maxPrice = ""
         attrSelections = emptyMap()
         attrRanges = emptyMap()
+        attrTextFilters = emptyMap()
         filterableAttributes = unionFilterableAttrs(subcategories)
         search()
     }
@@ -170,11 +193,13 @@ class ListingsViewModel @Inject constructor(
         if (minPrice.isNotBlank()) params["minPrice"] = minPrice
         if (maxPrice.isNotBlank()) params["maxPrice"] = maxPrice
         if (sort != "default") params["tri"] = sort
+        selectedAccountType?.let { params["accountType"] = it }
         for ((code, values) in attrSelections) if (values.isNotEmpty()) params["attr_$code"] = values.joinToString(",")
         for ((code, range) in attrRanges) {
             if (range.first.isNotBlank()) params["attr_${code}_min"] = range.first
             if (range.second.isNotBlank()) params["attr_${code}_max"] = range.second
         }
+        for ((code, value) in attrTextFilters) if (value.isNotBlank()) params["attr_$code"] = value
         return params
     }
 
@@ -292,6 +317,7 @@ class ListingsViewModel @Inject constructor(
             selectedSubcategoryId = saved.subcategoryId
             attrSelections = saved.attrs?.mapValues { it.value.toSet() } ?: emptyMap()
             attrRanges = emptyMap()
+            attrTextFilters = emptyMap()
             selectedCategory = saved.category
 
             if (saved.category != null) {
