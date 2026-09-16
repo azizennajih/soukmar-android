@@ -28,6 +28,7 @@ import com.soukmar.app.ui.components.TextAutocompleteField
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
 import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.theme.Primary
@@ -143,11 +144,16 @@ fun ListingsScreen(
 private fun CategoryChipsRow(selected: String?, onSelect: (String?) -> Unit) {
     LazyRowChips {
         item {
-            FilterChipItem(label = t("nav.all"), emoji = "🏷️", selected = selected == null, onClick = { onSelect(null) })
+            FilterChipItem(label = t("nav.all"), selected = selected == null, onClick = { onSelect(null) })
         }
         items(CATEGORIES.size) { i ->
             val c = CATEGORIES[i]
-            FilterChipItem(label = tCatalog("cats.${c.value}", c.value), emoji = c.emoji, selected = selected == c.value, onClick = { onSelect(c.value) })
+            FilterChipItem(
+                label = tCatalog("cats.${c.value}", c.value),
+                icon = { CategoryIcon(c.value, tint = if (selected == c.value) Primary else TextMuted, modifier = Modifier.size(15.dp)) },
+                selected = selected == c.value,
+                onClick = { onSelect(c.value) }
+            )
         }
     }
 }
@@ -162,11 +168,12 @@ private fun LazyRowChips(content: androidx.compose.foundation.lazy.LazyListScope
 }
 
 @Composable
-private fun FilterChipItem(label: String, emoji: String? = null, selected: Boolean, onClick: () -> Unit) {
+private fun FilterChipItem(label: String, icon: (@Composable () -> Unit)? = null, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(if (emoji != null) "$emoji $label" else label) },
+        label = { Text(label) },
+        leadingIcon = icon,
         colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
     )
 }

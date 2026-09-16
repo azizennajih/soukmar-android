@@ -45,6 +45,7 @@ import com.soukmar.app.ui.components.SoukMarLogo
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Primary
@@ -183,7 +184,7 @@ fun HomeScreen(
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(cat.emoji, fontSize = 26.sp)
+                        CategoryIcon(cat.value, tint = cat.fg, modifier = Modifier.size(26.dp))
                         Spacer(Modifier.height(6.dp))
                         Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
@@ -214,7 +215,11 @@ private fun InterestsSection(interests: List<com.soukmar.app.data.remote.dto.Int
                         .padding(vertical = 14.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(cat?.emoji ?: "🏷️", fontSize = 22.sp)
+                    if (cat != null) {
+                        CategoryIcon(cat.value, tint = cat.fg, modifier = Modifier.size(22.dp))
+                    } else {
+                        Text("🏷️", fontSize = 22.sp)
+                    }
                     Spacer(Modifier.height(4.dp))
                     Text(
                         tCatalog("cats.${interest.category}", interest.category),

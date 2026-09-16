@@ -44,6 +44,7 @@ import com.soukmar.app.ui.components.TextAutocompleteField
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
 import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.model.MOROCCO_CITIES
@@ -268,7 +269,7 @@ private fun CategoryStep(viewModel: DeposerAnnonceViewModel) {
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(cat.emoji, fontSize = 26.sp)
+                CategoryIcon(cat.value, tint = if (selected) Primary else cat.fg, modifier = Modifier.size(26.dp))
                 Spacer(Modifier.height(6.dp))
                 Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (selected) Primary else cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
