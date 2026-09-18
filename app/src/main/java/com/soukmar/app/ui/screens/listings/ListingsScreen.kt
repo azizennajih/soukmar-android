@@ -2,26 +2,38 @@
 
 package com.soukmar.app.ui.screens.listings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.automirrored.filled.List as ListIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.soukmar.app.ui.components.ListingCard
 import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.components.TextAutocompleteField
@@ -35,6 +47,8 @@ import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun ListingsScreen(
@@ -219,6 +233,60 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
     }
 }
 
+/** Requests the runtime location permission if needed, then a one-shot
+ * current location via `FusedLocationProviderClient` — mirrors web's
+ * `navigator.geolocation.getCurrentPosition()` (`GeocodeService.
+ * getCurrentPosition()`). Returns a trigger function; the actual permission
+ * prompt/GPS fetch happens asynchronously and reports back through
+ * [ListingsViewModel]'s own `lat`/`lng`/`locationLoading`/`locationError`. */
+@Composable
+private fun rememberLocationRequester(viewModel: ListingsViewModel): () -> Unit {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val fusedClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    fun fetchLocation() {
+        viewModel.updateLocationLoading(true)
+        scope.launch {
+            try {
+                val location = fusedClient.getCurrentLocation(
+                    Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                    CancellationTokenSource().token
+                ).await()
+                if (location != null) {
+                    viewModel.setLocation(location.latitude, location.longitude)
+                } else {
+                    viewModel.updateLocationError("annonces.gps_error")
+                }
+            } catch (e: SecurityException) {
+                viewModel.updateLocationError("annonces.gps_error_denied")
+            } catch (e: Exception) {
+                viewModel.updateLocationError("annonces.gps_error")
+            }
+            viewModel.updateLocationLoading(false)
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            results[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) fetchLocation() else viewModel.updateLocationError("annonces.gps_error_denied")
+    }
+
+    return {
+        viewModel.updateLocationError(null)
+        val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (hasPermission) {
+            fetchLocation()
+        } else {
+            permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
+    }
+}
+
 @Composable
 private fun FiltersPanel(viewModel: ListingsViewModel) {
     // FiltersPanel lives inside Scaffold's topBar, which doesn't scroll — a
@@ -232,6 +300,56 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
+        val requestLocation = rememberLocationRequester(viewModel)
+
+        Text(t("annonces.city"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
+        Spacer(Modifier.height(6.dp))
+        if (viewModel.lat != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.MyLocation, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("annonces.current_location"), color = TextPrimary, modifier = Modifier.weight(1f))
+                IconButton(onClick = { viewModel.clearLocation() }) {
+                    Icon(Icons.Filled.Close, contentDescription = t("common.cancel"), tint = TextMuted)
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            Text(t("annonces.radius"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
+            Spacer(Modifier.height(4.dp))
+            LazyRowChips {
+                items(listOf("5", "10", "20", "30", "50", "100", "150", "200")) { r ->
+                    FilterChipItem(label = "+$r km", selected = viewModel.radius == r, onClick = { viewModel.selectRadius(r) })
+                }
+            }
+        } else {
+            OutlinedButton(onClick = { requestLocation() }, enabled = !viewModel.locationLoading) {
+                if (viewModel.locationLoading) {
+                    CircularProgressIndicator(color = Primary, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(8.dp))
+                }
+                Icon(Icons.Filled.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("annonces.use_gps"))
+            }
+            viewModel.locationError?.let {
+                Spacer(Modifier.height(4.dp))
+                Text(t(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+
+        Text(t("annonces.sort"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
+        Spacer(Modifier.height(6.dp))
+        LazyRowChips {
+            item { FilterChipItem(label = t("annonces.newest"), selected = viewModel.sort == "default", onClick = { viewModel.selectSort("default") }) }
+            item { FilterChipItem(label = t("annonces.price_asc"), selected = viewModel.sort == "prix_asc", onClick = { viewModel.selectSort("prix_asc") }) }
+            item { FilterChipItem(label = t("annonces.price_desc"), selected = viewModel.sort == "prix_desc", onClick = { viewModel.selectSort("prix_desc") }) }
+            if (viewModel.lat != null) {
+                item { FilterChipItem(label = t("annonces.distance"), selected = viewModel.sort == "distance", onClick = { viewModel.selectSort("distance") }) }
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+
         if (viewModel.subcategories.isNotEmpty()) {
             Text(t("annonces.subcategory"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
             Spacer(Modifier.height(6.dp))

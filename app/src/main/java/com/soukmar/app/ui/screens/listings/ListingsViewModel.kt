@@ -42,6 +42,16 @@ class ListingsViewModel @Inject constructor(
     var maxPrice by mutableStateOf("")
     var sort by mutableStateOf("default")
 
+    var lat by mutableStateOf<Double?>(null)
+        private set
+    var lng by mutableStateOf<Double?>(null)
+        private set
+    var radius by mutableStateOf("10")
+    var locationLoading by mutableStateOf(false)
+        private set
+    var locationError by mutableStateOf<String?>(null)
+        private set
+
     var subcategories by mutableStateOf<List<SubcategoryWithAttributesDto>>(emptyList())
         private set
     var filterableAttributes by mutableStateOf<List<AttributeDefinitionDto>>(emptyList())
@@ -173,7 +183,50 @@ class ListingsViewModel @Inject constructor(
         attrSelections = emptyMap()
         attrRanges = emptyMap()
         attrTextFilters = emptyMap()
+        sort = "default"
+        lat = null
+        lng = null
+        radius = "10"
+        locationError = null
         filterableAttributes = unionFilterableAttrs(subcategories)
+        search()
+    }
+
+    // Named selectX/updateX rather than setX — a plain "setSort"/"setRadius"
+    // clashes at the JVM level with the synthesized property setter Kotlin
+    // already generates for `var sort`/`var radius`.
+    fun selectSort(value: String) {
+        sort = value
+        search()
+    }
+
+    fun selectRadius(value: String) {
+        radius = value
+        search()
+    }
+
+    /** Mirrors web's `onGpsSelected()`: defaults the radius to 10 km if none
+     * was set yet, then re-searches with the new coordinates. */
+    fun setLocation(newLat: Double, newLng: Double) {
+        lat = newLat
+        lng = newLng
+        locationError = null
+        if (radius.isBlank()) radius = "10"
+        search()
+    }
+
+    fun updateLocationLoading(value: Boolean) {
+        locationLoading = value
+    }
+
+    fun updateLocationError(messageKey: String?) {
+        locationError = messageKey
+    }
+
+    fun clearLocation() {
+        lat = null
+        lng = null
+        locationError = null
         search()
     }
 
@@ -205,6 +258,11 @@ class ListingsViewModel @Inject constructor(
         if (maxPrice.isNotBlank()) params["maxPrice"] = maxPrice
         if (sort != "default") params["tri"] = sort
         selectedAccountType?.let { params["accountType"] = it }
+        if (lat != null && lng != null) {
+            params["lat"] = lat.toString()
+            params["lng"] = lng.toString()
+            if (radius.isNotBlank()) params["radius"] = radius
+        }
         for ((code, values) in attrSelections) if (values.isNotEmpty()) params["attr_$code"] = values.joinToString(",")
         for ((code, range) in attrRanges) {
             if (range.first.isNotBlank()) params["attr_${code}_min"] = range.first
