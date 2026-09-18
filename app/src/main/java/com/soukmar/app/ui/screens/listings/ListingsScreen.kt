@@ -4,6 +4,10 @@ package com.soukmar.app.ui.screens.listings
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -31,9 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
 import com.soukmar.app.ui.components.ListingCard
 import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.components.TextAutocompleteField
@@ -48,7 +49,8 @@ import com.soukmar.app.ui.theme.PrimaryLight
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable
 fun ListingsScreen(
@@ -238,21 +240,44 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
  * `navigator.geolocation.getCurrentPosition()` (`GeocodeService.
  * getCurrentPosition()`). Returns a trigger function; the actual permission
  * prompt/GPS fetch happens asynchronously and reports back through
- * [ListingsViewModel]'s own `lat`/`lng`/`locationLoading`/`locationError`. */
+ * [ListingsViewModel]'s own `lat`/`lng`/`locationLoading`/`locationError`.
+ *
+ * Uses the plain platform `LocationManager` rather than Play Services'
+ * `FusedLocationProviderClient` — the latter depends on Play Services' own
+ * network location backend (Google account + live connectivity to Google's
+ * servers), which a plain GPS-only fix can't satisfy and which real budget
+ * devices without a signed-in Google account can't rely on either;
+ * `LocationManager` talks to GPS directly and works everywhere. */
 @Composable
 private fun rememberLocationRequester(viewModel: ListingsViewModel): () -> Unit {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val fusedClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    suspend fun LocationManager.awaitSingleLocation(provider: String): Location? {
+        if (!isProviderEnabled(provider)) return null
+        return suspendCancellableCoroutine { cont ->
+            val listener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    if (cont.isActive) cont.resume(location, onCancellation = null)
+                }
+            }
+            requestSingleUpdate(provider, listener, Looper.getMainLooper())
+            cont.invokeOnCancellation { removeUpdates(listener) }
+        }
+    }
 
     fun fetchLocation() {
         viewModel.updateLocationLoading(true)
         scope.launch {
             try {
-                val location = fusedClient.getCurrentLocation(
-                    Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                    CancellationTokenSource().token
-                ).await()
+                val locationManager = ContextCompat.getSystemService(context, LocationManager::class.java)
+                val location = locationManager?.let {
+                    withTimeoutOrNull(15_000) {
+                        it.awaitSingleLocation(LocationManager.GPS_PROVIDER)
+                            ?: it.awaitSingleLocation(LocationManager.NETWORK_PROVIDER)
+                    }
+                }
                 if (location != null) {
                     viewModel.setLocation(location.latitude, location.longitude)
                 } else {

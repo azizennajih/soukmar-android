@@ -95,10 +95,6 @@ dependencies {
     // (no API key needed, unlike Google Maps).
     implementation("org.osmdroid:osmdroid-android:6.1.20")
 
-    // "Use my location" GPS radius search — FusedLocationProviderClient
-    // (device location only, no Google Maps API key needed either).
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-
     // DI
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")
