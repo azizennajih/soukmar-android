@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.soukmar.app.data.country.CountryRepository
@@ -106,6 +107,8 @@ class DeposerAnnonceViewModel @Inject constructor(
     var pendingCancel by mutableStateOf(false)
         private set
 
+    private var countrySyncStarted = false
+
     val hasProgress: Boolean
         get() = form.category.isNotEmpty() || form.subcategoryId.isNotEmpty() || form.title.isNotBlank() ||
             form.description.isNotBlank() || form.price.isNotBlank() || form.city.isNotEmpty() || photos.isNotEmpty()
@@ -127,11 +130,24 @@ class DeposerAnnonceViewModel @Inject constructor(
         if (id != null && editId == null) {
             editId = id
             loadForEdit(id)
-        } else if (id == null) {
-            // New listing — default to whatever country the visitor is
-            // currently browsing (CountryRepository), same as web's
-            // deposer-annonce.component.ts constructor.
-            form = form.copy(country = countryRepository.country)
+        } else if (id == null && !countrySyncStarted) {
+            countrySyncStarted = true
+            // Country is centrally controlled by the app-wide CountrySwitcher
+            // (Home/Login/Listings), never a separate choice within this
+            // form — kept in live sync with CountryRepository.country for as
+            // long as the wizard is open (not just defaulted once), so
+            // switching country elsewhere takes effect immediately. Mirrors
+            // web's deposer-annonce.component.ts constructor effect().
+            // snapshotFlow emits the current value immediately on collection,
+            // so this also covers the initial default — no separate one-off
+            // assignment needed. Editing an existing listing instead
+            // preserves its own country, set in loadForEdit() — NOT
+            // re-synced here.
+            viewModelScope.launch {
+                snapshotFlow { countryRepository.country }.collect { country ->
+                    form = form.copy(country = country, city = "")
+                }
+            }
         }
     }
 
@@ -231,12 +247,6 @@ class DeposerAnnonceViewModel @Inject constructor(
         form = form.copy(subcategoryId = sub.id, attributes = emptyMap())
         attributeDefs = sub.attributeDefinitions
         step = 2
-    }
-
-    /** A new country invalidates whatever city was picked under the old
-     * one — mirrors web's onCountryChange(). */
-    fun selectCountry(code: String) {
-        form = form.copy(country = code, city = "")
     }
 
     fun setAttrText(code: String, value: String) {

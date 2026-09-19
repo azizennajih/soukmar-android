@@ -45,15 +45,12 @@ import com.soukmar.app.ui.i18n.LocalI18n
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
-import com.soukmar.app.ui.model.COUNTRIES
-import com.soukmar.app.ui.model.COUNTRY_REGIONS
 import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
 import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.countryFlag
 import com.soukmar.app.ui.model.localeForLang
-import com.soukmar.app.ui.model.regionLabelKey
 import java.util.Locale
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
@@ -352,12 +349,12 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
     )
     Spacer(Modifier.height(12.dp))
-    // Unconditional (all categories) country field, replacing the old fixed
-    // MAD/EUR/USD currency picker — currency is now always derived from the
-    // chosen country (form.derivedCurrency above), never chosen manually.
-    // Mirrors web's deposer-annonce.component.html post-international-tranche.
-    CountryDropdown(selected = form.country, onSelect = { viewModel.selectCountry(it) })
-    Spacer(Modifier.height(12.dp))
+    // No country field here on purpose — country is centrally controlled by
+    // the app-wide CountrySwitcher (Home/Login/Listings), never a separate
+    // choice within this form. Currency (above) and the city list below both
+    // still derive from form.country, which DeposerAnnonceViewModel keeps in
+    // live sync with CountryRepository.country. Mirrors web's
+    // deposer-annonce.component.html post-"zentral gesteuert" fix.
     CityDropdown(selected = form.city, cities = form.citiesForCountry, onSelect = { viewModel.updateForm { f -> f.copy(city = it) } })
 
     if (viewModel.showCondition) {
@@ -433,62 +430,6 @@ private fun CityDropdown(selected: String, cities: List<String>, onSelect: (Stri
             )
             cities.filter { it.contains(query, ignoreCase = true) }.take(60).forEach { city ->
                 DropdownMenuItem(text = { Text(city) }, onClick = { onSelect(city); expanded = false; query = "" })
-            }
-        }
-    }
-}
-
-/** Searchable country picker grouped by continent (Morocco pinned first) —
- * mirrors web's CountrySelectComponent. Flag is a plain computed emoji
- * (unlike web's bundled-SVG FlagIconComponent workaround): Android renders
- * regional-indicator flag emoji natively via Noto Color Emoji with no known
- * issue, so there's no Windows-Chrome-style rendering bug to work around here. */
-@Composable
-private fun CountryDropdown(selected: String, onSelect: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    val uiLocale = localeForLang(LocalI18n.current.currentLang)
-    fun displayName(code: String) = Locale("", code).getDisplayCountry(uiLocale).ifEmpty { code }
-
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(
-            value = "${countryFlag(selected)} ${displayName(selected)}",
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(t("deposer.label_country")) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(),
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 400.dp)) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                placeholder = { Text("Rechercher…") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-            )
-            val q = query.trim()
-            fun pick(code: String) { onSelect(code); expanded = false; query = "" }
-            if (q.isEmpty()) {
-                COUNTRY_REGIONS.forEach { (region, codes) ->
-                    if (codes.isEmpty()) return@forEach
-                    Text(
-                        t(regionLabelKey(region)),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMuted,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
-                    codes.forEach { code ->
-                        DropdownMenuItem(text = { Text("${countryFlag(code)} ${displayName(code)}") }, onClick = { pick(code) })
-                    }
-                }
-            } else {
-                COUNTRIES.filter { displayName(it.code).contains(q, ignoreCase = true) }.forEach { c ->
-                    DropdownMenuItem(text = { Text("${countryFlag(c.code)} ${displayName(c.code)}") }, onClick = { pick(c.code) })
-                }
             }
         }
     }
