@@ -9,7 +9,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
-import java.util.Locale
 
 val LocalI18n = staticCompositionLocalOf<I18nRepository> {
     error("LocalI18n not provided — wrap the app root in CompositionLocalProvider(LocalI18n provides ...)")
@@ -63,15 +62,19 @@ fun dateAttrT(isoDate: String): String {
     val i18n = LocalI18n.current
     i18n.currentLang // read for recomposition on language change
     val date = try { LocalDate.parse(isoDate) } catch (e: DateTimeParseException) { return isoDate }
-    val locale = when (i18n.currentLang) {
-        "ar" -> Locale("ar", "MA")
-        "en" -> Locale.US
-        "de" -> Locale.GERMAN
-        "es" -> Locale("es")
-        "it" -> Locale.ITALIAN
-        else -> Locale.FRENCH
-    }
+    val locale = com.soukmar.app.ui.model.localeForLang(i18n.currentLang)
     return date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
+}
+
+/** Locale- and currency-aware price split for direct use in @Composable UI
+ * (ListingCard, listing detail, mes-annonces, chat offer bubbles) — a thin
+ * wrapper around the plain formatPriceParts() in CatalogModels.kt that reads
+ * the active language automatically, the same way dateAttrT()/timeAgoT() do. */
+@Composable
+fun formatPricePartsT(price: Double, currency: String): Pair<String, String> {
+    val i18n = LocalI18n.current
+    i18n.currentLang // read for recomposition on language change
+    return com.soukmar.app.ui.model.formatPriceParts(price, currency, i18n.currentLang)
 }
 
 /** Shows a Moroccan city's Arabic name when the app is in Arabic (falling

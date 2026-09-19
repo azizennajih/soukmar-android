@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
 import com.soukmar.app.data.remote.dto.ListingDto
@@ -15,8 +16,11 @@ import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.CatalogRepository
 import com.soukmar.app.data.repository.ListingRepository
 import com.soukmar.app.data.repository.UploadRepository
+import com.soukmar.app.ui.model.CITIES_BY_COUNTRY
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
+import com.soukmar.app.ui.model.MOROCCO_CITIES
 import com.soukmar.app.ui.model.NO_CONDITION_SUBCATEGORIES
+import com.soukmar.app.ui.model.currencyForCountry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
@@ -41,20 +45,27 @@ data class ListingFormState(
     val title: String = "",
     val description: String = "",
     val price: String = "",
-    val currency: String = "MAD",
     val city: String = "",
+    /** No manual currency field on purpose — mirrors web's deposer-annonce
+     * (post-international-country-tranche): currency is always derived from
+     * [country] via currencyForCountry(), never chosen independently. */
+    val country: String = CountryRepository.DEFAULT_COUNTRY,
     val phone: String = "",
     val whatsapp: String = "",
     val showPhone: Boolean = true,
     val attributes: Map<String, JsonElement> = emptyMap()
-)
+) {
+    val derivedCurrency: String get() = currencyForCountry(country)
+    val citiesForCountry: List<String> get() = if (country == "MA") MOROCCO_CITIES else (CITIES_BY_COUNTRY[country] ?: emptyList())
+}
 
 @HiltViewModel
 class DeposerAnnonceViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
     private val catalogRepository: CatalogRepository,
     private val uploadRepository: UploadRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val countryRepository: CountryRepository
 ) : ViewModel() {
 
     var isLoggedIn by mutableStateOf(false)
@@ -116,6 +127,11 @@ class DeposerAnnonceViewModel @Inject constructor(
         if (id != null && editId == null) {
             editId = id
             loadForEdit(id)
+        } else if (id == null) {
+            // New listing — default to whatever country the visitor is
+            // currently browsing (CountryRepository), same as web's
+            // deposer-annonce.component.ts constructor.
+            form = form.copy(country = countryRepository.country)
         }
     }
 
@@ -162,8 +178,8 @@ class DeposerAnnonceViewModel @Inject constructor(
             title = listing.title,
             description = listing.description,
             price = listing.price?.let { if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString() } ?: "",
-            currency = listing.currency,
             city = listing.city,
+            country = listing.country,
             phone = listing.phone ?: "",
             whatsapp = listing.whatsapp ?: "",
             showPhone = listing.showPhone != false,
@@ -215,6 +231,12 @@ class DeposerAnnonceViewModel @Inject constructor(
         form = form.copy(subcategoryId = sub.id, attributes = emptyMap())
         attributeDefs = sub.attributeDefinitions
         step = 2
+    }
+
+    /** A new country invalidates whatever city was picked under the old
+     * one — mirrors web's onCountryChange(). */
+    fun selectCountry(code: String) {
+        form = form.copy(country = code, city = "")
     }
 
     fun setAttrText(code: String, value: String) {
@@ -317,11 +339,11 @@ class DeposerAnnonceViewModel @Inject constructor(
                 title = form.title,
                 description = form.description,
                 price = form.price.toDoubleOrNull(),
-                currency = form.currency,
                 category = form.category,
                 subcategoryId = form.subcategoryId.ifEmpty { null },
                 condition = form.condition.ifEmpty { null },
                 city = form.city,
+                country = form.country,
                 images = images,
                 phone = form.phone,
                 whatsapp = form.whatsapp,

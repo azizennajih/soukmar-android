@@ -2,9 +2,11 @@ package com.soukmar.app.ui.model
 
 import androidx.compose.ui.graphics.Color
 import java.text.NumberFormat
+import java.text.NumberFormat.Field.CURRENCY
 import java.time.Duration
 import java.time.Instant
 import java.time.format.DateTimeParseException
+import java.util.Currency
 import java.util.Locale
 
 /** Mirrors soukmar/src/app/models/listing.model.ts's CATEGORIES/CONDITION_CATEGORIES/
@@ -527,11 +529,47 @@ val HIGHLIGHT_ATTR_CODES: Map<String, List<String>> = mapOf(
     "TICKETS" to listOf("EVENT_DATE", "TICKET_COUNT"),
 )
 
+/** Mirrors listing.model.ts's localeForLang() — used everywhere a UI
+ * language code needs to become a java.util.Locale for formatting. */
+fun localeForLang(lang: String): Locale = when (lang) {
+    "ar" -> Locale("ar", "MA")
+    "en" -> Locale.US
+    "de" -> Locale.GERMAN
+    "es" -> Locale("es")
+    "it" -> Locale.ITALIAN
+    else -> Locale.FRENCH
+}
+
 /** Splits a formatted price into amount/currency so the currency can be
- * rendered smaller — mirrors formatPriceParts() in listing.model.ts. */
-fun formatPriceParts(price: Double, currency: String = "MAD"): Pair<String, String> {
-    val nf = NumberFormat.getIntegerInstance(Locale.FRANCE)
-    return nf.format(price) to currency
+ * rendered smaller — mirrors formatPriceParts() in listing.model.ts. Any
+ * valid ISO 4217 code formats correctly via NumberFormat.getCurrencyInstance
+ * regardless of currency, now that listings can be denominated in any of
+ * ~195 countries' currencies (see CountryModels.kt) — no more hand-rolled
+ * MAD-only formatting. formatToCharacterIterator() is the JVM's equivalent
+ * of Intl.NumberFormat.formatToParts(): it tags each character with the
+ * field it belongs to, so the currency symbol/code can be pulled out of the
+ * formatted string the same way the web splits `parts` by `type`. */
+fun formatPriceParts(price: Double, currency: String = "MAD", lang: String = "fr"): Pair<String, String> {
+    val locale = localeForLang(lang)
+    return try {
+        val nf = NumberFormat.getCurrencyInstance(locale).apply {
+            this.currency = Currency.getInstance(currency)
+            maximumFractionDigits = 0
+        }
+        val iterator = nf.formatToCharacterIterator(price)
+        val amount = StringBuilder()
+        val currencyLabel = StringBuilder()
+        var c = iterator.first()
+        while (c != java.text.CharacterIterator.DONE) {
+            if (iterator.attributes.containsKey(CURRENCY)) currencyLabel.append(c) else amount.append(c)
+            c = iterator.next()
+        }
+        amount.toString().trim() to currencyLabel.toString().trim().ifEmpty { currency }
+    } catch (e: IllegalArgumentException) {
+        // Unknown/malformed ISO 4217 code — fall back to a plain integer so a
+        // bad currency value can never crash price rendering.
+        NumberFormat.getIntegerInstance(locale).format(price) to currency
+    }
 }
 
 /** French relative-time label, e.g. "il y a 5 min" — mirrors timeAgo() in

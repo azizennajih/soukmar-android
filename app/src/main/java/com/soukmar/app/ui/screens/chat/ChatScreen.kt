@@ -38,7 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.data.remote.dto.MessageDto
 import com.soukmar.app.ui.components.VerifiedBadge
 import com.soukmar.app.ui.i18n.t
-import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
 import com.soukmar.app.ui.theme.Gold
@@ -219,6 +219,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     viewModel.isSystem(msg) -> SystemMessageRow(msg)
                     viewModel.isOffer(msg) -> OfferBubble(
                         msg = msg,
+                        currency = viewModel.conversation?.listing?.currency ?: "MAD",
                         mine = viewModel.isMine(msg),
                         canRespond = viewModel.canRespond(msg),
                         canCancel = viewModel.canCancel(msg),
@@ -249,7 +250,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     OutlinedTextField(
                         value = viewModel.offerAmount,
                         onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.offerAmount = it },
-                        placeholder = { Text("Montant en MAD") },
+                        placeholder = { Text("Montant en ${viewModel.conversation?.listing?.currency ?: "MAD"}") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
@@ -345,6 +346,7 @@ private fun TextBubble(msg: MessageDto, mine: Boolean) {
 @Composable
 private fun OfferBubble(
     msg: MessageDto,
+    currency: String,
     mine: Boolean,
     canRespond: Boolean,
     canCancel: Boolean,
@@ -352,7 +354,7 @@ private fun OfferBubble(
     onReject: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val amountText = msg.offerAmount?.let { formatPriceParts(it).first } ?: "—"
+    val amountText = msg.offerAmount?.let { formatPricePartsT(it, currency).first } ?: "—"
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         MsgTimeLabel(msg.createdAt)

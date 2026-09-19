@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.soukmar.app.ui.components.CountrySwitcher
 import com.soukmar.app.ui.components.ListingCard
 import com.soukmar.app.ui.components.ListingsMapView
 import com.soukmar.app.ui.components.TextAutocompleteField
@@ -326,6 +327,14 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         val requestLocation = rememberLocationRequester(viewModel)
+
+        // Reuses deposer.label_country ("Pays *") rather than inventing a new
+        // i18n key just for this filter-panel label — trims the trailing
+        // required-field asterisk, which doesn't apply to an optional filter.
+        Text(t("deposer.label_country").removeSuffix(" *"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
+        Spacer(Modifier.height(6.dp))
+        CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
+        Spacer(Modifier.height(14.dp))
 
         Text(t("annonces.city"), style = MaterialTheme.typography.labelMedium, color = TextMuted)
         Spacer(Modifier.height(6.dp))

@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.AppTextField
+import com.soukmar.app.ui.components.CountrySwitcher
 import com.soukmar.app.ui.components.ErrorBanner
 import com.soukmar.app.ui.components.LanguageSwitcher
 import com.soukmar.app.ui.components.PrimaryButton
@@ -36,6 +37,8 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
+            Spacer(Modifier.width(8.dp))
             LanguageSwitcher()
         }
         Spacer(Modifier.height(8.dp))

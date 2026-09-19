@@ -22,12 +22,13 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.ui.i18n.cityLabelT
+import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.model.HIGHLIGHT_ATTR_CODES
 import com.soukmar.app.ui.model.categoryConfig
-import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.model.countryFlag
 import com.soukmar.app.ui.model.isNewListing
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
@@ -56,7 +57,7 @@ private fun highlightFor(listing: ListingDto): String? {
 @Composable
 fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val cat = categoryConfig(listing.category)
-    val priceParts = listing.price?.let { formatPriceParts(it, listing.currency) }
+    val priceParts = listing.price?.let { formatPricePartsT(it, listing.currency) }
 
     Column(
         modifier = modifier
@@ -133,6 +134,13 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                 Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                 Spacer(Modifier.width(2.dp))
                 Text(cityLabelT(listing.city), color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                // Only shown for non-Morocco listings — Morocco is the
+                // overwhelming majority, so a foreign listing is the one
+                // worth calling out while browsing. Mirrors web's foreignFlag.
+                if (listing.country != "MA") {
+                    Text(countryFlag(listing.country), fontSize = 11.sp)
+                    Spacer(Modifier.width(4.dp))
+                }
                 Spacer(Modifier.width(4.dp))
                 Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 11.sp)
             }

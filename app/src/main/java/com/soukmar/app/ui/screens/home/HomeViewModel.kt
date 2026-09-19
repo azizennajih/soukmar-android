@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
+import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.InterestDto
 import com.soukmar.app.data.remote.dto.UserDto
@@ -23,8 +24,18 @@ class HomeViewModel @Inject constructor(
     private val api: ApiService,
     private val notificationRepository: NotificationRepository,
     private val pushRepository: PushRepository,
-    private val listingRepository: ListingRepository
+    private val listingRepository: ListingRepository,
+    private val countryRepository: CountryRepository
 ) : ViewModel() {
+
+    var country by mutableStateOf(countryRepository.country)
+        private set
+
+    fun selectCountry(code: String) {
+        if (code == country) return
+        country = code
+        countryRepository.updateCountry(code)
+    }
 
     var user by mutableStateOf<UserDto?>(null)
     var loading by mutableStateOf(true)

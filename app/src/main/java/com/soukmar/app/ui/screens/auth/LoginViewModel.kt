@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,8 +14,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val countryRepository: CountryRepository
 ) : ViewModel() {
+
+    // Lets a not-yet-logged-in visitor pick their country before signing in
+    // — mirrors the web navbar's country switcher being visible everywhere,
+    // including on auth pages, the same way LanguageSwitcher already is here.
+    var country by mutableStateOf(countryRepository.country)
+        private set
+
+    fun selectCountry(code: String) {
+        if (code == country) return
+        country = code
+        countryRepository.updateCountry(code)
+    }
 
     var email by mutableStateOf("")
     var password by mutableStateOf("")

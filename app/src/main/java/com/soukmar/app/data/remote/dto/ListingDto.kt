@@ -35,6 +35,7 @@ data class ListingDto(
     val condition: String? = null,
     val city: String,
     val region: String? = null,
+    val country: String = "MA",
     val lat: Double? = null,
     val lng: Double? = null,
     val images: List<String> = emptyList(),
@@ -73,17 +74,21 @@ data class FavoriteRecordDto(
 
 /** Body for both POST /listings and PUT /listings/:id — mirrors the web
  * deposer-annonce component, which reuses the same payload object for
- * create and update rather than sending a partial diff. */
+ * create and update rather than sending a partial diff. No `currency` field
+ * on purpose: the backend derives it server-side from `country`
+ * (currencyForCountry) since the international-country tranche — mirrors
+ * web's deposer-annonce.component.ts publish() payload, which dropped its
+ * own currency field the same way. */
 @Serializable
 data class ListingUpsertRequest(
     val title: String,
     val description: String,
     val price: Double? = null,
-    val currency: String = "MAD",
     val category: String,
     val subcategoryId: String? = null,
     val condition: String? = null,
     val city: String,
+    val country: String,
     val images: List<String> = emptyList(),
     val phone: String? = null,
     val whatsapp: String? = null,

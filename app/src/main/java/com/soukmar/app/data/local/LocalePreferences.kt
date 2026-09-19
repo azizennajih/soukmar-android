@@ -9,7 +9,13 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.localeDataStore by preferencesDataStore(name = "soukmar_prefs")
+// internal (not private): CountryPreferences shares this exact same DataStore
+// instance — Jetpack DataStore throws IllegalStateException ("multiple
+// DataStores active for the same file") if two separately-declared
+// `preferencesDataStore(name = "soukmar_prefs")` delegates both point at the
+// same underlying file, even from different classes. One property per file
+// name, always.
+internal val Context.soukmarPrefsDataStore by preferencesDataStore(name = "soukmar_prefs")
 
 /** Separate from TokenManager's "soukmar_session" store on purpose — the
  * chosen language must survive logout, mirroring the web app's dedicated
@@ -21,9 +27,9 @@ class LocalePreferences @Inject constructor(@ApplicationContext private val cont
         val LANGUAGE = stringPreferencesKey("language")
     }
 
-    suspend fun getLanguage(): String? = context.localeDataStore.data.first()[Keys.LANGUAGE]
+    suspend fun getLanguage(): String? = context.soukmarPrefsDataStore.data.first()[Keys.LANGUAGE]
 
     suspend fun setLanguage(code: String) {
-        context.localeDataStore.edit { it[Keys.LANGUAGE] = code }
+        context.soukmarPrefsDataStore.edit { it[Keys.LANGUAGE] = code }
     }
 }

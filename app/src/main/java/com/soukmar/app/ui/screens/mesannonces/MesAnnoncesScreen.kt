@@ -27,7 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.ui.model.categoryConfig
-import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.i18n.cityLabelT
 import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
@@ -187,7 +187,7 @@ private fun ListingRow(
     onDelete: () -> Unit
 ) {
     val cat = categoryConfig(listing.category)
-    val priceParts = listing.price?.let { formatPriceParts(it, listing.currency) }
+    val priceParts = listing.price?.let { formatPricePartsT(it, listing.currency) }
     val style = statusStyle(listing.status)
     val canToggleReserve = listing.status == "ACTIVE" || listing.status == "RESERVED"
 

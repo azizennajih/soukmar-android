@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
 import com.soukmar.app.data.remote.dto.ListingDto
@@ -28,8 +29,18 @@ class ListingsViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
     private val catalogRepository: CatalogRepository,
     private val savedSearchRepository: SavedSearchRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val countryRepository: CountryRepository
 ) : ViewModel() {
+
+    /** Defaults to whatever the visitor is currently browsing app-wide
+     * (mirrors web's `annonces.component.ts` reading `countryService.country()`
+     * as its default). Not live-bound to CountryRepository afterwards — a
+     * ViewModel is recreated per screen visit, so re-opening this screen
+     * already picks up the latest global choice; [selectCountry] handles the
+     * case where the switcher lives on this same screen. */
+    var country by mutableStateOf(countryRepository.country)
+        private set
 
     var query by mutableStateOf("")
     var selectedCategory by mutableStateOf<String?>(null)
@@ -205,6 +216,13 @@ class ListingsViewModel @Inject constructor(
         search()
     }
 
+    fun selectCountry(code: String) {
+        if (code == country) return
+        country = code
+        countryRepository.updateCountry(code)
+        search()
+    }
+
     /** Mirrors web's `onGpsSelected()`: defaults the radius to 10 km if none
      * was set yet, then re-searches with the new coordinates. */
     fun setLocation(newLat: Double, newLng: Double) {
@@ -249,7 +267,7 @@ class ListingsViewModel @Inject constructor(
     }
 
     private fun buildParams(targetPage: Int): Map<String, String> {
-        val params = mutableMapOf("page" to targetPage.toString(), "limit" to "20")
+        val params = mutableMapOf("page" to targetPage.toString(), "limit" to "20", "country" to country)
         if (query.isNotBlank()) params["q"] = query.trim()
         selectedCategory?.let { params["category"] = it }
         selectedSubcategoryId?.let { params["subcategoryId"] = it }

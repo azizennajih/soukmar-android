@@ -44,7 +44,8 @@ import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.model.categoryConfig
-import com.soukmar.app.ui.model.formatPriceParts
+import com.soukmar.app.ui.model.countryFlag
+import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
 import com.soukmar.app.ui.theme.Primary
@@ -119,6 +120,10 @@ fun ListingDetailScreen(
                             Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(2.dp))
                             Text(cityLabelT(listing.city), color = TextMuted, fontSize = 13.sp)
+                            if (listing.country != "MA") {
+                                Spacer(Modifier.width(4.dp))
+                                Text(countryFlag(listing.country), fontSize = 13.sp)
+                            }
                             Spacer(Modifier.width(10.dp))
                             Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 13.sp)
                             Spacer(Modifier.width(10.dp))
@@ -128,7 +133,7 @@ fun ListingDetailScreen(
                         }
 
                         Spacer(Modifier.height(14.dp))
-                        val priceParts = listing.price?.let { formatPriceParts(it, listing.currency) }
+                        val priceParts = listing.price?.let { formatPricePartsT(it, listing.currency) }
                         Row(verticalAlignment = Alignment.Bottom) {
                             Text(priceParts?.first ?: t("listing.negotiate"), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             if (priceParts != null) {

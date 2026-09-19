@@ -41,14 +41,20 @@ import com.soukmar.app.data.remote.dto.SubcategoryWithAttributesDto
 import com.soukmar.app.ui.components.ErrorBanner
 import com.soukmar.app.ui.components.PrimaryButton
 import com.soukmar.app.ui.components.TextAutocompleteField
+import com.soukmar.app.ui.i18n.LocalI18n
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.COUNTRIES
+import com.soukmar.app.ui.model.COUNTRY_REGIONS
 import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
 import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
-import com.soukmar.app.ui.model.MOROCCO_CITIES
 import com.soukmar.app.ui.model.categoryConfig
+import com.soukmar.app.ui.model.countryFlag
+import com.soukmar.app.ui.model.localeForLang
+import com.soukmar.app.ui.model.regionLabelKey
+import java.util.Locale
 import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.Gold
 import com.soukmar.app.ui.theme.GoldLight
@@ -335,37 +341,24 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
     )
     Spacer(Modifier.height(12.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        OutlinedTextField(
-            value = form.price,
-            onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.updateForm { f -> f.copy(price = it) } },
-            label = { Text(t("deposer.label_price")) },
-            placeholder = { Text("0") },
-            singleLine = true,
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f),
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-        )
-        var currencyExpanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(expanded = currencyExpanded, onExpandedChange = { currencyExpanded = it }, modifier = Modifier.weight(1f)) {
-            OutlinedTextField(
-                value = form.currency,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(t("deposer.label_currency")) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor(),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-            )
-            ExposedDropdownMenu(expanded = currencyExpanded, onDismissRequest = { currencyExpanded = false }) {
-                listOf("MAD", "EUR", "USD").forEach { cur ->
-                    DropdownMenuItem(text = { Text(cur) }, onClick = { viewModel.updateForm { f -> f.copy(currency = cur) }; currencyExpanded = false })
-                }
-            }
-        }
-    }
+    OutlinedTextField(
+        value = form.price,
+        onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.updateForm { f -> f.copy(price = it) } },
+        label = { Text("${t("deposer.label_price")} (${form.derivedCurrency})") },
+        placeholder = { Text("0") },
+        singleLine = true,
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = Modifier.fillMaxWidth(),
+        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+    )
     Spacer(Modifier.height(12.dp))
-    CityDropdown(selected = form.city, onSelect = { viewModel.updateForm { f -> f.copy(city = it) } })
+    // Unconditional (all categories) country field, replacing the old fixed
+    // MAD/EUR/USD currency picker — currency is now always derived from the
+    // chosen country (form.derivedCurrency above), never chosen manually.
+    // Mirrors web's deposer-annonce.component.html post-international-tranche.
+    CountryDropdown(selected = form.country, onSelect = { viewModel.selectCountry(it) })
+    Spacer(Modifier.height(12.dp))
+    CityDropdown(selected = form.city, cities = form.citiesForCountry, onSelect = { viewModel.updateForm { f -> f.copy(city = it) } })
 
     if (viewModel.showCondition) {
         Spacer(Modifier.height(12.dp))
@@ -398,8 +391,24 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
     }
 }
 
+/** [cities] empty means the chosen country has no curated list (most of the
+ * ~195 countries don't) — falls back to a plain free-text field, exactly
+ * like web's CountrySelectComponent/CityDropdown fallback (Listing.city is a
+ * free string backend-side either way, only without suggestions). */
 @Composable
-private fun CityDropdown(selected: String, onSelect: (String) -> Unit) {
+private fun CityDropdown(selected: String, cities: List<String>, onSelect: (String) -> Unit) {
+    if (cities.isEmpty()) {
+        OutlinedTextField(
+            value = selected,
+            onValueChange = onSelect,
+            label = { Text(t("deposer.label_city")) },
+            placeholder = { Text(t("deposer.city_default")) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+        )
+        return
+    }
     var expanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -422,8 +431,64 @@ private fun CityDropdown(selected: String, onSelect: (String) -> Unit) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
             )
-            MOROCCO_CITIES.filter { it.contains(query, ignoreCase = true) }.take(60).forEach { city ->
+            cities.filter { it.contains(query, ignoreCase = true) }.take(60).forEach { city ->
                 DropdownMenuItem(text = { Text(city) }, onClick = { onSelect(city); expanded = false; query = "" })
+            }
+        }
+    }
+}
+
+/** Searchable country picker grouped by continent (Morocco pinned first) —
+ * mirrors web's CountrySelectComponent. Flag is a plain computed emoji
+ * (unlike web's bundled-SVG FlagIconComponent workaround): Android renders
+ * regional-indicator flag emoji natively via Noto Color Emoji with no known
+ * issue, so there's no Windows-Chrome-style rendering bug to work around here. */
+@Composable
+private fun CountryDropdown(selected: String, onSelect: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val uiLocale = localeForLang(LocalI18n.current.currentLang)
+    fun displayName(code: String) = Locale("", code).getDisplayCountry(uiLocale).ifEmpty { code }
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = "${countryFlag(selected)} ${displayName(selected)}",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(t("deposer.label_country")) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 400.dp)) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = { Text("Rechercher…") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+            )
+            val q = query.trim()
+            fun pick(code: String) { onSelect(code); expanded = false; query = "" }
+            if (q.isEmpty()) {
+                COUNTRY_REGIONS.forEach { (region, codes) ->
+                    if (codes.isEmpty()) return@forEach
+                    Text(
+                        t(regionLabelKey(region)),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextMuted,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                    codes.forEach { code ->
+                        DropdownMenuItem(text = { Text("${countryFlag(code)} ${displayName(code)}") }, onClick = { pick(code) })
+                    }
+                }
+            } else {
+                COUNTRIES.filter { displayName(it.code).contains(q, ignoreCase = true) }.forEach { c ->
+                    DropdownMenuItem(text = { Text("${countryFlag(c.code)} ${displayName(c.code)}") }, onClick = { pick(c.code) })
+                }
             }
         }
     }
@@ -709,7 +774,9 @@ private fun ContactStep(viewModel: DeposerAnnonceViewModel) {
         }
         if (form.condition.isNotEmpty()) SummaryRow(t("deposer.label_condition"), if (form.condition == "NEW") "Neuf" else "Occasion")
         SummaryRow(t("deposer.summary_listing_title"), form.title.ifEmpty { "—" })
-        SummaryRow(t("deposer.summary_price"), if (form.price.isNotEmpty()) "${form.price} ${form.currency}" else t("deposer.negotiate"))
+        SummaryRow(t("deposer.summary_price"), if (form.price.isNotEmpty()) "${form.price} ${form.derivedCurrency}" else t("deposer.negotiate"))
+        val uiLocale = localeForLang(LocalI18n.current.currentLang)
+        SummaryRow(t("deposer.label_country"), "${countryFlag(form.country)} ${Locale("", form.country).getDisplayCountry(uiLocale)}")
         SummaryRow(t("deposer.summary_city"), form.city.ifEmpty { "—" })
     }
 }

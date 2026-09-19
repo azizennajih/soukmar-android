@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.soukmar.app.ui.components.CountrySwitcher
 import com.soukmar.app.ui.components.LanguageSwitcher
 import com.soukmar.app.ui.components.SoukMarLogo
 import com.soukmar.app.ui.i18n.t
@@ -84,6 +85,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { SoukMarLogo() },
                 actions = {
+                    CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
                     LanguageSwitcher()
                     IconButton(onClick = onOpenFavoris) {
                         Icon(Icons.Filled.FavoriteBorder, contentDescription = t("nav.my_favorites"))
