@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -120,7 +121,11 @@ private fun NotificationRow(n: NotificationDto, onClick: () -> Unit) {
             Text(templateFor(n, i18n), color = TextPrimary, fontSize = 14.sp, fontWeight = if (n.isRead) FontWeight.Normal else FontWeight.SemiBold)
             n.listingTitle?.let {
                 Spacer(Modifier.height(4.dp))
-                Text("📌 $it", color = TextMuted, fontSize = 12.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Link, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(it, color = TextMuted, fontSize = 12.sp)
+                }
             }
             Spacer(Modifier.height(4.dp))
             Text(timeAgoT(n.createdAt), color = TextMuted, fontSize = 11.sp)

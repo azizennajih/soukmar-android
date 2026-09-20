@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -90,7 +91,15 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                         .background(GoldLight, RoundedCornerShape(6.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    Text(if (listing.isFeatured) "⭐ ${t("listing.premium_badge")}" else "Pro", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    if (listing.isFeatured) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.Star, contentDescription = null, tint = Gold, modifier = Modifier.size(12.dp))
+                            Spacer(Modifier.width(3.dp))
+                            Text(t("listing.premium_badge"), color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        Text("Pro", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
             if (listing.status != "RESERVED" && isNewListing(listing.createdAt)) {

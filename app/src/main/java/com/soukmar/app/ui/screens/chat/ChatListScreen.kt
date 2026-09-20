@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -98,7 +99,7 @@ private fun ConversationRow(conv: ConversationDto, myId: String?, onClick: () ->
                 Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (conv.messagingBlocked) {
                     Spacer(Modifier.width(4.dp))
-                    Text("🚫", fontSize = 12.sp)
+                    Icon(Icons.Filled.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                 }
             }
             VerifiedBadge(conv.partnerUser(myId).emailVerified, conv.partnerUser(myId).phoneVerified, modifier = Modifier.padding(vertical = 2.dp))

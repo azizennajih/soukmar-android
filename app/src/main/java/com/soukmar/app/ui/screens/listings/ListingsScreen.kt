@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Map
@@ -199,7 +201,11 @@ private fun FilterChipItem(label: String, icon: (@Composable () -> Unit)? = null
 private fun SaveSearchSection(viewModel: ListingsViewModel) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
         when {
-            viewModel.searchSaved -> Text("✅ ${t("annonces.search_saved")}", color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
+            viewModel.searchSaved -> Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("annonces.search_saved"), color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
+            }
             viewModel.showSaveSearchForm -> {
                 if (viewModel.editSearchId != null) {
                     Text(t("annonces.edit_search_title"), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -230,7 +236,9 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
                 }
             }
             else -> TextButton(onClick = { viewModel.showSaveSearchForm = true }) {
-                Text("🔔 ${t("annonces.save_search")}")
+                Icon(Icons.Filled.Bookmark, contentDescription = null, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("annonces.save_search"))
             }
         }
     }

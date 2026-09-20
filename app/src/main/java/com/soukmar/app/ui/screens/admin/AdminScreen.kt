@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -172,13 +173,11 @@ private fun ReportCard(
 
         report.listing?.let { listing ->
             Spacer(Modifier.height(8.dp))
-            Text(
-                "📌 ${listing.title}",
-                color = Primary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clickable { onOpenListing(listing.id) }
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onOpenListing(listing.id) }) {
+                Icon(Icons.Filled.Link, contentDescription = null, tint = Primary, modifier = Modifier.size(14.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(listing.title, color = Primary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
 
         Spacer(Modifier.height(10.dp))

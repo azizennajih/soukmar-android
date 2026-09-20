@@ -217,11 +217,7 @@ private fun InterestsSection(interests: List<com.soukmar.app.data.remote.dto.Int
                         .padding(vertical = 14.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (cat != null) {
-                        CategoryIcon(cat.value, tint = cat.fg, modifier = Modifier.size(22.dp))
-                    } else {
-                        Text("🏷️", fontSize = 22.sp)
-                    }
+                    CategoryIcon(cat?.value ?: "OTHER", tint = cat?.fg ?: TextPrimary, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.height(4.dp))
                     Text(
                         tCatalog("cats.${interest.category}", interest.category),

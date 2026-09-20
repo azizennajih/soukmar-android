@@ -19,8 +19,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -194,18 +200,22 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 modifier = Modifier.fillMaxWidth().background(GoldLight).padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("🔒 ${t("chat.reserved_msg")} ${t("chat.reserved_word")}", fontSize = 13.sp, color = Gold, modifier = Modifier.weight(1f))
+                Icon(Icons.Filled.Lock, contentDescription = null, tint = Gold, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("${t("chat.reserved_msg")} ${t("chat.reserved_word")}", fontSize = 13.sp, color = Gold, modifier = Modifier.weight(1f))
                 TextButton(onClick = { viewModel.requestCancelReservation() }) { Text(t("chat.cancel"), fontSize = 12.sp) }
             }
         }
 
         if (viewModel.reportSubmitted) {
-            Text(
-                "✅ Signalement envoyé, merci.",
-                color = SuccessColor,
-                fontSize = 13.sp,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Signalement envoyé, merci.", color = SuccessColor, fontSize = 13.sp)
+            }
         }
 
         LazyColumn(
@@ -233,11 +243,14 @@ private fun ChatContent(viewModel: ChatViewModel) {
         }
 
         if (viewModel.messagingBlocked()) {
-            Box(
+            Row(
                 modifier = Modifier.fillMaxWidth().background(BorderColor.copy(alpha = 0.4f)).padding(16.dp),
-                contentAlignment = Alignment.Center
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("🚫 ${t("chat.blocked_banner")}", color = TextMuted, fontSize = 13.sp, textAlign = TextAlign.Center)
+                Icon(Icons.Filled.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("chat.blocked_banner"), color = TextMuted, fontSize = 13.sp, textAlign = TextAlign.Center)
             }
         } else {
             if (viewModel.showOfferInput) {
@@ -376,29 +389,44 @@ private fun OfferBubble(
                 Text(t("common.mad"), fontSize = 11.sp, color = TextMuted)
             }
             when (msg.offerStatus) {
-                "PENDING" -> Text("⏳ ${t("chat.pending")}", fontSize = 11.sp, color = TextMuted)
-                "ACCEPTED" -> Text("✅ ${t("chat.accepted")}", fontSize = 11.sp, color = SuccessColor)
-                "REJECTED" -> if (mine) Text("🚫 ${t("chat.cancelled")}", fontSize = 11.sp, color = ErrorColor) else Text("❌ ${t("chat.rejected")}", fontSize = 11.sp, color = ErrorColor)
+                "PENDING" -> StatusRow(Icons.Filled.HourglassEmpty, t("chat.pending"), TextMuted)
+                "ACCEPTED" -> StatusRow(Icons.Filled.CheckCircle, t("chat.accepted"), SuccessColor)
+                "REJECTED" -> if (mine) StatusRow(Icons.Filled.Block, t("chat.cancelled"), ErrorColor) else StatusRow(Icons.Filled.Cancel, t("chat.rejected"), ErrorColor)
             }
             if (canRespond) {
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = onAccept, colors = ButtonDefaults.buttonColors(containerColor = SuccessColor), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text("✅ ${t("chat.accept")}", fontSize = 12.sp)
+                        Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(t("chat.accept"), fontSize = 12.sp)
                     }
                     Button(onClick = onReject, colors = ButtonDefaults.buttonColors(containerColor = ErrorColor), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text("❌ ${t("chat.reject")}", fontSize = 12.sp)
+                        Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(t("chat.reject"), fontSize = 12.sp)
                     }
                 }
             }
             if (canCancel) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = onCancel, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                    Text("🚫 ${t("chat.cancel_offer")}", fontSize = 12.sp)
+                    Icon(Icons.Filled.Block, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(t("chat.cancel_offer"), fontSize = 12.sp)
                 }
             }
         }
         }
+    }
+}
+
+@Composable
+private fun StatusRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(13.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(label, fontSize = 11.sp, color = color)
     }
 }
 

@@ -16,11 +16,19 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -144,12 +152,17 @@ fun ListingDetailScreen(
                         viewModel.priceComparisonPct?.let { pct ->
                             Spacer(Modifier.height(4.dp))
                             val good = pct < 0
-                            Text(
-                                if (good) "📉 ${t("listing.price_below", "pct" to (-pct).toString())}" else "📈 ${t("listing.price_above", "pct" to pct.toString())}",
-                                color = if (good) SuccessColor else if (pct > 10) ErrorColor else TextMuted,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            val trendColor = if (good) SuccessColor else if (pct > 10) ErrorColor else TextMuted
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(if (good) Icons.AutoMirrored.Filled.TrendingDown else Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = trendColor, modifier = Modifier.size(14.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    if (good) t("listing.price_below", "pct" to (-pct).toString()) else t("listing.price_above", "pct" to pct.toString()),
+                                    color = trendColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
 
                         categoryConfig(listing.category)?.let { cat ->
@@ -344,19 +357,28 @@ private fun ContactCard(
     ) {
         if (!isLoggedIn) {
             Button(onClick = onLogin, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-                Text("🔐 ${t("listing.login_contact")}")
+                Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("listing.login_contact"))
             }
             return@Column
         }
         phone?.let {
             Row(
-                modifier = Modifier.fillMaxWidth().background(SuccessColor.copy(alpha = 0.08f), RoundedCornerShape(10.dp)).padding(12.dp)
-            ) { Text("📞 $it", color = SuccessColor, fontWeight = FontWeight.SemiBold) }
+                modifier = Modifier.fillMaxWidth().background(SuccessColor.copy(alpha = 0.08f), RoundedCornerShape(10.dp)).padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.Phone, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(it, color = SuccessColor, fontWeight = FontWeight.SemiBold)
+            }
             Spacer(Modifier.height(8.dp))
         }
         whatsapp?.let { number ->
             OutlinedButton(onClick = { onCallWhatsapp(number) }, modifier = Modifier.fillMaxWidth()) {
-                Text("💬 WhatsApp · $number")
+                Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("WhatsApp · $number")
             }
             Spacer(Modifier.height(8.dp))
         }
@@ -367,7 +389,11 @@ private fun ContactCard(
             colors = ButtonDefaults.buttonColors(containerColor = Primary)
         ) {
             if (chatStarting) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
-            else Text("💬 ${t("listing.contact")}")
+            else {
+                Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("listing.contact"))
+            }
         }
     }
 }
@@ -435,7 +461,9 @@ private fun ReviewCard(viewModel: ListingDetailViewModel) {
     ) {
         if (!viewModel.showReviewForm) {
             OutlinedButton(onClick = { viewModel.showReviewForm = true }, modifier = Modifier.fillMaxWidth()) {
-                Text("⭐ ${t("listing.leave_review")}")
+                Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("listing.leave_review"))
             }
         } else {
             Text(t("listing.leave_review"), fontWeight = FontWeight.SemiBold, color = TextPrimary)
@@ -474,12 +502,18 @@ private fun ReviewCard(viewModel: ListingDetailViewModel) {
 @Composable
 private fun ReportSection(viewModel: ListingDetailViewModel) {
     if (viewModel.reportSubmitted) {
-        Text("✅ ${t("report.thanks")}", color = SuccessColor, fontSize = 13.sp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(t("report.thanks"), color = SuccessColor, fontSize = 13.sp)
+        }
         return
     }
     if (!viewModel.reportOpen) {
         TextButton(onClick = { viewModel.reportOpen = true }) {
-            Text("🚩 ${t("listing.report")}", color = TextMuted)
+            Icon(Icons.Filled.Flag, contentDescription = null, tint = TextMuted, modifier = Modifier.size(15.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(t("listing.report"), color = TextMuted)
         }
     } else {
         Column(
