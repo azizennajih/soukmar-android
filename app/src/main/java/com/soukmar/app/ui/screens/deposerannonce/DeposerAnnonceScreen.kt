@@ -2,8 +2,15 @@
 
 package com.soukmar.app.ui.screens.deposerannonce
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
+import java.io.File
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +30,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -75,6 +83,34 @@ fun DeposerAnnonceScreen(
         if (uris.isNotEmpty()) viewModel.addPhotos(uris)
     }
 
+    val context = LocalContext.current
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) pendingCameraUri?.let { viewModel.addPhotos(listOf(it)) }
+        pendingCameraUri = null
+    }
+    fun startCameraCapture() {
+        val photoFile = File(File(context.cacheDir, "camera").apply { mkdirs() }, "photo_${System.currentTimeMillis()}.jpg")
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", photoFile)
+        pendingCameraUri = uri
+        cameraLauncher.launch(uri)
+    }
+    // Some devices refuse ACTION_IMAGE_CAPTURE (delegated to the system
+    // Camera app) unless the CALLING app also holds a granted runtime CAMERA
+    // permission, even though our own process never touches the camera API
+    // directly — mirrors ListingsScreen's identical check-then-request
+    // pattern for ACCESS_FINE_LOCATION.
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) startCameraCapture()
+    }
+    fun launchCamera() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            startCameraCapture()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -92,7 +128,7 @@ fun DeposerAnnonceScreen(
                 !viewModel.isLoggedIn -> LoginGate(onRequireLogin)
                 viewModel.success -> PublishSuccess(isEdit = viewModel.isEdit)
                 viewModel.initLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
-                else -> DeposerAnnonceContent(viewModel, onPickPhotos = { photoPicker.launch("image/*") }, onPublished = onPublished)
+                else -> DeposerAnnonceContent(viewModel, onPickPhotos = { photoPicker.launch("image/*") }, onTakePhoto = { launchCamera() }, onPublished = onPublished)
             }
         }
     }
@@ -150,6 +186,7 @@ private fun PublishSuccess(isEdit: Boolean) {
 private fun DeposerAnnonceContent(
     viewModel: DeposerAnnonceViewModel,
     onPickPhotos: () -> Unit,
+    onTakePhoto: () -> Unit,
     onPublished: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -166,7 +203,7 @@ private fun DeposerAnnonceContent(
                 0 -> CategoryStep(viewModel)
                 1 -> SubcategoryStep(viewModel)
                 2 -> DetailsStep(viewModel)
-                3 -> PhotosStep(viewModel, onPickPhotos)
+                3 -> PhotosStep(viewModel, onPickPhotos, onTakePhoto)
                 4 -> ContactStep(viewModel)
             }
             viewModel.error?.let {
@@ -602,7 +639,7 @@ private fun String.toLocalDateOrNull(): java.time.LocalDate? =
     try { java.time.LocalDate.parse(this) } catch (e: java.time.format.DateTimeParseException) { null }
 
 @Composable
-private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit) {
+private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit, onTakePhoto: () -> Unit) {
     Text(t("deposer.photos_title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
     Spacer(Modifier.height(4.dp))
     Text("${t("deposer.photos_sub_prefix")} ${viewModel.maxPhotos} ${t("deposer.photos_sub_suffix")}", color = TextMuted, fontSize = 13.sp)
@@ -634,6 +671,23 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
         Icon(Icons.Filled.AddAPhoto, contentDescription = null, tint = Primary)
         Spacer(Modifier.width(8.dp))
         Text(t("deposer.upload_hint"), color = Primary, fontWeight = FontWeight.SemiBold)
+    }
+
+    Spacer(Modifier.height(10.dp))
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = viewModel.photos.size < viewModel.maxPhotos, onClick = onTakePhoto)
+            .background(WhiteColor, RoundedCornerShape(14.dp))
+            .border(1.dp, Primary, RoundedCornerShape(14.dp))
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = Primary)
+        Spacer(Modifier.width(8.dp))
+        Text(t("deposer.take_photo"), color = Primary, fontWeight = FontWeight.SemiBold)
     }
 
     if (viewModel.photos.isNotEmpty()) {
