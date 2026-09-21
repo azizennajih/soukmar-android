@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.data.remote.dto.ListingFunnelDto
 import com.soukmar.app.data.remote.dto.ViewStatDayDto
 import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.ListingRepository
@@ -44,6 +45,8 @@ class MesAnnoncesViewModel @Inject constructor(
     var statsOpenId by mutableStateOf<String?>(null)
         private set
     var statsData by mutableStateOf<Map<String, List<ViewStatDayDto>>>(emptyMap())
+        private set
+    var funnelData by mutableStateOf<Map<String, ListingFunnelDto>>(emptyMap())
         private set
     var deleteConfirmId by mutableStateOf<String?>(null)
 
@@ -132,6 +135,24 @@ class MesAnnoncesViewModel @Inject constructor(
                 }
             }
         }
+        if (statsOpenId == id && !funnelData.containsKey(id)) {
+            viewModelScope.launch {
+                when (val result = listingRepository.getFunnel(id)) {
+                    is ApiResult.Success -> funnelData = funnelData + (id to result.data)
+                    is ApiResult.Error -> { /* funnel panel just stays empty on failure */ }
+                }
+            }
+        }
+    }
+
+    /** Mirrors the web's `funnelPct()`: each step's bar width relative to
+     * the top of the funnel (views) — 100% for views itself, shrinking down
+     * through favorites/contacts/offers/accepted. Guards against
+     * divide-by-zero on a brand-new listing with 0 views. */
+    fun funnelPct(id: String, count: Int): Float {
+        val views = funnelData[id]?.views ?: 0
+        if (views <= 0) return 0f
+        return (count.toFloat() / views).coerceIn(0f, 1f)
     }
 
     fun requestDelete(id: String) { deleteConfirmId = id }

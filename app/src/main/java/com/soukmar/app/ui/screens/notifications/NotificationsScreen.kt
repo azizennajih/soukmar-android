@@ -75,6 +75,7 @@ fun NotificationsScreen(
                                         onOpenChat(n.conversationId)
                                     n.type == "NEW_REVIEW" -> onOpenProfil()
                                     n.type == "SAVED_SEARCH_MATCH" && n.listingId != null -> onOpenListing(n.listingId)
+                                    n.type == "PRICE_DROP" && n.listingId != null -> onOpenListing(n.listingId)
                                     n.type == "LISTING_EXPIRING_SOON" || n.type == "LISTING_EXPIRED" -> onOpenMesAnnonces()
                                     else -> { /* REPORT_RESOLVED and anything else: stay put */ }
                                 }
@@ -98,6 +99,8 @@ private fun templateFor(n: NotificationDto, i18n: I18nRepository): String {
         "REPORT_RESOLVED" -> i18n.t("notifications.report_resolved")
         "LISTING_EXPIRING_SOON" -> i18n.t("notifications.listing_expiring_soon")
         "LISTING_EXPIRED" -> i18n.t("notifications.listing_expired")
+        "PRICE_DROP" -> i18n.t("notifications.price_drop", mapOf("name" to name))
+        "ID_VERIFICATION_REVIEWED" -> i18n.t("notifications.id_verification_reviewed")
         else -> "Nouvelle notification."
     }
 }

@@ -15,7 +15,8 @@ data class UserDto(
     val createdAt: String? = null,
     val accountType: String? = null,
     val emailVerified: Boolean = false,
-    val phoneVerified: Boolean = false
+    val phoneVerified: Boolean = false,
+    val idVerified: Boolean = false
 )
 
 /** Body for the "edit profile" form — name/phone/city only. Deliberately a
@@ -65,3 +66,20 @@ data class DeleteAccountRequest(val password: String)
 
 @Serializable
 data class ApiErrorDto(val error: String? = null, val unverified: Boolean = false)
+
+/** Mirrors GET/POST /auth/id-verification — GET returns `null` (never
+ * submitted) or this shape; POST returns just `status`+`createdAt`
+ * (no `adminNote` yet on a fresh submission). Free KYC-lite: manual admin
+ * review of an ID photo + selfie, no paid provider. */
+@Serializable
+data class IdVerificationStatusDto(
+    val status: String,
+    val createdAt: String? = null,
+    val adminNote: String? = null
+)
+
+@Serializable
+data class IdVerificationSubmitRequest(
+    val idImageUrl: String,
+    val selfieImageUrl: String
+)

@@ -12,7 +12,8 @@ data class ChatUserDto(
     val avgRating: Double? = null,
     val reviewCount: Int = 0,
     val emailVerified: Boolean = false,
-    val phoneVerified: Boolean = false
+    val phoneVerified: Boolean = false,
+    val idVerified: Boolean = false
 )
 
 @Serializable

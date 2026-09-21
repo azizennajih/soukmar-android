@@ -17,6 +17,15 @@ sealed class ChatSocketEvent {
     data class OfferUpdated(val message: MessageDto) : ChatSocketEvent()
     data class UserTyping(val isTyping: Boolean) : ChatSocketEvent()
     data class ListingStatusChanged(val listingId: String, val status: String) : ChatSocketEvent()
+
+    // Masked in-app voice calling (Tranche 15) — same socket, mirrors the
+    // web's ChatService call_* handlers 1:1 (sdp as {type,sdp}, candidate as
+    // {candidate,sdpMid,sdpMLineIndex}, same shapes RTCSessionDescriptionInit/
+    // RTCIceCandidateInit serialize to, so it interops with the web client).
+    data class CallOffer(val conversationId: String, val sdpType: String, val sdp: String, val fromUserId: String, val fromUserName: String) : ChatSocketEvent()
+    data class CallAnswer(val conversationId: String, val sdpType: String, val sdp: String) : ChatSocketEvent()
+    data class CallIceCandidate(val conversationId: String, val candidate: String, val sdpMid: String?, val sdpMLineIndex: Int) : ChatSocketEvent()
+    data class CallEnded(val conversationId: String) : ChatSocketEvent()
 }
 
 /** Thin wrapper around socket.io-client mirroring the web app's ChatService —
@@ -49,6 +58,36 @@ class ChatSocketManager @Inject constructor(private val json: Json) {
             val obj = args.getOrNull(0) as? JSONObject ?: return@on
             val listingId = obj.optString("listingId").takeIf { it.isNotEmpty() } ?: return@on
             _events.tryEmit(ChatSocketEvent.ListingStatusChanged(listingId, obj.optString("status", "ACTIVE")))
+        }
+        s.on("call_offer") { args ->
+            val obj = args.getOrNull(0) as? JSONObject ?: return@on
+            val conversationId = obj.optString("conversationId").takeIf { it.isNotEmpty() } ?: return@on
+            val sdp = obj.optJSONObject("sdp") ?: return@on
+            _events.tryEmit(ChatSocketEvent.CallOffer(conversationId, sdp.optString("type"), sdp.optString("sdp"), obj.optString("fromUserId"), obj.optString("fromUserName")))
+        }
+        s.on("call_answer") { args ->
+            val obj = args.getOrNull(0) as? JSONObject ?: return@on
+            val conversationId = obj.optString("conversationId").takeIf { it.isNotEmpty() } ?: return@on
+            val sdp = obj.optJSONObject("sdp") ?: return@on
+            _events.tryEmit(ChatSocketEvent.CallAnswer(conversationId, sdp.optString("type"), sdp.optString("sdp")))
+        }
+        s.on("call_ice_candidate") { args ->
+            val obj = args.getOrNull(0) as? JSONObject ?: return@on
+            val conversationId = obj.optString("conversationId").takeIf { it.isNotEmpty() } ?: return@on
+            val candidate = obj.optJSONObject("candidate") ?: return@on
+            _events.tryEmit(
+                ChatSocketEvent.CallIceCandidate(
+                    conversationId,
+                    candidate.optString("candidate"),
+                    candidate.optString("sdpMid").takeIf { candidate.has("sdpMid") && !candidate.isNull("sdpMid") },
+                    candidate.optInt("sdpMLineIndex", 0)
+                )
+            )
+        }
+        s.on("call_end") { args ->
+            val obj = args.getOrNull(0) as? JSONObject ?: return@on
+            val conversationId = obj.optString("conversationId").takeIf { it.isNotEmpty() } ?: return@on
+            _events.tryEmit(ChatSocketEvent.CallEnded(conversationId))
         }
         s.connect()
         socket = s
@@ -110,6 +149,35 @@ class ChatSocketManager @Inject constructor(private val json: Json) {
             put("conversationId", conversationId)
             put("isTyping", isTyping)
         })
+    }
+
+    fun emitCallOffer(conversationId: String, sdpType: String, sdp: String) {
+        socket?.emit("call_offer", JSONObject().apply {
+            put("conversationId", conversationId)
+            put("sdp", JSONObject().apply { put("type", sdpType); put("sdp", sdp) })
+        })
+    }
+
+    fun emitCallAnswer(conversationId: String, sdpType: String, sdp: String) {
+        socket?.emit("call_answer", JSONObject().apply {
+            put("conversationId", conversationId)
+            put("sdp", JSONObject().apply { put("type", sdpType); put("sdp", sdp) })
+        })
+    }
+
+    fun emitCallIceCandidate(conversationId: String, candidate: String, sdpMid: String?, sdpMLineIndex: Int) {
+        socket?.emit("call_ice_candidate", JSONObject().apply {
+            put("conversationId", conversationId)
+            put("candidate", JSONObject().apply {
+                put("candidate", candidate)
+                put("sdpMid", sdpMid)
+                put("sdpMLineIndex", sdpMLineIndex)
+            })
+        })
+    }
+
+    fun emitCallEnd(conversationId: String) {
+        socket?.emit("call_end", JSONObject().apply { put("conversationId", conversationId) })
     }
 
     private fun decodeMessage(args: Array<Any>): MessageDto? {

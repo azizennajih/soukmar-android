@@ -139,6 +139,26 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    /** `null` body means "never submitted" (not an error) — mirrors the
+     * web's `GET /auth/id-verification` returning a literal JSON `null`. */
+    suspend fun getIdVerificationStatus(): ApiResult<IdVerificationStatusDto?> {
+        return try {
+            val res = api.getIdVerificationStatus()
+            if (res.isSuccessful) ApiResult.Success(res.body()) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun submitIdVerification(idImageUrl: String, selfieImageUrl: String): ApiResult<IdVerificationStatusDto> {
+        return try {
+            val res = api.submitIdVerification(IdVerificationSubmitRequest(idImageUrl, selfieImageUrl))
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun isLoggedIn(): Boolean = tokenManager.isLoggedIn()
 
     suspend fun logout() = tokenManager.clear()

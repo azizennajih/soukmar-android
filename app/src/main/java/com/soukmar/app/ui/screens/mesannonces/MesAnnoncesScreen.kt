@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.data.remote.dto.ListingFunnelDto
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.i18n.cityLabelT
@@ -34,6 +35,7 @@ import com.soukmar.app.ui.theme.BorderColor
 import com.soukmar.app.ui.theme.ErrorColor
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
+import com.soukmar.app.ui.theme.SuccessColor
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
@@ -108,6 +110,10 @@ fun MesAnnoncesScreen(
                             )
                             if (viewModel.statsOpenId == listing.id) {
                                 StatsPanel(viewModel.statsData[listing.id])
+                                FunnelPanel(
+                                    funnel = viewModel.funnelData[listing.id],
+                                    pctOf = { count -> viewModel.funnelPct(listing.id, count) }
+                                )
                             }
                         }
                     }
@@ -318,5 +324,57 @@ private fun StatsPanel(days: List<com.soukmar.app.data.remote.dto.ViewStatDayDto
                 }
             }
         }
+    }
+}
+
+/** Mirrors the web's `.funnel` block (mes-annonces.component.html/scss):
+ * 5 horizontal rows, each a fixed-width label + a proportional-width bar
+ * (relative to `views`, via [pctOf]) + the raw count. `null` while loading. */
+@Composable
+private fun FunnelPanel(funnel: ListingFunnelDto?, pctOf: (Int) -> Float) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(PrimaryLight, RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Text(t("mes_annonces.funnel_title"), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+        Spacer(Modifier.height(8.dp))
+        if (funnel == null) {
+            Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Primary, strokeWidth = 2.dp)
+            }
+        } else {
+            FunnelRow(t("mes_annonces.funnel_views"), 1f, funnel.views, Primary)
+            FunnelRow(t("mes_annonces.funnel_favorites"), pctOf(funnel.favorites), funnel.favorites, Primary)
+            FunnelRow(t("mes_annonces.funnel_contacts"), pctOf(funnel.contacts), funnel.contacts, Primary)
+            FunnelRow(t("mes_annonces.funnel_offers"), pctOf(funnel.offers), funnel.offers, Primary)
+            FunnelRow(t("mes_annonces.funnel_accepted"), pctOf(funnel.offersAccepted), funnel.offersAccepted, SuccessColor)
+        }
+    }
+}
+
+@Composable
+private fun FunnelRow(label: String, fraction: Float, count: Int, fillColor: Color) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(label, fontSize = 11.sp, color = TextMuted, modifier = Modifier.width(90.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(10.dp)
+                .background(BorderColor, RoundedCornerShape(999.dp))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                    .background(fillColor, RoundedCornerShape(999.dp))
+            )
+        }
+        Text(count.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.width(28.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
     }
 }

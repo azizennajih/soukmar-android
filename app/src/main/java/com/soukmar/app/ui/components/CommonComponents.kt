@@ -170,11 +170,12 @@ fun AccountTypeSelector(
  * nothing if neither flag is set, so an unverified account just shows no
  * badge rather than a warning. */
 @Composable
-fun VerifiedBadge(emailVerified: Boolean, phoneVerified: Boolean, modifier: Modifier = Modifier) {
-    if (!emailVerified && !phoneVerified) return
+fun VerifiedBadge(emailVerified: Boolean, phoneVerified: Boolean, idVerified: Boolean = false, modifier: Modifier = Modifier) {
+    if (!emailVerified && !phoneVerified && !idVerified) return
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         if (emailVerified) VerifiedPill(com.soukmar.app.ui.i18n.t("seller.email_verified_short"))
         if (phoneVerified) VerifiedPill(com.soukmar.app.ui.i18n.t("seller.phone_verified_short"))
+        if (idVerified) VerifiedPill(com.soukmar.app.ui.i18n.t("seller.id_verified_short"))
     }
 }
 

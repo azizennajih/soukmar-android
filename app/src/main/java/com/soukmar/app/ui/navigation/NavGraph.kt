@@ -30,6 +30,7 @@ import com.soukmar.app.ui.screens.mesannonces.MesAnnoncesScreen
 import com.soukmar.app.ui.screens.sellerprofile.SellerProfileScreen
 import com.soukmar.app.ui.screens.savedsearches.SavedSearchesScreen
 import com.soukmar.app.ui.screens.notifications.NotificationsScreen
+import com.soukmar.app.ui.screens.imagesearch.ImageSearchScreen
 import com.soukmar.app.ui.screens.admin.AdminScreen
 import com.soukmar.app.ui.screens.legal.LegalLinkRow
 import com.soukmar.app.ui.screens.legal.LegalPageScreen
@@ -78,6 +79,7 @@ fun SoukMarNavGraph(startDestination: String) {
             HomeScreen(
                 onOpenCategory = { category -> navController.navigate(Routes.listings(category)) },
                 onOpenSearch = { navController.navigate(Routes.listings()) },
+                onOpenImageSearch = { navController.navigate(Routes.IMAGE_SEARCH) },
                 onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) },
                 onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
@@ -200,6 +202,13 @@ fun SoukMarNavGraph(startDestination: String) {
             AdminScreen(
                 onBack = { navController.popBackStack() },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+            )
+        }
+        composable(Routes.IMAGE_SEARCH) {
+            ImageSearchScreen(
+                onBack = { navController.popBackStack() },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onBrowseAll = { navController.navigate(Routes.listings()) { popUpTo(Routes.HOME) } }
             )
         }
         composable(Routes.LEGAL_NOTICE) {

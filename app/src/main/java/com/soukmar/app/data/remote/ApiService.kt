@@ -45,6 +45,12 @@ interface ApiService {
     @HTTP(method = "DELETE", path = "auth/account", hasBody = true)
     suspend fun deleteAccount(@Body body: DeleteAccountRequest): Response<MessageResponse>
 
+    @GET("auth/id-verification")
+    suspend fun getIdVerificationStatus(): Response<IdVerificationStatusDto?>
+
+    @POST("auth/id-verification")
+    suspend fun submitIdVerification(@Body body: IdVerificationSubmitRequest): Response<IdVerificationStatusDto>
+
     @GET("listings")
     suspend fun getListings(@QueryMap params: Map<String, String>): Response<ListingsResponseDto>
 
@@ -74,6 +80,9 @@ interface ApiService {
 
     @GET("listings/{id}/view-stats")
     suspend fun getViewStats(@Path("id") id: String): Response<ViewStatsDto>
+
+    @GET("listings/{id}/funnel")
+    suspend fun getFunnel(@Path("id") id: String): Response<ListingFunnelDto>
 
     @POST("listings/{id}/bump")
     suspend fun bumpListing(@Path("id") id: String): Response<ListingDto>
@@ -129,6 +138,19 @@ interface ApiService {
 
     @PATCH("reports/admin/{id}")
     suspend fun updateAdminReport(@Path("id") id: String, @Body body: AdminReportUpdateRequest): Response<AdminReportDto>
+
+    @GET("admin/id-verifications")
+    suspend fun getAdminIdVerifications(): Response<List<AdminIdVerificationDto>>
+
+    @PATCH("admin/id-verifications/{id}")
+    suspend fun updateAdminIdVerification(@Path("id") id: String, @Body body: AdminIdVerificationUpdateRequest): Response<AdminIdVerificationDto>
+
+    @Multipart
+    @POST("listings/search-by-image")
+    suspend fun searchByImage(
+        @Part image: MultipartBody.Part,
+        @Query("country") country: String? = null
+    ): Response<List<ListingDto>>
 
     @POST("chat/conversations")
     suspend fun createConversation(@Body body: CreateConversationRequest): Response<ConversationDto>

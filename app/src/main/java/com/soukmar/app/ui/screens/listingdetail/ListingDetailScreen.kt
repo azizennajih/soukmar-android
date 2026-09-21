@@ -223,6 +223,7 @@ fun ListingDetailScreen(
                                 accountType = seller.accountType,
                                 emailVerified = seller.emailVerified,
                                 phoneVerified = seller.phoneVerified,
+                                idVerified = seller.idVerified,
                                 onSeeListings = { onOpenSeller(listing.userId) }
                             )
                         }
@@ -420,7 +421,7 @@ private fun LocationMapSection(listing: ListingDto) {
 }
 
 @Composable
-private fun SellerCard(name: String, city: String?, accountType: String?, emailVerified: Boolean, phoneVerified: Boolean, onSeeListings: () -> Unit) {
+private fun SellerCard(name: String, city: String?, accountType: String?, emailVerified: Boolean, phoneVerified: Boolean, idVerified: Boolean = false, onSeeListings: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
     ) {
@@ -444,7 +445,7 @@ private fun SellerCard(name: String, city: String?, accountType: String?, emailV
                 accountType?.let {
                     com.soukmar.app.ui.components.AccountTypeLabel(it, modifier = Modifier.padding(top = 2.dp))
                 }
-                VerifiedBadge(emailVerified, phoneVerified, modifier = Modifier.padding(top = 2.dp))
+                VerifiedBadge(emailVerified, phoneVerified, idVerified, modifier = Modifier.padding(top = 2.dp))
             }
         }
         Spacer(Modifier.height(10.dp))

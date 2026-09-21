@@ -95,6 +95,14 @@ dependencies {
     // (no API key needed, unlike Google Maps).
     implementation("org.osmdroid:osmdroid-android:6.1.20")
 
+    // WebRTC (masked in-app voice calling, Tranche 15) — Google's official
+    // org.webrtc:google-webrtc is no longer reliably published to Maven
+    // Central (broken since ~2023-2024). Stream's maintained fork ships
+    // prebuilt AARs of the same native libwebrtc, is Apache-2.0/free, and is
+    // actively published to Maven Central (verified: latest 1.3.10, updated
+    // Sept 2025) — no paid SDK/relay involved, just the native binding.
+    implementation("io.getstream:stream-webrtc-android:1.3.10")
+
     // DI
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")

@@ -37,4 +37,5 @@ object Routes {
     const val LEGAL_WITHDRAWAL = "legal_withdrawal"
     const val SETTINGS = "settings"
     const val DELETE_ACCOUNT = "delete_account"
+    const val IMAGE_SEARCH = "image_search"
 }

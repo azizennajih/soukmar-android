@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.remote.dto.AdminIdVerificationDto
 import com.soukmar.app.data.remote.dto.AdminReportDto
 import com.soukmar.app.data.repository.AdminRepository
 import com.soukmar.app.data.repository.ApiResult
@@ -12,10 +13,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class AdminTab { REPORTS, ID_VERIFICATIONS }
+
 @HiltViewModel
 class AdminViewModel @Inject constructor(
     private val adminRepository: AdminRepository
 ) : ViewModel() {
+
+    var currentTab by mutableStateOf(AdminTab.REPORTS)
 
     var reports by mutableStateOf<List<AdminReportDto>>(emptyList())
         private set
@@ -42,6 +47,29 @@ class AdminViewModel @Inject constructor(
     fun countFor(status: String): Int =
         if (status == "ALL") reports.size else reports.count { it.status == status }
 
+    // ID verifications (free KYC-lite queue)
+    var idVerifications by mutableStateOf<List<AdminIdVerificationDto>>(emptyList())
+        private set
+    var idVerificationsLoading by mutableStateOf(true)
+        private set
+    var idVerificationsLoadError by mutableStateOf(false)
+        private set
+    var idVerificationFilter by mutableStateOf("PENDING")
+
+    var idActionTarget by mutableStateOf<AdminIdVerificationDto?>(null)
+        private set
+    var idActionStatus by mutableStateOf<String?>(null)
+        private set
+    var idActionNote by mutableStateOf("")
+    var idActionSubmitting by mutableStateOf(false)
+        private set
+
+    val filteredIdVerifications: List<AdminIdVerificationDto>
+        get() = if (idVerificationFilter == "ALL") idVerifications else idVerifications.filter { it.status == idVerificationFilter }
+
+    fun idCountFor(status: String): Int =
+        if (status == "ALL") idVerifications.size else idVerifications.count { it.status == status }
+
     fun load() {
         viewModelScope.launch {
             loading = true
@@ -51,6 +79,49 @@ class AdminViewModel @Inject constructor(
                 is ApiResult.Error -> loadError = true
             }
             loading = false
+        }
+        viewModelScope.launch {
+            idVerificationsLoading = true
+            idVerificationsLoadError = false
+            when (val result = adminRepository.getIdVerifications()) {
+                is ApiResult.Success -> idVerifications = result.data
+                is ApiResult.Error -> idVerificationsLoadError = true
+            }
+            idVerificationsLoading = false
+        }
+    }
+
+    fun openIdAction(v: AdminIdVerificationDto, status: String) {
+        idActionTarget = v
+        idActionStatus = status
+        idActionNote = ""
+    }
+
+    fun cancelIdAction() {
+        idActionTarget = null
+        idActionStatus = null
+        idActionNote = ""
+    }
+
+    fun confirmIdAction() {
+        val v = idActionTarget ?: return
+        val status = idActionStatus ?: return
+        if (idActionSubmitting) return
+        idActionSubmitting = true
+        viewModelScope.launch {
+            when (val result = adminRepository.reviewIdVerification(v.id, status, idActionNote)) {
+                is ApiResult.Success -> {
+                    val updated = result.data
+                    idVerifications = idVerifications.map {
+                        if (it.id == v.id) it.copy(status = updated.status, adminNote = updated.adminNote, reviewedAt = updated.reviewedAt) else it
+                    }
+                    idActionTarget = null
+                    idActionStatus = null
+                    idActionNote = ""
+                }
+                is ApiResult.Error -> { /* leave the dialog open so the admin can retry */ }
+            }
+            idActionSubmitting = false
         }
     }
 

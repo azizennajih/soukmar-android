@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.remote.dto.IdVerificationStatusDto
 import com.soukmar.app.data.remote.dto.UserDto
 import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.AuthRepository
@@ -63,6 +64,21 @@ class ProfilViewModel @Inject constructor(
     var pwErrorMessage by mutableStateOf<String?>(null)
         private set
 
+    // ID verification (free KYC-lite: ID photo + selfie, reviewed manually
+    // by an admin) — "NONE" mirrors the web's default when GET returns null.
+    var idVerificationStatus by mutableStateOf("NONE")
+        private set
+    var idVerificationNote by mutableStateOf<String?>(null)
+        private set
+    var idImageUri by mutableStateOf<Uri?>(null)
+    var selfieImageUri by mutableStateOf<Uri?>(null)
+    var submittingIdVerification by mutableStateOf(false)
+        private set
+    var idVerificationMessage by mutableStateOf<String?>(null)
+        private set
+    var idVerificationErrorMessage by mutableStateOf<String?>(null)
+        private set
+
     fun load() {
         viewModelScope.launch {
             loading = true
@@ -78,6 +94,54 @@ class ProfilViewModel @Inject constructor(
                 is ApiResult.Error -> loadError = true
             }
             loading = false
+        }
+        loadIdVerificationStatus()
+    }
+
+    private fun loadIdVerificationStatus() {
+        viewModelScope.launch {
+            when (val result = authRepository.getIdVerificationStatus()) {
+                is ApiResult.Success -> {
+                    val v: IdVerificationStatusDto? = result.data
+                    idVerificationStatus = v?.status ?: "NONE"
+                    idVerificationNote = v?.adminNote
+                }
+                is ApiResult.Error -> { /* non-essential — leave the form open, mirrors the web */ }
+            }
+        }
+    }
+
+    fun submitIdVerification() {
+        val idUri = idImageUri
+        val selfieUri = selfieImageUri
+        if (idUri == null || selfieUri == null) {
+            idVerificationErrorMessage = "Veuillez ajouter les deux photos."
+            return
+        }
+        if (submittingIdVerification) return
+        submittingIdVerification = true
+        idVerificationMessage = null
+        idVerificationErrorMessage = null
+        viewModelScope.launch {
+            val idUpload = uploadRepository.uploadImages(listOf(idUri), type = "idVerification")
+            val selfieUpload = uploadRepository.uploadImages(listOf(selfieUri), type = "idVerification")
+            val idUrl = (idUpload as? ApiResult.Success)?.data?.firstOrNull()
+            val selfieUrl = (selfieUpload as? ApiResult.Success)?.data?.firstOrNull()
+            if (idUrl == null || selfieUrl == null) {
+                idVerificationErrorMessage = "L'envoi a échoué. Réessayez."
+                submittingIdVerification = false
+                return@launch
+            }
+            when (val result = authRepository.submitIdVerification(idUrl, selfieUrl)) {
+                is ApiResult.Success -> {
+                    idVerificationStatus = result.data.status
+                    idImageUri = null
+                    selfieImageUri = null
+                    idVerificationMessage = "Votre demande a été envoyée. Nous l'examinerons sous peu."
+                }
+                is ApiResult.Error -> idVerificationErrorMessage = result.message
+            }
+            submittingIdVerification = false
         }
     }
 

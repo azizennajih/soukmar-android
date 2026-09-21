@@ -10,7 +10,8 @@ data class ListingUserDto(
     val city: String? = null,
     val accountType: String? = null,
     val emailVerified: Boolean = false,
-    val phoneVerified: Boolean = false
+    val phoneVerified: Boolean = false,
+    val idVerified: Boolean = false
 )
 
 @Serializable
@@ -110,3 +111,16 @@ data class ViewStatDayDto(val date: String, val count: Int)
 
 @Serializable
 data class ViewStatsDto(val days: List<ViewStatDayDto> = emptyList(), val total: Int = 0)
+
+/** Mirrors GET /listings/:id/funnel — owner/admin-only conversion funnel
+ * (views → favorites → contacts → offers received → offers accepted), each
+ * a plain count already tracked elsewhere server-side (Listing.views,
+ * Favorite, Conversation, Message), no new analytics infra. */
+@Serializable
+data class ListingFunnelDto(
+    val views: Int = 0,
+    val favorites: Int = 0,
+    val contacts: Int = 0,
+    val offers: Int = 0,
+    val offersAccepted: Int = 0
+)

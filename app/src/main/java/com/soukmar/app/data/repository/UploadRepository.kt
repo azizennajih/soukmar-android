@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.ListingDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -60,6 +61,25 @@ class UploadRepository @Inject constructor(
             ApiResult.Error(e.message ?: "Erreur réseau.")
         } finally {
             tempFiles.forEach { it.delete() }
+        }
+    }
+
+    /** "Search by photo" — mirrors the web's `ListingService.searchByImage()`:
+     * a dedicated public multipart endpoint (field name `image`, singular),
+     * separate from the general [uploadImages]/`/api/upload` — the backend
+     * hashes the photo locally (free, no paid vision API) rather than
+     * storing it, so this doesn't go through Cloudinary at all. */
+    suspend fun searchByImage(uri: Uri, country: String? = null): ApiResult<List<ListingDto>> = withContext(Dispatchers.IO) {
+        val tempFile = File.createTempFile("search_by_image_", ".jpg", context.cacheDir)
+        try {
+            compressToJpeg(uri, tempFile, maxDimension = 1200)
+            val part = MultipartBody.Part.createFormData("image", tempFile.name, tempFile.asRequestBody("image/jpeg".toMediaType()))
+            val res = api.searchByImage(part, country)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        } finally {
+            tempFile.delete()
         }
     }
 

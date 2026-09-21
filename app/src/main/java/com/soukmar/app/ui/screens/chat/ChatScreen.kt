@@ -2,6 +2,10 @@
 
 package com.soukmar.app.ui.screens.chat
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,12 +31,21 @@ import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.CallEnd
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
+import com.soukmar.app.data.remote.CallPhase
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -69,6 +82,28 @@ fun ChatScreen(
 ) {
     LaunchedEffect(conversationId) { viewModel.load(conversationId) }
 
+    val context = LocalContext.current
+    val micPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) viewModel.startCall()
+    }
+    fun startCallWithPermissionCheck() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            viewModel.startCall()
+        } else {
+            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+    val micPermissionLauncherForAccept = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) viewModel.acceptCall() else viewModel.rejectCall()
+    }
+    fun acceptCallWithPermissionCheck() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            viewModel.acceptCall()
+        } else {
+            micPermissionLauncherForAccept.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,6 +115,11 @@ fun ChatScreen(
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     viewModel.conversation?.let { conv ->
+                        if (!conv.blockedByMe && !conv.blockedByThem && viewModel.callManager.phase == CallPhase.IDLE) {
+                            IconButton(onClick = { startCallWithPermissionCheck() }) {
+                                Icon(Icons.Filled.Call, contentDescription = t("chat.call_start"), tint = Primary)
+                            }
+                        }
                         IconButton(onClick = { viewModel.requestBlockToggle() }, enabled = !viewModel.blockSubmitting) {
                             Icon(
                                 if (conv.blockedByMe) Icons.Filled.RemoveCircleOutline else Icons.Filled.Block,
@@ -96,14 +136,32 @@ fun ChatScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when {
-                viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
-                viewModel.loadError || viewModel.conversation == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Conversation introuvable.", color = TextMuted)
+            Column(modifier = Modifier.fillMaxSize()) {
+                viewModel.callManager.callError?.let {
+                    com.soukmar.app.ui.components.ErrorBanner(t("chat.call_failed"), modifier = Modifier.padding(12.dp))
                 }
-                else -> ChatContent(viewModel)
+                if (viewModel.callManager.phase == CallPhase.OUTGOING || viewModel.callManager.phase == CallPhase.ACTIVE) {
+                    ActiveCallBar(viewModel)
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    when {
+                        viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
+                        viewModel.loadError || viewModel.conversation == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Conversation introuvable.", color = TextMuted)
+                        }
+                        else -> ChatContent(viewModel)
+                    }
+                }
             }
         }
+    }
+
+    if (viewModel.callManager.phase == CallPhase.INCOMING) {
+        IncomingCallDialog(
+            callerName = viewModel.callManager.incomingCall?.fromUserName ?: "",
+            onAccept = { acceptCallWithPermissionCheck() },
+            onReject = { viewModel.rejectCall() }
+        )
     }
 
     if (viewModel.confirmCancelReservation) {
@@ -157,7 +215,7 @@ private fun ChatHeaderContent(viewModel: ChatViewModel, onOpenListing: (String) 
                     }
                 }
                 viewModel.partnerUser()?.let { partner ->
-                    VerifiedBadge(partner.emailVerified, partner.phoneVerified, modifier = Modifier.padding(vertical = 1.dp))
+                    VerifiedBadge(partner.emailVerified, partner.phoneVerified, partner.idVerified, modifier = Modifier.padding(vertical = 1.dp))
                 }
                 if (viewModel.partnerTyping) {
                     Text(t("chat.typing"), fontSize = 11.sp, color = Primary)
@@ -171,6 +229,75 @@ private fun ChatHeaderContent(viewModel: ChatViewModel, onOpenListing: (String) 
                         modifier = Modifier.clickable { onOpenListing(conv.listingId) }
                     )
                 }
+            }
+        }
+    }
+}
+
+/** Outgoing/active call bar — mirrors the web's call bar markup in
+ * `chat.component.html` (mute toggle + end-call button, status text swaps
+ * between "ringing…" and "in call"). */
+@Composable
+private fun ActiveCallBar(viewModel: ChatViewModel) {
+    val active = viewModel.callManager.phase == CallPhase.ACTIVE
+    Row(
+        modifier = Modifier.fillMaxWidth().background(if (active) SuccessColor else Gold).padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Filled.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(
+            if (active) t("chat.call_active") else t("chat.call_ringing"),
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp,
+            modifier = Modifier.weight(1f)
+        )
+        IconButton(onClick = { viewModel.toggleMute() }) {
+            Icon(
+                if (viewModel.callManager.muted) Icons.Filled.MicOff else Icons.Filled.Mic,
+                contentDescription = t(if (viewModel.callManager.muted) "chat.call_unmute" else "chat.call_mute"),
+                tint = Color.White
+            )
+        }
+        IconButton(onClick = { viewModel.endCall() }) {
+            Icon(Icons.Filled.CallEnd, contentDescription = t("chat.call_end"), tint = Color.White)
+        }
+    }
+}
+
+/** Incoming-call full-screen overlay — mirrors the web's incoming-call
+ * card (caller name, accept/reject) in `chat.component.html`. */
+@Composable
+private fun IncomingCallDialog(callerName: String, onAccept: () -> Unit, onReject: () -> Unit) {
+    Dialog(onDismissRequest = onReject, properties = DialogProperties(dismissOnClickOutside = false)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(20.dp)).padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(modifier = Modifier.size(72.dp).background(Primary, CircleShape), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(t("chat.call_incoming"), color = TextMuted, fontSize = 13.sp)
+            Spacer(Modifier.height(4.dp))
+            Text(callerName, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(Modifier.height(24.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(
+                    onClick = onReject,
+                    colors = ButtonDefaults.buttonColors(containerColor = ErrorColor),
+                    modifier = Modifier.size(56.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    shape = CircleShape
+                ) { Icon(Icons.Filled.CallEnd, contentDescription = t("chat.call_reject"), tint = Color.White) }
+                Button(
+                    onClick = onAccept,
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                    modifier = Modifier.size(56.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    shape = CircleShape
+                ) { Icon(Icons.Filled.Call, contentDescription = t("chat.call_accept"), tint = Color.White) }
             }
         }
     }

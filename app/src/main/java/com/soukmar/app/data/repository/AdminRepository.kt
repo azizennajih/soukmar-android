@@ -1,6 +1,8 @@
 package com.soukmar.app.data.repository
 
 import com.soukmar.app.data.remote.ApiService
+import com.soukmar.app.data.remote.dto.AdminIdVerificationDto
+import com.soukmar.app.data.remote.dto.AdminIdVerificationUpdateRequest
 import com.soukmar.app.data.remote.dto.AdminReportDto
 import com.soukmar.app.data.remote.dto.AdminReportUpdateRequest
 import com.soukmar.app.data.remote.dto.ApiErrorDto
@@ -34,6 +36,24 @@ class AdminRepository @Inject constructor(
     suspend fun updateReport(id: String, status: String, adminNote: String?): ApiResult<AdminReportDto> {
         return try {
             val res = api.updateAdminReport(id, AdminReportUpdateRequest(status, adminNote?.takeIf { it.isNotBlank() }))
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun getIdVerifications(): ApiResult<List<AdminIdVerificationDto>> {
+        return try {
+            val res = api.getAdminIdVerifications()
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun reviewIdVerification(id: String, status: String, adminNote: String?): ApiResult<AdminIdVerificationDto> {
+        return try {
+            val res = api.updateAdminIdVerification(id, AdminIdVerificationUpdateRequest(status, adminNote?.takeIf { it.isNotBlank() }))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

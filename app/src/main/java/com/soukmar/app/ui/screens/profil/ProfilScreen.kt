@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -248,7 +249,103 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
                 }
             }
         }
+        Spacer(Modifier.height(16.dp))
+        IdVerificationCard(viewModel)
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun IdVerificationCard(viewModel: ProfilViewModel) {
+    val idPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { viewModel.idImageUri = it }
+    }
+    val selfiePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { viewModel.selfieImageUri = it }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
+    ) {
+        Text(t("profil.id_verification_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
+        Spacer(Modifier.height(6.dp))
+        Text(t("profil.id_verification_desc"), color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+        Spacer(Modifier.height(12.dp))
+
+        when (viewModel.idVerificationStatus) {
+            "APPROVED" -> {
+                Text("✓ ${t("profil.id_verification_approved")}", color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            }
+            "PENDING" -> {
+                Text(t("profil.id_verification_pending"), color = Gold, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            }
+            else -> {
+                // NONE or REJECTED — form stays open (resubmission allowed after rejection).
+                if (viewModel.idVerificationStatus == "REJECTED") {
+                    Text(t("profil.id_verification_rejected"), color = com.soukmar.app.ui.theme.ErrorColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    viewModel.idVerificationNote?.takeIf { it.isNotBlank() }?.let {
+                        Spacer(Modifier.height(4.dp))
+                        Text(it, color = TextMuted, fontSize = 12.sp)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                }
+
+                Text(t("profil.id_verification_id_label"), style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                Spacer(Modifier.height(6.dp))
+                IdPhotoPicker(uri = viewModel.idImageUri, onPick = { idPicker.launch("image/*") })
+                Spacer(Modifier.height(12.dp))
+                Text(t("profil.id_verification_selfie_label"), style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                Spacer(Modifier.height(6.dp))
+                IdPhotoPicker(uri = viewModel.selfieImageUri, onPick = { selfiePicker.launch("image/*") })
+
+                viewModel.idVerificationMessage?.let {
+                    Spacer(Modifier.height(10.dp))
+                    SuccessBanner(it)
+                }
+                viewModel.idVerificationErrorMessage?.let {
+                    Spacer(Modifier.height(10.dp))
+                    ErrorBanner(it)
+                }
+
+                Spacer(Modifier.height(14.dp))
+                Button(
+                    onClick = { viewModel.submitIdVerification() },
+                    enabled = !viewModel.submittingIdVerification && viewModel.idImageUri != null && viewModel.selfieImageUri != null,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    if (viewModel.submittingIdVerification) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text(t("profil.id_verification_submit"))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IdPhotoPicker(uri: android.net.Uri?, onPick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(90.dp)
+            .background(com.soukmar.app.ui.theme.BgColor, RoundedCornerShape(10.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(10.dp)),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (uri != null) {
+            AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clickable(onClick = onPick))
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize().clickable(onClick = onPick), verticalArrangement = Arrangement.Center) {
+                Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = TextMuted)
+                Spacer(Modifier.height(4.dp))
+                Text(t("deposer.upload_hint"), color = TextMuted, fontSize = 11.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            }
+        }
     }
 }
 

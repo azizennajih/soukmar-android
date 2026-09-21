@@ -103,6 +103,15 @@ class ListingRepository @Inject constructor(
         }
     }
 
+    suspend fun getFunnel(id: String): ApiResult<com.soukmar.app.data.remote.dto.ListingFunnelDto> {
+        return try {
+            val res = api.getFunnel(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
     suspend fun bump(id: String): ApiResult<ListingDto> {
         return try {
             val res = api.bumpListing(id)

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.soukmar.app.data.local.TokenManager
+import com.soukmar.app.data.remote.CallManager
 import com.soukmar.app.data.remote.ChatSocketEvent
 import com.soukmar.app.data.remote.ChatSocketManager
 import com.soukmar.app.data.remote.dto.ChatUserDto
@@ -31,7 +32,8 @@ class ChatViewModel @Inject constructor(
     private val reportRepository: ReportRepository,
     private val userRepository: UserRepository,
     private val socketManager: ChatSocketManager,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    val callManager: CallManager
 ) : ViewModel() {
 
     private var conversationId: String? = null
@@ -118,6 +120,10 @@ class ChatViewModel @Inject constructor(
                     is ChatSocketEvent.ListingStatusChanged -> if (event.listingId == conversation?.listingId) {
                         listingStatus = event.status
                     }
+                    is ChatSocketEvent.CallOffer -> if (event.conversationId == id) callManager.handleEvent(event)
+                    is ChatSocketEvent.CallAnswer -> if (event.conversationId == id) callManager.handleEvent(event)
+                    is ChatSocketEvent.CallIceCandidate -> if (event.conversationId == id) callManager.handleEvent(event)
+                    is ChatSocketEvent.CallEnded -> if (event.conversationId == id) callManager.handleEvent(event)
                 }
             }
         }
@@ -247,7 +253,21 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    // Masked in-app voice calling (Tranche 15) — thin proxies to [CallManager],
+    // which owns the actual PeerConnection/state machine; ChatViewModel just
+    // supplies the conversation id and stays the single collector of the
+    // shared socket event stream (see observeSocketEvents above).
+    fun startCall() {
+        val conv = conversation ?: return
+        callManager.startCall(conv.id)
+    }
+    fun acceptCall() = callManager.acceptCall()
+    fun rejectCall() = callManager.rejectCall()
+    fun endCall() = callManager.endCall()
+    fun toggleMute() = callManager.toggleMute()
+
     override fun onCleared() {
         typingJob?.cancel()
+        callManager.endCall()
     }
 }

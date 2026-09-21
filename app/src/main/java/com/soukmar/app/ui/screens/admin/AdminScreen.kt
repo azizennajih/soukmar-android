@@ -11,18 +11,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.soukmar.app.data.i18n.I18nRepository
+import com.soukmar.app.data.remote.dto.AdminIdVerificationDto
 import com.soukmar.app.data.remote.dto.AdminReportDto
 import com.soukmar.app.ui.i18n.LocalI18n
 import com.soukmar.app.ui.i18n.t
@@ -39,11 +45,23 @@ import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
 
 private val FILTERS = listOf("PENDING", "RESOLVED", "DISMISSED", "ALL")
+private val ID_VERIFICATION_FILTERS = listOf("PENDING", "APPROVED", "REJECTED", "ALL")
 
 private fun statusLabel(status: String, i18n: I18nRepository): String = when (status) {
     "PENDING" -> i18n.t("admin.reports_status_pending")
     "RESOLVED" -> i18n.t("admin.reports_status_resolved")
     "DISMISSED" -> i18n.t("admin.reports_status_dismissed")
+    else -> i18n.t("admin.filter_all")
+}
+
+/** Reuses the `admin.reports_status_*` keys for APPROVED/REJECTED too —
+ * mirrors the web's `admin.component.html`, which literally builds the key
+ * as `'admin.reports_status_' + f.toLowerCase()` for the ID-verification
+ * filter pills instead of having a separate set of translations. */
+private fun idVerificationStatusLabel(status: String, i18n: I18nRepository): String = when (status) {
+    "PENDING" -> i18n.t("admin.reports_status_pending")
+    "APPROVED" -> i18n.t("admin.reports_status_approved")
+    "REJECTED" -> i18n.t("admin.reports_status_rejected")
     else -> i18n.t("admin.filter_all")
 }
 
@@ -65,39 +83,93 @@ fun AdminScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FILTERS.forEach { f ->
-                    FilterChip(
-                        selected = viewModel.filter == f,
-                        onClick = { viewModel.filter = f },
-                        label = { Text("${statusLabel(f, i18n)} (${viewModel.countFor(f)})") },
-                        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
-                    )
-                }
+            TabRow(selectedTabIndex = if (viewModel.currentTab == AdminTab.REPORTS) 0 else 1, containerColor = WhiteColor, contentColor = Primary) {
+                Tab(
+                    selected = viewModel.currentTab == AdminTab.REPORTS,
+                    onClick = { viewModel.currentTab = AdminTab.REPORTS },
+                    text = { Text(t("admin.reports_title")) },
+                    icon = { Icon(Icons.Filled.Flag, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                )
+                Tab(
+                    selected = viewModel.currentTab == AdminTab.ID_VERIFICATIONS,
+                    onClick = { viewModel.currentTab = AdminTab.ID_VERIFICATIONS },
+                    text = { Text(t("admin.tab_id_verifications")) },
+                    icon = { Icon(Icons.Filled.Badge, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                )
             }
 
-            Box(modifier = Modifier.weight(1f)) {
-                when {
-                    viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
-                    viewModel.loadError -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Impossible de charger les signalements.", color = TextMuted)
+            if (viewModel.currentTab == AdminTab.REPORTS) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FILTERS.forEach { f ->
+                        FilterChip(
+                            selected = viewModel.filter == f,
+                            onClick = { viewModel.filter = f },
+                            label = { Text("${statusLabel(f, i18n)} (${viewModel.countFor(f)})") },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
+                        )
                     }
-                    viewModel.filteredReports.isEmpty() -> EmptyState()
-                    else -> LazyColumn(
-                        contentPadding = PaddingValues(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(viewModel.filteredReports, key = { it.id }) { report ->
-                            ReportCard(
-                                report = report,
-                                onOpenListing = onOpenListing,
-                                onResolve = { viewModel.openAction(report, "RESOLVED") },
-                                onDismiss = { viewModel.openAction(report, "DISMISSED") }
-                            )
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    when {
+                        viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
+                        viewModel.loadError -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Impossible de charger les signalements.", color = TextMuted)
+                        }
+                        viewModel.filteredReports.isEmpty() -> EmptyState()
+                        else -> LazyColumn(
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(viewModel.filteredReports, key = { it.id }) { report ->
+                                ReportCard(
+                                    report = report,
+                                    onOpenListing = onOpenListing,
+                                    onResolve = { viewModel.openAction(report, "RESOLVED") },
+                                    onDismiss = { viewModel.openAction(report, "DISMISSED") }
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ID_VERIFICATION_FILTERS.forEach { f ->
+                        FilterChip(
+                            selected = viewModel.idVerificationFilter == f,
+                            onClick = { viewModel.idVerificationFilter = f },
+                            label = { Text("${idVerificationStatusLabel(f, i18n)} (${viewModel.idCountFor(f)})") },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
+                        )
+                    }
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    when {
+                        viewModel.idVerificationsLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
+                        viewModel.idVerificationsLoadError -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Impossible de charger les vérifications d'identité.", color = TextMuted)
+                        }
+                        viewModel.filteredIdVerifications.isEmpty() -> IdVerificationEmptyState()
+                        else -> LazyColumn(
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(viewModel.filteredIdVerifications, key = { it.id }) { v ->
+                                IdVerificationCard(
+                                    v = v,
+                                    onApprove = { viewModel.openIdAction(v, "APPROVED") },
+                                    onReject = { viewModel.openIdAction(v, "REJECTED") }
+                                )
+                            }
                         }
                     }
                 }
@@ -134,6 +206,39 @@ fun AdminScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelAction() }) { Text(t("common.cancel")) }
+            }
+        )
+    }
+
+    viewModel.idActionTarget?.let {
+        val status = viewModel.idActionStatus ?: return@let
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelIdAction() },
+            title = { Text(if (status == "APPROVED") t("admin.id_verifications_approve") else t("admin.id_verifications_reject")) },
+            text = {
+                Column {
+                    Text(t("admin.id_verification_note_prompt"), color = TextMuted, fontSize = 12.sp)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = viewModel.idActionNote,
+                        onValueChange = { viewModel.idActionNote = it },
+                        placeholder = { Text(t("admin.id_verification_note_prompt")) },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmIdAction() },
+                    enabled = !viewModel.idActionSubmitting,
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text(if (viewModel.idActionSubmitting) "Envoi…" else "Confirmer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelIdAction() }) { Text(t("common.cancel")) }
             }
         )
     }
@@ -212,5 +317,92 @@ private fun EmptyState() {
         Text("🚩", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
         Text(t("admin.reports_empty"), color = TextMuted, textAlign = TextAlign.Center)
+    }
+}
+
+/** Mirrors the web's ID-verification queue row: user ref, two Cloudinary
+ * photo thumbnails (ID + selfie, loaded directly with Coil — no local
+ * storage, same URLs the backend already returns), status badge, and
+ * Approve/Reject buttons only while PENDING. */
+@Composable
+private fun IdVerificationCard(
+    v: AdminIdVerificationDto,
+    onApprove: () -> Unit,
+    onReject: () -> Unit
+) {
+    val i18n = LocalI18n.current
+    Column(
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val (bg, fg) = when (v.status) {
+                "PENDING" -> GoldLight to Gold
+                "APPROVED" -> SuccessColor.copy(alpha = 0.12f) to SuccessColor
+                else -> ErrorColor.copy(alpha = 0.1f) to ErrorColor
+            }
+            Box(modifier = Modifier.background(bg, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Text(idVerificationStatusLabel(v.status, i18n), color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(timeAgoT(v.createdAt), color = TextMuted, fontSize = 11.sp)
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Text(t("admin.id_verifications_user"), color = TextMuted, fontSize = 11.sp)
+        Text("${v.user?.name ?: "?"} · ${v.user?.email ?: ""}", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                AsyncImage(
+                    model = v.idImageUrl,
+                    contentDescription = t("admin.id_verifications_id_photo"),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth().height(100.dp).clip(RoundedCornerShape(8.dp)).background(BorderColor)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(t("admin.id_verifications_id_photo"), color = Primary, fontSize = 11.sp)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                AsyncImage(
+                    model = v.selfieImageUrl,
+                    contentDescription = t("admin.id_verifications_selfie_photo"),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth().height(100.dp).clip(RoundedCornerShape(8.dp)).background(BorderColor)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(t("admin.id_verifications_selfie_photo"), color = Primary, fontSize = 11.sp)
+            }
+        }
+
+        v.adminNote?.takeIf { it.isNotBlank() }?.let {
+            Spacer(Modifier.height(8.dp))
+            Text("📝 $it", color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+        }
+
+        if (v.status == "PENDING") {
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onApprove, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
+                    Text(t("admin.id_verifications_approve"))
+                }
+                OutlinedButton(onClick = onReject) {
+                    Text(t("admin.id_verifications_reject"))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IdVerificationEmptyState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(Icons.Filled.Badge, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        Spacer(Modifier.height(12.dp))
+        Text(t("admin.id_verifications_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }
 }

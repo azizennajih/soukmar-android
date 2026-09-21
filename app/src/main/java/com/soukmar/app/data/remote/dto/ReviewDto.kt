@@ -74,7 +74,8 @@ data class SellerProfileDto(
     val activeListingsCount: Int = 0,
     val avgResponseHours: Double? = null,
     val emailVerified: Boolean = false,
-    val phoneVerified: Boolean = false
+    val phoneVerified: Boolean = false,
+    val idVerified: Boolean = false
 )
 
 /** Mirrors soukmar-backend's POST/DELETE /api/users/:id/block response. */

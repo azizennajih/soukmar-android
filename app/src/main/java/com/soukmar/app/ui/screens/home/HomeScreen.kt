@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
@@ -58,6 +59,7 @@ import com.soukmar.app.ui.theme.WhiteColor
 fun HomeScreen(
     onOpenCategory: (String) -> Unit,
     onOpenSearch: () -> Unit,
+    onOpenImageSearch: () -> Unit,
     onOpenDeposerAnnonce: () -> Unit,
     onOpenChat: () -> Unit,
     onOpenMesAnnonces: () -> Unit,
@@ -151,15 +153,22 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onOpenSearch)
                     .background(WhiteColor, RoundedCornerShape(999.dp))
                     .border(1.dp, BorderColor, RoundedCornerShape(999.dp))
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.Search, contentDescription = null, tint = TextMuted)
-                Spacer(Modifier.width(8.dp))
-                Text(t("nav.search_placeholder"), color = TextMuted)
+                Row(
+                    modifier = Modifier.weight(1f).clickable(onClick = onOpenSearch).padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.Search, contentDescription = null, tint = TextMuted)
+                    Spacer(Modifier.width(8.dp))
+                    Text(t("nav.search_placeholder"), color = TextMuted)
+                }
+                IconButton(onClick = onOpenImageSearch) {
+                    Icon(Icons.Filled.CameraAlt, contentDescription = t("nav.search_by_image"), tint = TextMuted)
+                }
             }
 
             if (viewModel.interests.isNotEmpty()) {

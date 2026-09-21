@@ -102,7 +102,7 @@ private fun ConversationRow(conv: ConversationDto, myId: String?, onClick: () ->
                     Icon(Icons.Filled.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                 }
             }
-            VerifiedBadge(conv.partnerUser(myId).emailVerified, conv.partnerUser(myId).phoneVerified, modifier = Modifier.padding(vertical = 2.dp))
+            VerifiedBadge(conv.partnerUser(myId).emailVerified, conv.partnerUser(myId).phoneVerified, conv.partnerUser(myId).idVerified, modifier = Modifier.padding(vertical = 2.dp))
             Text(conv.listing.title, color = TextMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(2.dp))
             Text(lastMessagePreview(conv), color = TextMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)

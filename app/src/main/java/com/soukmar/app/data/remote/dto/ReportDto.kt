@@ -48,3 +48,31 @@ data class AdminReportUpdateRequest(
     val status: String,
     val adminNote: String? = null
 )
+
+/** Mirrors soukmar-backend's GET /api/admin/id-verifications — free KYC-lite
+ * queue (ID photo + selfie, reviewed manually), pending-first ordering. */
+@Serializable
+data class AdminIdVerificationUserRefDto(
+    val id: String,
+    val name: String,
+    val email: String
+)
+
+@Serializable
+data class AdminIdVerificationDto(
+    val id: String,
+    val userId: String,
+    val idImageUrl: String,
+    val selfieImageUrl: String,
+    val status: String,
+    val adminNote: String? = null,
+    val createdAt: String,
+    val reviewedAt: String? = null,
+    val user: AdminIdVerificationUserRefDto? = null
+)
+
+@Serializable
+data class AdminIdVerificationUpdateRequest(
+    val status: String,
+    val adminNote: String? = null
+)
