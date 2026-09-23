@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -274,7 +275,10 @@ private fun IdVerificationCard(viewModel: ProfilViewModel) {
 
         when (viewModel.idVerificationStatus) {
             "APPROVED" -> {
-                Text("✓ ${t("profil.id_verification_approved")}", color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(15.dp))
+                    Text(t("profil.id_verification_approved"), color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
             "PENDING" -> {
                 Text(t("profil.id_verification_pending"), color = Gold, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
@@ -354,7 +358,10 @@ private fun PhoneVerificationRow(viewModel: ProfilViewModel) {
     Column {
         when {
             viewModel.profile?.phoneVerified == true -> {
-                Text("✓ ${t("profil.phone_verified")}", color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(14.dp))
+                    Text(t("profil.phone_verified"), color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
             !viewModel.phoneCodeSent -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {

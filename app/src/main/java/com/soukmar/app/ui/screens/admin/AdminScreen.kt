@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.RocketLaunch
@@ -380,7 +381,10 @@ private fun ReportCard(
 
         report.adminNote?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
-            Text("📝 $it", color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Icon(Icons.Filled.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                Text(it, color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            }
         }
 
         if (report.status == "PENDING") {
@@ -404,7 +408,7 @@ private fun EmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("🚩", fontSize = 40.sp)
+        Icon(Icons.Filled.Flag, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
         Spacer(Modifier.height(12.dp))
         Text(t("admin.reports_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }
@@ -467,7 +471,10 @@ private fun IdVerificationCard(
 
         v.adminNote?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
-            Text("📝 $it", color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Icon(Icons.Filled.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                Text(it, color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            }
         }
 
         if (v.status == "PENDING") {
@@ -547,7 +554,10 @@ private fun BoostRequestCard(
 
         r.adminNote?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
-            Text("📝 $it", color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Icon(Icons.Filled.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                Text(it, color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            }
         }
 
         if (r.status == "PENDING") {

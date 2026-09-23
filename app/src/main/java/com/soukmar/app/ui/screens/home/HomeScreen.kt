@@ -146,7 +146,7 @@ fun HomeScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
             viewModel.user?.let { u ->
-                Text("Bonjour, ${u.name} 👋", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                Text("Bonjour, ${u.name}", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                 Spacer(Modifier.height(12.dp))
             }
 
@@ -212,7 +212,7 @@ fun HomeScreen(
 @Composable
 private fun InterestsSection(interests: List<com.soukmar.app.data.remote.dto.InterestDto>, onOpenCategory: (String) -> Unit) {
     Column {
-        Text("👋 ${t("home.welcome_back")}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text(t("home.welcome_back"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text(t("home.your_interests"), color = TextMuted, fontSize = 12.sp)
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

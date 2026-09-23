@@ -51,6 +51,7 @@ import com.soukmar.app.ui.i18n.dateAttrT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
+import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.countryFlag
 import com.soukmar.app.ui.i18n.formatPricePartsT
@@ -167,10 +168,13 @@ fun ListingDetailScreen(
 
                         categoryConfig(listing.category)?.let { cat ->
                             Spacer(Modifier.height(10.dp))
-                            Box(
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(5.dp),
                                 modifier = Modifier.background(cat.bg, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
-                                Text("${cat.emoji} ${tCatalog("cats.${cat.value}", cat.value)}", color = cat.fg, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                CategoryIcon(category = cat.value, tint = cat.fg, modifier = Modifier.size(13.dp))
+                                Text(tCatalog("cats.${cat.value}", cat.value), color = cat.fg, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
 
@@ -235,7 +239,10 @@ fun ListingDetailScreen(
                             }
                             if (viewModel.reviewSubmitted) {
                                 Spacer(Modifier.height(10.dp))
-                                Text("✅ ${t("listing.review_thanks")}", color = SuccessColor, fontSize = 13.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
+                                    Text(t("listing.review_thanks"), color = SuccessColor, fontSize = 13.sp)
+                                }
                             }
                             Spacer(Modifier.height(14.dp))
                             ReportSection(viewModel)

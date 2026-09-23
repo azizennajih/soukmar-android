@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
@@ -136,7 +137,10 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 responseLabel(profile.avgResponseHours)?.let {
                     Spacer(Modifier.height(8.dp))
                     Box(modifier = Modifier.background(Color(0xFFF1F5F9), RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                        Text("⚡ $it", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Icon(Icons.Filled.Bolt, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(12.dp))
+                            Text(it, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }

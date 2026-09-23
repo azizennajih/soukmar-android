@@ -29,6 +29,7 @@ import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.i18n.timeAgoT
+import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.HIGHLIGHT_ATTR_CODES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.countryFlag
@@ -186,12 +187,15 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
             }
             cat?.let {
                 Spacer(Modifier.height(6.dp))
-                Box(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier
                         .background(it.bg, RoundedCornerShape(999.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    Text("${it.emoji} ${tCatalog("cats.${it.value}", it.value)}", color = it.fg, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                    CategoryIcon(category = it.value, tint = it.fg, modifier = Modifier.size(11.dp))
+                    Text(tCatalog("cats.${it.value}", it.value), color = it.fg, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

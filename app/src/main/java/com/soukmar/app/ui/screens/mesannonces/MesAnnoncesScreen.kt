@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.ListingFunnelDto
+import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.i18n.cityLabelT
@@ -164,7 +166,7 @@ private fun EmptyMesAnnonces(onNewListing: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("📋", fontSize = 40.sp)
+        Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
         Spacer(Modifier.height(12.dp))
         Text(t("mes_annonces.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
@@ -215,7 +217,7 @@ private fun ListingRow(
                     AsyncImage(model = listing.images.first(), contentDescription = listing.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                 } else {
                     Box(modifier = Modifier.fillMaxSize().background(cat?.bg ?: BorderColor), contentAlignment = Alignment.Center) {
-                        Text(cat?.emoji ?: "📦", fontSize = 24.sp)
+                        CategoryIcon(category = listing.category, tint = cat?.fg ?: TextMuted, modifier = Modifier.size(24.dp))
                     }
                 }
             }
@@ -235,19 +237,34 @@ private fun ListingRow(
                 )
                 Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("👁 ${listing.views} ${t("listing.views")} · 🕐 ${timeAgoT(listing.createdAt)} · ", color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Icon(Icons.Filled.Visibility, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Spacer(Modifier.width(1.dp))
+                    Text("${listing.views} ${t("listing.views")}", color = TextMuted, fontSize = 11.sp, maxLines = 1)
+                    Spacer(Modifier.width(4.dp))
+                    Icon(Icons.Filled.Schedule, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Spacer(Modifier.width(1.dp))
+                    Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 11.sp, maxLines = 1)
+                    Spacer(Modifier.width(4.dp))
                     Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
                     Spacer(Modifier.width(1.dp))
-                    Text(cityLabelT(listing.city), color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(cityLabelT(listing.city), color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 }
                 if (daysUntilExpiry != null) {
                     Spacer(Modifier.height(2.dp))
-                    Text(
-                        "⏳ " + if (daysUntilExpiry == 0L) t("mes_annonces.expires_today") else t("mes_annonces.expires_in_days", "n" to daysUntilExpiry.toString()),
-                        color = if (expiringSoon) Primary else TextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = if (expiringSoon) FontWeight.SemiBold else FontWeight.Normal
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Icon(
+                            Icons.Filled.HourglassEmpty,
+                            contentDescription = null,
+                            tint = if (expiringSoon) Primary else TextMuted,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Text(
+                            if (daysUntilExpiry == 0L) t("mes_annonces.expires_today") else t("mes_annonces.expires_in_days", "n" to daysUntilExpiry.toString()),
+                            color = if (expiringSoon) Primary else TextMuted,
+                            fontSize = 11.sp,
+                            fontWeight = if (expiringSoon) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
                 }
             }
         }

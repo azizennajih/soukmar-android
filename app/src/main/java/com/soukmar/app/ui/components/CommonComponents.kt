@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -187,7 +188,9 @@ private fun VerifiedPill(label: String) {
             .padding(horizontal = 6.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("✓ $label", color = SuccessColor, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(11.dp))
+        Spacer(Modifier.width(2.dp))
+        Text(label, color = SuccessColor, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -205,13 +208,16 @@ fun ErrorBanner(message: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun SuccessBanner(message: String, modifier: Modifier = Modifier) {
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .background(SuccessColor.copy(alpha = 0.08f), RoundedCornerShape(10.dp))
-            .padding(12.dp)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("✅ $message", color = SuccessColor, style = MaterialTheme.typography.bodyMedium)
+        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(18.dp))
+        Text(message, color = SuccessColor, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
