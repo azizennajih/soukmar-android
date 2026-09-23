@@ -60,6 +60,7 @@ fun MesAnnoncesScreen(
     onOpenListing: (String) -> Unit,
     onEditListing: (String) -> Unit,
     onNewListing: () -> Unit,
+    onBoostListing: (String) -> Unit,
     viewModel: MesAnnoncesViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -102,6 +103,7 @@ fun MesAnnoncesScreen(
                                 statsOpen = viewModel.statsOpenId == listing.id,
                                 onOpen = { onOpenListing(listing.id) },
                                 onEdit = { onEditListing(listing.id) },
+                                onBoost = { onBoostListing(listing.id) },
                                 onToggleReserve = { viewModel.toggleReserve(listing) },
                                 onBump = { viewModel.bump(listing) },
                                 onExtend = { viewModel.extend(listing) },
@@ -186,6 +188,7 @@ private fun ListingRow(
     statsOpen: Boolean,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
+    onBoost: () -> Unit,
     onToggleReserve: () -> Unit,
     onBump: () -> Unit,
     onExtend: () -> Unit,
@@ -262,6 +265,7 @@ private fun ListingRow(
             RowActionButton(Icons.Filled.Edit, t("mes_annonces.edit"), onClick = onEdit)
             if (canToggleReserve) {
                 RowActionButton(Icons.Filled.ArrowUpward, if (canBump) t("mes_annonces.bump") else t("mes_annonces.bump_cooldown"), enabled = canBump && !bumping, onClick = onBump)
+                RowActionButton(Icons.Filled.RocketLaunch, t("mes_annonces.boost"), onClick = onBoost)
             }
             if (canToggleReserve && canExtend) {
                 RowActionButton(Icons.Filled.DateRange, t("mes_annonces.extend"), enabled = !extending, onClick = onExtend)

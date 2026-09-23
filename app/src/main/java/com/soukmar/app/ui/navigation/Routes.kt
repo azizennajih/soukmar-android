@@ -38,4 +38,6 @@ object Routes {
     const val SETTINGS = "settings"
     const val DELETE_ACCOUNT = "delete_account"
     const val IMAGE_SEARCH = "image_search"
+    const val BOOST_LISTING = "boost_listing/{listingId}"
+    fun boostListing(listingId: String) = "boost_listing/$listingId"
 }

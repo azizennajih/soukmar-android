@@ -6,9 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,6 +32,7 @@ import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.model.HIGHLIGHT_ATTR_CODES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.countryFlag
+import com.soukmar.app.ui.model.isBoostActive
 import com.soukmar.app.ui.model.isNewListing
 import com.soukmar.app.ui.theme.Primary
 import com.soukmar.app.ui.theme.PrimaryLight
@@ -59,12 +62,16 @@ private fun highlightFor(listing: ListingDto): String? {
 fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val cat = categoryConfig(listing.category)
     val priceParts = listing.price?.let { formatPricePartsT(it, listing.currency) }
+    val isBoostTop = isBoostActive(listing.boostTopUntil)
+    val isBoostSpotlight = !isBoostTop && isBoostActive(listing.boostSpotlightUntil)
+    val borderColor = if (isBoostTop) Primary else BorderColor
+    val borderWidth = if (isBoostTop) 2.dp else 1.dp
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(WhiteColor)
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+            .background(if (isBoostSpotlight) PrimaryLight else WhiteColor)
+            .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
     ) {
         Box {
@@ -83,7 +90,31 @@ fun ListingCard(listing: ListingDto, onClick: () -> Unit, modifier: Modifier = M
                     Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = TextMuted)
                 }
             }
-            if (listing.isFeatured || listing.isPremium) {
+            if (isBoostTop || isBoostSpotlight) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                        .background(if (isBoostTop) Primary else PrimaryLight, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            if (isBoostTop) Icons.Filled.WorkspacePremium else Icons.Filled.Bolt,
+                            contentDescription = null,
+                            tint = if (isBoostTop) WhiteColor else Primary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(Modifier.width(3.dp))
+                        Text(
+                            t(if (isBoostTop) "listing.boost_top_badge" else "listing.boost_spotlight_badge"),
+                            color = if (isBoostTop) WhiteColor else Primary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            } else if (listing.isFeatured || listing.isPremium) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)

@@ -87,6 +87,12 @@ interface ApiService {
     @POST("listings/{id}/bump")
     suspend fun bumpListing(@Path("id") id: String): Response<ListingDto>
 
+    @GET("listings/{id}/boost-status")
+    suspend fun getBoostStatus(@Path("id") id: String): Response<BoostStatusDto>
+
+    @POST("listings/{id}/boost-request")
+    suspend fun requestBoost(@Path("id") id: String, @Body body: BoostRequestBody): Response<BoostRequestDto>
+
     @POST("listings/{id}/extend")
     suspend fun extendListing(@Path("id") id: String): Response<ListingDto>
 
@@ -144,6 +150,12 @@ interface ApiService {
 
     @PATCH("admin/id-verifications/{id}")
     suspend fun updateAdminIdVerification(@Path("id") id: String, @Body body: AdminIdVerificationUpdateRequest): Response<AdminIdVerificationDto>
+
+    @GET("admin/boost-requests")
+    suspend fun getAdminBoostRequests(): Response<List<BoostRequestDto>>
+
+    @PATCH("admin/boost-requests/{id}")
+    suspend fun updateAdminBoostRequest(@Path("id") id: String, @Body body: BoostRequestReviewRequest): Response<BoostRequestDto>
 
     @Multipart
     @POST("listings/search-by-image")

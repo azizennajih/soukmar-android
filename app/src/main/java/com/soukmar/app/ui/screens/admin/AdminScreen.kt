@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +31,9 @@ import coil.compose.AsyncImage
 import com.soukmar.app.data.i18n.I18nRepository
 import com.soukmar.app.data.remote.dto.AdminIdVerificationDto
 import com.soukmar.app.data.remote.dto.AdminReportDto
+import com.soukmar.app.data.remote.dto.BoostRequestDto
 import com.soukmar.app.ui.i18n.LocalI18n
+import com.soukmar.app.ui.i18n.formatPricePartsT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.timeAgoT
 import com.soukmar.app.ui.theme.BorderColor
@@ -46,6 +49,7 @@ import com.soukmar.app.ui.theme.WhiteColor
 
 private val FILTERS = listOf("PENDING", "RESOLVED", "DISMISSED", "ALL")
 private val ID_VERIFICATION_FILTERS = listOf("PENDING", "APPROVED", "REJECTED", "ALL")
+private val BOOST_REQUEST_FILTERS = listOf("PENDING", "APPROVED", "REJECTED", "ALL")
 
 private fun statusLabel(status: String, i18n: I18nRepository): String = when (status) {
     "PENDING" -> i18n.t("admin.reports_status_pending")
@@ -83,7 +87,12 @@ fun AdminScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            TabRow(selectedTabIndex = if (viewModel.currentTab == AdminTab.REPORTS) 0 else 1, containerColor = WhiteColor, contentColor = Primary) {
+            val tabIndex = when (viewModel.currentTab) {
+                AdminTab.REPORTS -> 0
+                AdminTab.ID_VERIFICATIONS -> 1
+                AdminTab.BOOST_REQUESTS -> 2
+            }
+            TabRow(selectedTabIndex = tabIndex, containerColor = WhiteColor, contentColor = Primary) {
                 Tab(
                     selected = viewModel.currentTab == AdminTab.REPORTS,
                     onClick = { viewModel.currentTab = AdminTab.REPORTS },
@@ -96,9 +105,16 @@ fun AdminScreen(
                     text = { Text(t("admin.tab_id_verifications")) },
                     icon = { Icon(Icons.Filled.Badge, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 )
+                Tab(
+                    selected = viewModel.currentTab == AdminTab.BOOST_REQUESTS,
+                    onClick = { viewModel.currentTab = AdminTab.BOOST_REQUESTS },
+                    text = { Text(t("admin.tab_boost_requests")) },
+                    icon = { Icon(Icons.Filled.RocketLaunch, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                )
             }
 
-            if (viewModel.currentTab == AdminTab.REPORTS) {
+            when (viewModel.currentTab) {
+              AdminTab.REPORTS -> {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -136,7 +152,8 @@ fun AdminScreen(
                         }
                     }
                 }
-            } else {
+              }
+              AdminTab.ID_VERIFICATIONS -> {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -173,6 +190,46 @@ fun AdminScreen(
                         }
                     }
                 }
+              }
+              AdminTab.BOOST_REQUESTS -> {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    BOOST_REQUEST_FILTERS.forEach { f ->
+                        FilterChip(
+                            selected = viewModel.boostRequestFilter == f,
+                            onClick = { viewModel.boostRequestFilter = f },
+                            label = { Text("${idVerificationStatusLabel(f, i18n)} (${viewModel.boostCountFor(f)})") },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = Primary)
+                        )
+                    }
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    when {
+                        viewModel.boostRequestsLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
+                        viewModel.boostRequestsLoadError -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Impossible de charger les demandes de visibilité.", color = TextMuted)
+                        }
+                        viewModel.filteredBoostRequests.isEmpty() -> BoostRequestEmptyState()
+                        else -> LazyColumn(
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(viewModel.filteredBoostRequests, key = { it.id }) { r ->
+                                BoostRequestCard(
+                                    r = r,
+                                    onOpenListing = onOpenListing,
+                                    onApprove = { viewModel.openBoostAction(r, "APPROVED") },
+                                    onReject = { viewModel.openBoostAction(r, "REJECTED") }
+                                )
+                            }
+                        }
+                    }
+                }
+              }
             }
         }
     }
@@ -239,6 +296,39 @@ fun AdminScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelIdAction() }) { Text(t("common.cancel")) }
+            }
+        )
+    }
+
+    viewModel.boostActionTarget?.let {
+        val status = viewModel.boostActionStatus ?: return@let
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelBoostAction() },
+            title = { Text(if (status == "APPROVED") t("admin.boost_requests_approve") else t("admin.boost_requests_reject")) },
+            text = {
+                Column {
+                    Text(t("admin.boost_request_note_prompt"), color = TextMuted, fontSize = 12.sp)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = viewModel.boostActionNote,
+                        onValueChange = { viewModel.boostActionNote = it },
+                        placeholder = { Text(t("admin.boost_request_note_prompt")) },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmBoostAction() },
+                    enabled = !viewModel.boostActionSubmitting,
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text(if (viewModel.boostActionSubmitting) "Envoi…" else "Confirmer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelBoostAction() }) { Text(t("common.cancel")) }
             }
         )
     }
@@ -404,5 +494,85 @@ private fun IdVerificationEmptyState() {
         Icon(Icons.Filled.Badge, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
         Spacer(Modifier.height(12.dp))
         Text(t("admin.id_verifications_empty"), color = TextMuted, textAlign = TextAlign.Center)
+    }
+}
+
+/** Mirrors the web admin's Boosts tab: listing/seller refs, the requested
+ * tier ids (translated via boost.tier_<id>_name) + quoted price, status
+ * badge, Approve/Reject only while PENDING. Approving is the only place
+ * that actually activates the effects (see backend's applyBoostTiers) — the
+ * request itself never touches money, since no payment processor exists yet. */
+@Composable
+private fun BoostRequestCard(
+    r: BoostRequestDto,
+    onOpenListing: (String) -> Unit,
+    onApprove: () -> Unit,
+    onReject: () -> Unit
+) {
+    val i18n = LocalI18n.current
+    val priceParts = formatPricePartsT(r.totalPrice, r.currency)
+    Column(
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val (bg, fg) = when (r.status) {
+                "PENDING" -> GoldLight to Gold
+                "APPROVED" -> SuccessColor.copy(alpha = 0.12f) to SuccessColor
+                else -> ErrorColor.copy(alpha = 0.1f) to ErrorColor
+            }
+            Box(modifier = Modifier.background(bg, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Text(idVerificationStatusLabel(r.status, i18n), color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(timeAgoT(r.createdAt), color = TextMuted, fontSize = 11.sp)
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Text(t("admin.boost_requests_listing"), color = TextMuted, fontSize = 11.sp)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onOpenListing(r.listingId) }) {
+            Icon(Icons.Filled.Link, contentDescription = null, tint = Primary, modifier = Modifier.size(14.dp))
+            Spacer(Modifier.width(4.dp))
+            Text(r.listing?.title ?: "?", color = Primary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Text(t("admin.boost_requests_seller"), color = TextMuted, fontSize = 11.sp)
+        Text("${r.user?.name ?: "?"} · ${r.user?.email ?: ""}", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+
+        Spacer(Modifier.height(10.dp))
+        Text(
+            "${t("admin.boost_requests_tiers")}: ${r.tiers.joinToString(", ") { i18n.t("boost.tier_${it}_name") }}  ·  ${t("admin.boost_requests_price")}: ${priceParts.first} ${priceParts.second}",
+            color = TextPrimary, fontSize = 13.sp, lineHeight = 19.sp
+        )
+
+        r.adminNote?.takeIf { it.isNotBlank() }?.let {
+            Spacer(Modifier.height(8.dp))
+            Text("📝 $it", color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+        }
+
+        if (r.status == "PENDING") {
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onApprove, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
+                    Text(t("admin.boost_requests_approve"))
+                }
+                OutlinedButton(onClick = onReject) {
+                    Text(t("admin.boost_requests_reject"))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoostRequestEmptyState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(Icons.Filled.RocketLaunch, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        Spacer(Modifier.height(12.dp))
+        Text(t("admin.boost_requests_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }
 }

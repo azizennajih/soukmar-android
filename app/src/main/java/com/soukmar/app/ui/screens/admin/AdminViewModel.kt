@@ -7,13 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.soukmar.app.data.remote.dto.AdminIdVerificationDto
 import com.soukmar.app.data.remote.dto.AdminReportDto
+import com.soukmar.app.data.remote.dto.BoostRequestDto
 import com.soukmar.app.data.repository.AdminRepository
 import com.soukmar.app.data.repository.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class AdminTab { REPORTS, ID_VERIFICATIONS }
+enum class AdminTab { REPORTS, ID_VERIFICATIONS, BOOST_REQUESTS }
 
 @HiltViewModel
 class AdminViewModel @Inject constructor(
@@ -70,6 +71,64 @@ class AdminViewModel @Inject constructor(
     fun idCountFor(status: String): Int =
         if (status == "ALL") idVerifications.size else idVerifications.count { it.status == status }
 
+    // Boost requests (paid visibility, see BoostDto.kt) — same shape as the
+    // id-verifications queue above.
+    var boostRequests by mutableStateOf<List<BoostRequestDto>>(emptyList())
+        private set
+    var boostRequestsLoading by mutableStateOf(true)
+        private set
+    var boostRequestsLoadError by mutableStateOf(false)
+        private set
+    var boostRequestFilter by mutableStateOf("PENDING")
+
+    var boostActionTarget by mutableStateOf<BoostRequestDto?>(null)
+        private set
+    var boostActionStatus by mutableStateOf<String?>(null)
+        private set
+    var boostActionNote by mutableStateOf("")
+    var boostActionSubmitting by mutableStateOf(false)
+        private set
+
+    val filteredBoostRequests: List<BoostRequestDto>
+        get() = if (boostRequestFilter == "ALL") boostRequests else boostRequests.filter { it.status == boostRequestFilter }
+
+    fun boostCountFor(status: String): Int =
+        if (status == "ALL") boostRequests.size else boostRequests.count { it.status == status }
+
+    fun openBoostAction(r: BoostRequestDto, status: String) {
+        boostActionTarget = r
+        boostActionStatus = status
+        boostActionNote = ""
+    }
+
+    fun cancelBoostAction() {
+        boostActionTarget = null
+        boostActionStatus = null
+        boostActionNote = ""
+    }
+
+    fun confirmBoostAction() {
+        val r = boostActionTarget ?: return
+        val status = boostActionStatus ?: return
+        if (boostActionSubmitting) return
+        boostActionSubmitting = true
+        viewModelScope.launch {
+            when (val result = adminRepository.reviewBoostRequest(r.id, status, boostActionNote)) {
+                is ApiResult.Success -> {
+                    val updated = result.data
+                    boostRequests = boostRequests.map {
+                        if (it.id == r.id) it.copy(status = updated.status, adminNote = updated.adminNote, resolvedAt = updated.resolvedAt) else it
+                    }
+                    boostActionTarget = null
+                    boostActionStatus = null
+                    boostActionNote = ""
+                }
+                is ApiResult.Error -> { /* leave the dialog open so the admin can retry */ }
+            }
+            boostActionSubmitting = false
+        }
+    }
+
     fun load() {
         viewModelScope.launch {
             loading = true
@@ -88,6 +147,15 @@ class AdminViewModel @Inject constructor(
                 is ApiResult.Error -> idVerificationsLoadError = true
             }
             idVerificationsLoading = false
+        }
+        viewModelScope.launch {
+            boostRequestsLoading = true
+            boostRequestsLoadError = false
+            when (val result = adminRepository.getBoostRequests()) {
+                is ApiResult.Success -> boostRequests = result.data
+                is ApiResult.Error -> boostRequestsLoadError = true
+            }
+            boostRequestsLoading = false
         }
     }
 

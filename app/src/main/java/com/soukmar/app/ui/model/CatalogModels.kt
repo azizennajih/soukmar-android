@@ -55,6 +55,15 @@ fun isNewListing(createdAt: String, hours: Long = 24): Boolean {
     return ms in 0 until hours * 3_600_000
 }
 
+/** True while a boost "Until" timestamp (boostSpotlightUntil/boostTopUntil/
+ * boostGlobalUntil) is still in the future. Mirrors isBoostActive() in the
+ * web's listing.model.ts. */
+fun isBoostActive(until: String?): Boolean {
+    if (until == null) return false
+    val date = try { Instant.parse(until) } catch (e: DateTimeParseException) { return false }
+    return date.isAfter(Instant.now())
+}
+
 val CONDITION_CATEGORIES: Set<String> = setOf(
     "VEHICLES", "ELECTRONICS", "HOME_GARDEN", "FASHION", "BABY_KIDS", "SPORTS_LEISURE", "GIVEAWAY_SWAP"
 )

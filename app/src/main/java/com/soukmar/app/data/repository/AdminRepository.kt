@@ -6,6 +6,8 @@ import com.soukmar.app.data.remote.dto.AdminIdVerificationUpdateRequest
 import com.soukmar.app.data.remote.dto.AdminReportDto
 import com.soukmar.app.data.remote.dto.AdminReportUpdateRequest
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.BoostRequestDto
+import com.soukmar.app.data.remote.dto.BoostRequestReviewRequest
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import javax.inject.Inject
@@ -54,6 +56,24 @@ class AdminRepository @Inject constructor(
     suspend fun reviewIdVerification(id: String, status: String, adminNote: String?): ApiResult<AdminIdVerificationDto> {
         return try {
             val res = api.updateAdminIdVerification(id, AdminIdVerificationUpdateRequest(status, adminNote?.takeIf { it.isNotBlank() }))
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun getBoostRequests(): ApiResult<List<BoostRequestDto>> {
+        return try {
+            val res = api.getAdminBoostRequests()
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun reviewBoostRequest(id: String, status: String, adminNote: String?): ApiResult<BoostRequestDto> {
+        return try {
+            val res = api.updateAdminBoostRequest(id, BoostRequestReviewRequest(status, adminNote?.takeIf { it.isNotBlank() }))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

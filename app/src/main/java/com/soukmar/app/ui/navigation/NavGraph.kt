@@ -32,6 +32,7 @@ import com.soukmar.app.ui.screens.savedsearches.SavedSearchesScreen
 import com.soukmar.app.ui.screens.notifications.NotificationsScreen
 import com.soukmar.app.ui.screens.imagesearch.ImageSearchScreen
 import com.soukmar.app.ui.screens.admin.AdminScreen
+import com.soukmar.app.ui.screens.boostlisting.BoostListingScreen
 import com.soukmar.app.ui.screens.legal.LegalLinkRow
 import com.soukmar.app.ui.screens.legal.LegalPageScreen
 import com.soukmar.app.ui.screens.settings.SettingsScreen
@@ -155,7 +156,17 @@ fun SoukMarNavGraph(startDestination: String) {
                 onBack = { navController.popBackStack() },
                 onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
                 onEditListing = { id -> navController.navigate(Routes.deposerAnnonce(id)) },
-                onNewListing = { navController.navigate(Routes.deposerAnnonce()) }
+                onNewListing = { navController.navigate(Routes.deposerAnnonce()) },
+                onBoostListing = { id -> navController.navigate(Routes.boostListing(id)) }
+            )
+        }
+        composable(
+            route = Routes.BOOST_LISTING,
+            arguments = listOf(navArgument("listingId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            BoostListingScreen(
+                listingId = backStackEntry.arguments?.getString("listingId") ?: "",
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Routes.FAVORIS) {

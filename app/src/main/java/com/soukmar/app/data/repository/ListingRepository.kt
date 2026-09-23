@@ -2,6 +2,9 @@ package com.soukmar.app.data.repository
 
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.BoostRequestBody
+import com.soukmar.app.data.remote.dto.BoostRequestDto
+import com.soukmar.app.data.remote.dto.BoostStatusDto
 import com.soukmar.app.data.remote.dto.InterestDto
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.ListingStatusUpdateRequest
@@ -115,6 +118,24 @@ class ListingRepository @Inject constructor(
     suspend fun bump(id: String): ApiResult<ListingDto> {
         return try {
             val res = api.bumpListing(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun getBoostStatus(id: String): ApiResult<BoostStatusDto> {
+        return try {
+            val res = api.getBoostStatus(id)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Erreur réseau.")
+        }
+    }
+
+    suspend fun requestBoost(id: String, tiers: List<String>): ApiResult<BoostRequestDto> {
+        return try {
+            val res = api.requestBoost(id, BoostRequestBody(tiers))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

@@ -55,7 +55,12 @@ data class ListingDto(
     val createdAt: String,
     val expiresAt: String? = null,
     val expiryExtended: Boolean = false,
-    val expiryWarningSent: Boolean = false
+    val expiryWarningSent: Boolean = false,
+    // Paid visibility boosts (see BoostDto.kt) — null/0 when never bought or expired.
+    val boostSpotlightUntil: String? = null,
+    val boostTopUntil: String? = null,
+    val boostGlobalUntil: String? = null,
+    val boostRank: Int = 0
 )
 
 @Serializable
