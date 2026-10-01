@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -64,6 +65,7 @@ fun HomeScreen(
     onOpenChat: () -> Unit,
     onOpenMesAnnonces: () -> Unit,
     onOpenFavoris: () -> Unit,
+    onOpenMesAbonnements: () -> Unit,
     onOpenSavedSearches: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenAdmin: () -> Unit,
@@ -119,6 +121,11 @@ fun HomeScreen(
                                     onClick = { menuExpanded = false; onOpenAdmin() }
                                 )
                             }
+                            DropdownMenuItem(
+                                text = { Text(t("nav.my_follows")) },
+                                leadingIcon = { Icon(Icons.Filled.Group, contentDescription = null) },
+                                onClick = { menuExpanded = false; onOpenMesAbonnements() }
+                            )
                             DropdownMenuItem(
                                 text = { Text(t("nav.saved_searches")) },
                                 leadingIcon = { Icon(Icons.Filled.BookmarkBorder, contentDescription = null) },

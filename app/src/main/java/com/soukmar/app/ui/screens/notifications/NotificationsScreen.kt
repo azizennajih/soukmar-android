@@ -77,6 +77,7 @@ fun NotificationsScreen(
                                     n.type == "NEW_REVIEW" -> onOpenProfil()
                                     n.type == "SAVED_SEARCH_MATCH" && n.listingId != null -> onOpenListing(n.listingId)
                                     n.type == "PRICE_DROP" && n.listingId != null -> onOpenListing(n.listingId)
+                                    n.type == "NEW_LISTING_FROM_FOLLOWED" && n.listingId != null -> onOpenListing(n.listingId)
                                     n.type == "LISTING_EXPIRING_SOON" || n.type == "LISTING_EXPIRED" -> onOpenMesAnnonces()
                                     n.type == "BOOST_REVIEWED" -> onOpenMesAnnonces()
                                     else -> { /* REPORT_RESOLVED and anything else: stay put */ }
@@ -102,6 +103,7 @@ private fun templateFor(n: NotificationDto, i18n: I18nRepository): String {
         "LISTING_EXPIRING_SOON" -> i18n.t("notifications.listing_expiring_soon")
         "LISTING_EXPIRED" -> i18n.t("notifications.listing_expired")
         "PRICE_DROP" -> i18n.t("notifications.price_drop", mapOf("name" to name))
+        "NEW_LISTING_FROM_FOLLOWED" -> i18n.t("notifications.new_listing_from_followed", mapOf("name" to name))
         "ID_VERIFICATION_REVIEWED" -> i18n.t("notifications.id_verification_reviewed")
         "BOOST_REVIEWED" -> i18n.t("notifications.boost_reviewed")
         else -> "Nouvelle notification."

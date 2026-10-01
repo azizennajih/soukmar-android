@@ -180,9 +180,9 @@ class ListingRepository @Inject constructor(
 
     /** Non-essential home-screen section — the web equivalent fails
      * silently on error too, so callers just get an empty list here. */
-    suspend fun getInterests(): List<InterestDto> {
+    suspend fun getInterests(country: String): List<InterestDto> {
         return try {
-            val res = api.getInterests()
+            val res = api.getInterests(country)
             if (res.isSuccessful) res.body() ?: emptyList() else emptyList()
         } catch (e: Exception) {
             emptyList()

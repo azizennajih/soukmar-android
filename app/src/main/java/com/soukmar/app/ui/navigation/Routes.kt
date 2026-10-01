@@ -25,6 +25,7 @@ object Routes {
     fun chatDetail(conversationId: String) = "chat/$conversationId"
     const val MES_ANNONCES = "mes_annonces"
     const val FAVORIS = "favoris"
+    const val MES_ABONNEMENTS = "mes_abonnements"
     const val PROFIL = "profil"
     const val SELLER_PROFILE = "vendeur/{id}"
     fun sellerProfile(id: String) = "vendeur/$id"

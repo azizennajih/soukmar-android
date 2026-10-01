@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +51,7 @@ fun SellerProfileScreen(
     sellerId: String,
     onBack: () -> Unit,
     onOpenListing: (String) -> Unit,
+    onRequireLogin: () -> Unit,
     viewModel: SellerProfileViewModel = hiltViewModel()
 ) {
     LaunchedEffect(sellerId) { viewModel.load(sellerId) }
@@ -68,14 +70,14 @@ fun SellerProfileScreen(
                 viewModel.notFound || viewModel.profile == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(t("seller.not_found"), color = TextMuted)
                 }
-                else -> SellerProfileContent(viewModel, onOpenListing)
+                else -> SellerProfileContent(viewModel, onOpenListing, onRequireLogin)
             }
         }
     }
 }
 
 @Composable
-private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListing: (String) -> Unit) {
+private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListing: (String) -> Unit, onRequireLogin: () -> Unit) {
     val profile = viewModel.profile!!
     val listingRows = viewModel.listings.chunked(2)
 
@@ -140,6 +142,24 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             Icon(Icons.Filled.Bolt, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(12.dp))
                             Text(it, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("${profile.followerCount} ${t("seller.followers")}", color = TextMuted, fontSize = 13.sp)
+                    if (!viewModel.isOwnProfile) {
+                        if (viewModel.isLoggedIn) {
+                            com.soukmar.app.ui.components.FollowButton(
+                                following = profile.isFollowing,
+                                submitting = viewModel.followSubmitting,
+                                onToggle = { viewModel.toggleFollow() }
+                            )
+                        } else {
+                            OutlinedButton(onClick = onRequireLogin) {
+                                Icon(Icons.Filled.PersonAdd, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
+                                Text(t("seller.follow"))
+                            }
                         }
                     }
                 }

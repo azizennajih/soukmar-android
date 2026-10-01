@@ -22,6 +22,7 @@ import com.soukmar.app.ui.screens.chat.ChatListScreen
 import com.soukmar.app.ui.screens.chat.ChatScreen
 import com.soukmar.app.ui.screens.deposerannonce.DeposerAnnonceScreen
 import com.soukmar.app.ui.screens.favoris.FavorisScreen
+import com.soukmar.app.ui.screens.mesabonnements.MesAbonnementsScreen
 import com.soukmar.app.ui.screens.home.HomeScreen
 import com.soukmar.app.ui.screens.profil.ProfilScreen
 import com.soukmar.app.ui.screens.listingdetail.ListingDetailScreen
@@ -85,6 +86,7 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
                 onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
+                onOpenMesAbonnements = { navController.navigate(Routes.MES_ABONNEMENTS) },
                 onOpenSavedSearches = { navController.navigate(Routes.SAVED_SEARCHES) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onOpenAdmin = { navController.navigate(Routes.ADMIN) },
@@ -180,6 +182,17 @@ fun SoukMarNavGraph(startDestination: String) {
                 }
             )
         }
+        composable(Routes.MES_ABONNEMENTS) {
+            MesAbonnementsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenSeller = { sellerId -> navController.navigate(Routes.sellerProfile(sellerId)) },
+                onBrowse = {
+                    navController.navigate(Routes.listings()) {
+                        popUpTo(Routes.MES_ABONNEMENTS) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Routes.PROFIL) {
             ProfilScreen(onBack = { navController.popBackStack() })
         }
@@ -190,7 +203,8 @@ fun SoukMarNavGraph(startDestination: String) {
             SellerProfileScreen(
                 sellerId = backStackEntry.arguments?.getString("id") ?: "",
                 onBack = { navController.popBackStack() },
-                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onRequireLogin = { navController.navigate(Routes.LOGIN) }
             )
         }
         composable(Routes.SAVED_SEARCHES) {

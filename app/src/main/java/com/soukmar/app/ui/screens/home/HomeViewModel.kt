@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
                 val res = api.me()
                 if (res.isSuccessful) {
                     user = res.body()
-                    interests = listingRepository.getInterests()
+                    interests = listingRepository.getInterests(country)
                 }
             } catch (_: Exception) { }
             loading = false

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.ReviewWithDetailsDto
 import com.soukmar.app.data.remote.dto.SellerProfileDto
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SellerProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     var loading by mutableStateOf(true)
@@ -33,10 +35,23 @@ class SellerProfileViewModel @Inject constructor(
     var reviews by mutableStateOf<List<ReviewWithDetailsDto>>(emptyList())
         private set
 
+    /** Whether the viewer is logged in / is viewing their own profile — the
+     * follow button is hidden for both an own profile and a logged-out
+     * visitor (who sees a login link instead), mirrors the web's
+     * `auth.currentUser()?.id !== profile.id`/`auth.isLoggedIn` gates. */
+    var isLoggedIn by mutableStateOf(false)
+        private set
+    var isOwnProfile by mutableStateOf(false)
+        private set
+    var followSubmitting by mutableStateOf(false)
+        private set
+
     fun load(sellerId: String) {
         viewModelScope.launch {
             loading = true
             notFound = false
+            isLoggedIn = tokenManager.isLoggedIn()
+            isOwnProfile = isLoggedIn && tokenManager.currentUserId() == sellerId
             when (val result = userRepository.getSellerProfile(sellerId)) {
                 is ApiResult.Success -> profile = result.data
                 is ApiResult.Error -> notFound = true
@@ -56,6 +71,20 @@ class SellerProfileViewModel @Inject constructor(
                 }
             }
             loading = false
+        }
+    }
+
+    fun toggleFollow() {
+        val current = profile ?: return
+        if (followSubmitting) return
+        followSubmitting = true
+        viewModelScope.launch {
+            val result = if (current.isFollowing) userRepository.unfollowUser(current.id) else userRepository.followUser(current.id)
+            when (result) {
+                is ApiResult.Success -> profile = current.copy(isFollowing = result.data.following, followerCount = result.data.followerCount)
+                is ApiResult.Error -> { /* leave state unchanged, silent like other non-essential actions here */ }
+            }
+            followSubmitting = false
         }
     }
 }

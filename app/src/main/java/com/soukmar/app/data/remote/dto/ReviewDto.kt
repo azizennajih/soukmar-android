@@ -75,9 +75,31 @@ data class SellerProfileDto(
     val avgResponseHours: Double? = null,
     val emailVerified: Boolean = false,
     val phoneVerified: Boolean = false,
-    val idVerified: Boolean = false
+    val idVerified: Boolean = false,
+    val followerCount: Int = 0,
+    val isFollowing: Boolean = false
 )
 
 /** Mirrors soukmar-backend's POST/DELETE /api/users/:id/block response. */
 @Serializable
 data class BlockStatusDto(val blocked: Boolean)
+
+/** Mirrors soukmar-backend's POST/DELETE /api/users/:id/follow response. */
+@Serializable
+data class FollowStatusDto(val following: Boolean, val followerCount: Int)
+
+/** Row shape returned by GET /api/users/me/following — a followed seller/
+ * buyer's basic public info plus their current active-listing count, for
+ * the "Mes abonnements" screen. */
+@Serializable
+data class FollowedUserDto(
+    val id: String,
+    val name: String,
+    val city: String? = null,
+    val image: String? = null,
+    val accountType: String? = null,
+    val emailVerified: Boolean = false,
+    val phoneVerified: Boolean = false,
+    val idVerified: Boolean = false,
+    val activeListingsCount: Int = 0
+)

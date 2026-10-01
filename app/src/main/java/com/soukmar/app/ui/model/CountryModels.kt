@@ -242,6 +242,28 @@ val COUNTRY_REGIONS: List<Pair<ContinentRegion, List<String>>> = listOf(
 fun countryFlag(code: String): String =
     code.uppercase().map { 0x1F1E6 - 'A'.code + it.code }.joinToString("") { String(Character.toChars(it)) }
 
+/** Best-guess UI language for a country, among only the 6 languages this
+ * app actually supports (see I18nRepository.SUPPORTED_LANGUAGES) — mirrors
+ * web's country.model.ts defaultLangForCountry(), used to default a
+ * first-time visitor's language to match where they're browsing from
+ * (e.g. USA -> English) instead of always falling back to French. Morocco
+ * keeps 'fr' to match the app's pre-existing default/original audience.
+ * Countries web maps to tr/fa/ur/ps (languages this app doesn't support)
+ * fall back to 'en' here instead, same as every other unlisted country. */
+private val COUNTRY_LANG: Map<String, String> = buildMap {
+    for (c in listOf("DZ", "TN", "LY", "EG", "SD", "MR", "ER", "DJ", "SO", "KM",
+        "SA", "YE", "OM", "AE", "QA", "BH", "KW", "JO", "LB", "SY", "IQ", "PS")) put(c, "ar")
+    for (c in listOf("MA", "FR", "BE", "LU", "MC",
+        "ML", "NE", "TD", "SN", "GN", "CI", "TG", "BJ", "CM", "CF",
+        "GA", "CG", "CD", "BF", "MG", "RW", "BI", "SC", "MU", "HT")) put(c, "fr")
+    for (c in listOf("DE", "AT", "CH", "LI")) put(c, "de")
+    for (c in listOf("ES", "MX", "AR", "CO", "PE", "VE", "CL", "EC", "BO", "PY",
+        "UY", "CR", "PA", "GT", "HN", "NI", "SV", "DO", "CU", "GQ", "AD")) put(c, "es")
+    for (c in listOf("IT", "SM", "VA")) put(c, "it")
+}
+
+fun defaultLangForCountry(code: String): String = COUNTRY_LANG[code] ?: "en"
+
 /** Major/mid-size cities for the ~30 countries curated in an earlier round
  * (moved here 1:1 from web's CITIES_BY_COUNTRY). Every other country in
  * COUNTRIES has no entry here on purpose — the city field falls back to

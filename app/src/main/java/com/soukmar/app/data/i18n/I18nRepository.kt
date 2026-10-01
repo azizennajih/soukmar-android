@@ -4,12 +4,16 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.local.LocalePreferences
+import com.soukmar.app.ui.model.defaultLangForCountry
 import com.soukmar.app.ui.model.humanizeCode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -38,7 +42,8 @@ val SUPPORTED_LANGUAGES = listOf(
 @Singleton
 class I18nRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val localePreferences: LocalePreferences
+    private val localePreferences: LocalePreferences,
+    private val countryRepository: CountryRepository
 ) {
     companion object {
         const val DEFAULT_LANGUAGE = "fr"
@@ -52,6 +57,15 @@ class I18nRepository @Inject constructor(
     private val repoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val json = Json { ignoreUnknownKeys = true }
 
+    /** True once the visitor has explicitly picked a language via setLang()
+     * (or a previously-saved choice was loaded) — from then on, country
+     * changes never override the language. No separate persisted flag is
+     * needed like on web: setLang() here is ALWAYS a genuine manual pick
+     * (the language switcher is the only caller), unlike the web's
+     * LocaleShellComponent which also calls it on every routine URL-segment
+     * sync — see I18nService.setLangFromCountry()'s doc comment there. */
+    private var hasExplicitLang = false
+
     private val dictionaries: Map<String, JsonObject> by lazy {
         SUPPORTED_LANGUAGES.associate { option ->
             val text = context.assets.open("i18n/${option.code}.json").bufferedReader().use { it.readText() }
@@ -62,13 +76,28 @@ class I18nRepository @Inject constructor(
     init {
         repoScope.launch {
             val saved = localePreferences.getLanguage()
-            val resolved = saved?.takeIf { code -> SUPPORTED_LANGUAGES.any { it.code == code } } ?: DEFAULT_LANGUAGE
-            withContext(Dispatchers.Main.immediate) { currentLang = resolved }
+            if (saved != null && SUPPORTED_LANGUAGES.any { it.code == saved }) {
+                hasExplicitLang = true
+                withContext(Dispatchers.Main.immediate) { currentLang = saved }
+            } else {
+                // No explicit choice yet: default from the visitor's country
+                // (e.g. USA -> English) instead of always French, and keep
+                // following it — CountryRepository's own country may still
+                // be resolving (persisted prefs read, or IP-geolocation on a
+                // genuine first launch) when this first runs.
+                withContext(Dispatchers.Main.immediate) { currentLang = defaultLangForCountry(countryRepository.country) }
+                snapshotFlow { countryRepository.country }.collect { code ->
+                    if (!hasExplicitLang) {
+                        withContext(Dispatchers.Main.immediate) { currentLang = defaultLangForCountry(code) }
+                    }
+                }
+            }
         }
     }
 
     fun setLang(code: String) {
         if (code == currentLang || SUPPORTED_LANGUAGES.none { it.code == code }) return
+        hasExplicitLang = true
         currentLang = code
         repoScope.launch { localePreferences.setLanguage(code) }
     }

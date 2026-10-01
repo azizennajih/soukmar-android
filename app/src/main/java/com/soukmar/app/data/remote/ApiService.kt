@@ -64,7 +64,7 @@ interface ApiService {
     suspend fun getSimilarListings(@Path("id") id: String): Response<List<ListingDto>>
 
     @GET("listings/interests")
-    suspend fun getInterests(): Response<List<InterestDto>>
+    suspend fun getInterests(@Query("country") country: String): Response<List<InterestDto>>
 
     @POST("listings")
     suspend fun createListing(@Body body: ListingUpsertRequest): Response<ListingDto>
@@ -135,6 +135,15 @@ interface ApiService {
 
     @DELETE("users/{id}/block")
     suspend fun unblockUser(@Path("id") id: String): Response<BlockStatusDto>
+
+    @POST("users/{id}/follow")
+    suspend fun followUser(@Path("id") id: String): Response<FollowStatusDto>
+
+    @DELETE("users/{id}/follow")
+    suspend fun unfollowUser(@Path("id") id: String): Response<FollowStatusDto>
+
+    @GET("users/me/following")
+    suspend fun getFollowing(): Response<List<FollowedUserDto>>
 
     @POST("reports")
     suspend fun submitReport(@Body body: ReportRequest): Response<ReportRecordDto>
