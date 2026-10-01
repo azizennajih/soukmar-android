@@ -25,7 +25,7 @@ data class LanguageOption(val code: String, val flag: String, val label: String)
 val SUPPORTED_LANGUAGES = listOf(
     LanguageOption("fr", "🇫🇷", "FR"),
     LanguageOption("en", "🇬🇧", "EN"),
-    LanguageOption("ar", "🇲🇦", "عر"),
+    LanguageOption("ar", "🇸🇦", "AR"),
     LanguageOption("de", "🇩🇪", "DE"),
     LanguageOption("es", "🇪🇸", "ES"),
     LanguageOption("it", "🇮🇹", "IT")
