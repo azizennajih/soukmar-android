@@ -37,8 +37,6 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
-            Spacer(Modifier.width(8.dp))
             LanguageSwitcher()
         }
         Spacer(Modifier.height(8.dp))
@@ -97,5 +95,8 @@ fun LoginScreen(
                 Text(t("auth.register_link"), color = Primary, fontWeight = FontWeight.Bold)
             }
         }
+        // The country lives at the bottom (like the web footer), not in the top row.
+        Spacer(Modifier.height(24.dp))
+        CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
     }
 }

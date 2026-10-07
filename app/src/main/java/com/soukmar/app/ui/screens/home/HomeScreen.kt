@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -89,7 +90,6 @@ fun HomeScreen(
             TopAppBar(
                 title = { SoukMarLogo() },
                 actions = {
-                    CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
                     LanguageSwitcher()
                     IconButton(onClick = onOpenFavoris) {
                         Icon(Icons.Filled.FavoriteBorder, contentDescription = t("nav.my_favorites"))
@@ -205,6 +205,12 @@ fun HomeScreen(
                         CategoryIcon(cat.value, tint = cat.fg, modifier = Modifier.size(26.dp))
                         Spacer(Modifier.height(6.dp))
                         Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    }
+                }
+                // The country lives at the very bottom (like the web footer), not in the top bar.
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
+                        CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
                     }
                 }
             }
