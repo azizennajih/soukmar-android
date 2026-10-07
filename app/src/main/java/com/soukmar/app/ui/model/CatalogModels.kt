@@ -594,3 +594,11 @@ fun timeAgo(isoDate: String): String {
         else -> "il y a ${seconds / 2_592_000} mois"
     }
 }
+
+/** Homepage grouping of the categories (labels: i18n "home.cat_group_<key>") — mirrors the web's CATEGORY_GROUPS. */
+val CATEGORY_GROUPS: List<Pair<String, List<String>>> = listOf(
+    "market" to listOf("VEHICLES", "REAL_ESTATE", "ELECTRONICS", "HOME_GARDEN", "FASHION", "SPORTS_LEISURE"),
+    "work" to listOf("JOBS", "SERVICES", "LESSONS_COURSES"),
+    "mobility" to listOf("CARPOOLING", "TRANSPORT", "RENTAL", "MOVING"),
+    "family" to listOf("BABY_KIDS", "PETS", "TICKETS", "GIVEAWAY_SWAP", "OTHER")
+)

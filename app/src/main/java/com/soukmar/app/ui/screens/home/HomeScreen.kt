@@ -49,6 +49,7 @@ import com.soukmar.app.ui.components.SoukMarLogo
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.CATEGORY_GROUPS
 import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.theme.BorderColor
@@ -193,7 +194,14 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(CATEGORIES, key = { it.value }) { cat ->
+                CATEGORY_GROUPS.forEach { (groupKey, values) ->
+                item(span = { GridItemSpan(maxLineSpan) }, key = "group_$groupKey") {
+                    Text(
+                        t("home.cat_group_$groupKey").uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        color = com.soukmar.app.ui.theme.TextMuted, modifier = Modifier.padding(top = 10.dp)
+                    )
+                }
+                items(values.mapNotNull { v -> CATEGORIES.find { it.value == v } }, key = { it.value }) { cat ->
                     Column(
                         modifier = Modifier
                             .clickable { onOpenCategory(cat.value) }
@@ -206,6 +214,7 @@ fun HomeScreen(
                         Spacer(Modifier.height(6.dp))
                         Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
+                }
                 }
                 // The country lives at the very bottom (like the web footer), not in the top bar.
                 item(span = { GridItemSpan(maxLineSpan) }) {
