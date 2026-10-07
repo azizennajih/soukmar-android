@@ -31,7 +31,7 @@ data class ProfileUpdateRequest(val name: String, val phone: String? = null, val
 data class ProfileImageUpdateRequest(val image: String)
 
 @Serializable
-data class LoginRequest(val email: String, val password: String)
+data class LoginRequest(val email: String, val password: String, val lang: String)
 
 @Serializable
 data class LoginResponse(val user: UserDto, val token: String)
@@ -43,14 +43,17 @@ data class RegisterRequest(
     val password: String,
     val phone: String? = null,
     val city: String? = null,
-    val accountType: String
+    val accountType: String,
+    // Language of the confirmation e-mail and the visitor's country (decides currency/default listings).
+    val lang: String,
+    val country: String
 )
 
 @Serializable
-data class MessageResponse(val message: String? = null, @SerialName("emailSent") val emailSent: Boolean = false)
+data class MessageResponse(val message: String? = null, @SerialName("emailSent") val emailSent: Boolean = false, val token: String? = null)
 
 @Serializable
-data class ForgotPasswordRequest(val email: String)
+data class ForgotPasswordRequest(val email: String, val lang: String)
 
 @Serializable
 data class ResetPasswordRequest(val token: String, val password: String)

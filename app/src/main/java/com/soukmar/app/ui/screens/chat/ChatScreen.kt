@@ -419,8 +419,11 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
-                    Icon(Icons.Filled.LocalOffer, contentDescription = t("chat.send_offer"), tint = Gold)
+                // Offers go from the buyer to the listing's owner only.
+                if (viewModel.conversation?.let { it.listing.userId != viewModel.currentUserId } == true) {
+                    IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
+                        Icon(Icons.Filled.LocalOffer, contentDescription = t("chat.send_offer"), tint = Gold)
+                    }
                 }
                 OutlinedTextField(
                     value = viewModel.messageText,

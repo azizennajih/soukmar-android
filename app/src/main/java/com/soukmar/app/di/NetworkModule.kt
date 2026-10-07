@@ -30,15 +30,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(tokenManager: TokenManager): OkHttpClient {
+    fun provideOkHttpClient(tokenManager: TokenManager, i18n: com.soukmar.app.data.i18n.I18nRepository): OkHttpClient {
         val authInterceptor = okhttp3.Interceptor { chain ->
             val token = runBlocking { tokenManager.getToken() }
-            val request = if (token != null) {
-                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-            } else {
-                chain.request()
-            }
-            chain.proceed(request)
+            // Accept-Language makes the API answer errors in the app's current language.
+            val builder = chain.request().newBuilder().header("Accept-Language", i18n.currentLang)
+            if (token != null) builder.addHeader("Authorization", "Bearer $token")
+            chain.proceed(builder.build())
         }
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE

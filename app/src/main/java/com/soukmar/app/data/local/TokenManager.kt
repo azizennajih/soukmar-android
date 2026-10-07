@@ -41,6 +41,11 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
         }
     }
 
+    /** Swaps only the login token — the server issues a fresh one after a password change and revokes all older ones. */
+    suspend fun replaceToken(token: String) {
+        context.dataStore.edit { prefs -> prefs[Keys.TOKEN] = token }
+    }
+
     suspend fun currentUserId(): String? = context.dataStore.data.first()[Keys.USER_ID]
 
     suspend fun currentUserRole(): String? = context.dataStore.data.first()[Keys.USER_ROLE]

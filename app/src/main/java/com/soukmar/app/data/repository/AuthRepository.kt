@@ -1,5 +1,7 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.country.CountryRepository
+import com.soukmar.app.data.i18n.I18nRepository
 import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.*
@@ -17,7 +19,9 @@ sealed class ApiResult<out T> {
 class AuthRepository @Inject constructor(
     private val api: ApiService,
     private val tokenManager: TokenManager,
-    private val json: Json
+    private val json: Json,
+    private val i18n: I18nRepository,
+    private val countryRepository: CountryRepository
 ) {
     private fun <T> parseError(response: Response<T>): ApiResult.Error {
         val body = response.errorBody()?.string()
@@ -29,7 +33,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun login(email: String, password: String): ApiResult<UserDto> {
         return try {
-            val res = api.login(LoginRequest(email, password))
+            val res = api.login(LoginRequest(email, password, i18n.currentLang))
             if (res.isSuccessful && res.body() != null) {
                 val body = res.body()!!
                 tokenManager.saveSession(body.token, body.user.id, body.user.name, body.user.email, body.user.role)
@@ -42,7 +46,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun register(name: String, email: String, password: String, phone: String?, city: String?, accountType: String): ApiResult<Boolean> {
         return try {
-            val res = api.register(RegisterRequest(name, email, password, phone, city, accountType))
+            val res = api.register(RegisterRequest(name, email, password, phone, city, accountType, i18n.currentLang, countryRepository.country))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
@@ -51,7 +55,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun resendVerification(email: String): ApiResult<Boolean> {
         return try {
-            val res = api.resendVerification(ForgotPasswordRequest(email))
+            val res = api.resendVerification(ForgotPasswordRequest(email, i18n.currentLang))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
@@ -60,7 +64,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun forgotPassword(email: String): ApiResult<Boolean> {
         return try {
-            val res = api.forgotPassword(ForgotPasswordRequest(email))
+            val res = api.forgotPassword(ForgotPasswordRequest(email, i18n.currentLang))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
@@ -79,7 +83,11 @@ class AuthRepository @Inject constructor(
     suspend fun changePassword(currentPassword: String, newPassword: String): ApiResult<Boolean> {
         return try {
             val res = api.changePassword(ChangePasswordRequest(currentPassword, newPassword))
-            if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
+            if (res.isSuccessful) {
+                // Every older login token was just revoked server-side; keep this device signed in with the new one.
+                res.body()?.token?.let { tokenManager.replaceToken(it) }
+                ApiResult.Success(true)
+            } else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")
         }
