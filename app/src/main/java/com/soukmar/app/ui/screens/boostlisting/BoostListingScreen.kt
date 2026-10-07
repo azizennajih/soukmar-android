@@ -226,6 +226,12 @@ private fun SummaryCard(viewModel: BoostListingViewModel) {
         Spacer(Modifier.height(10.dp))
         Text(t("boost.payment_note"), color = TextMuted, fontSize = 11.sp, lineHeight = 16.sp)
 
+        Spacer(Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.Top) {
+            Checkbox(checked = viewModel.withdrawalConsent, onCheckedChange = { viewModel.updateWithdrawalConsent(it) })
+            Text(t("boost.withdrawal_consent"), color = TextPrimary, fontSize = 11.sp, lineHeight = 16.sp, modifier = Modifier.padding(top = 12.dp))
+        }
+
         if (showSelectOneError && viewModel.selectedTiers.isEmpty()) {
             Spacer(Modifier.height(8.dp))
             ErrorBanner(t("boost.select_at_least_one"))
@@ -238,7 +244,7 @@ private fun SummaryCard(viewModel: BoostListingViewModel) {
         Spacer(Modifier.height(12.dp))
         Button(
             onClick = { viewModel.submit(onSelectAtLeastOne = { showSelectOneError = true }) },
-            enabled = !viewModel.submitting,
+            enabled = !viewModel.submitting && viewModel.withdrawalConsent,
             colors = ButtonDefaults.buttonColors(containerColor = Primary),
             modifier = Modifier.fillMaxWidth().height(48.dp)
         ) {

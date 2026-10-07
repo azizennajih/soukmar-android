@@ -135,7 +135,7 @@ class ListingRepository @Inject constructor(
 
     suspend fun requestBoost(id: String, tiers: List<String>): ApiResult<BoostRequestDto> {
         return try {
-            val res = api.requestBoost(id, BoostRequestBody(tiers))
+            val res = api.requestBoost(id, BoostRequestBody(tiers, withdrawalConsent = true))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Erreur réseau.")

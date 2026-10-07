@@ -36,6 +36,8 @@ class BoostListingViewModel @Inject constructor(
     var submitting by mutableStateOf(false)
         private set
     var submitted by mutableStateOf(false)
+    /** The buyer's express consent that the service starts early and the withdrawal right ends on full performance (§ 356 (4) BGB). */
+    var withdrawalConsent by mutableStateOf(false)
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set
@@ -53,6 +55,9 @@ class BoostListingViewModel @Inject constructor(
         }
     }
 
+    // Named update… (not setWithdrawalConsent) — a plain setter name clashes with the property setter on the JVM.
+    fun updateWithdrawalConsent(value: Boolean) { withdrawalConsent = value }
+
     fun toggle(tier: BoostTierId) {
         selectedTiers = if (tier in selectedTiers) selectedTiers - tier else selectedTiers + tier
     }
@@ -69,7 +74,7 @@ class BoostListingViewModel @Inject constructor(
 
     fun submit(onSelectAtLeastOne: () -> Unit) {
         if (selectedTiers.isEmpty()) { onSelectAtLeastOne(); return }
-        if (submitting) return
+        if (submitting || !withdrawalConsent) return
         submitting = true
         errorMessage = null
         viewModelScope.launch {

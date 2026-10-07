@@ -240,7 +240,7 @@ fun SoukMarNavGraph(startDestination: String) {
             LegalPageScreen(
                 titleKey = "legal.notice_title",
                 namespace = "legal.notice",
-                sectionCount = 6,
+                sectionCount = 7,
                 onBack = { navController.popBackStack() },
                 extraLinks = {
                     Spacer(Modifier.height(8.dp))

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +37,7 @@ fun LegalPageScreen(
     onBack: () -> Unit,
     extraLinks: (@Composable ColumnScope.() -> Unit)? = null
 ) {
+    LaunchedEffect(Unit) { OperatorInfo.load() }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,7 +54,7 @@ fun LegalPageScreen(
             for (n in 1..sectionCount) {
                 Text(t("$namespace.s${n}_title"), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
                 Spacer(Modifier.height(6.dp))
-                Text(t("$namespace.s${n}_body"), fontSize = 14.sp, color = TextPrimary, lineHeight = 20.sp)
+                Text(OperatorInfo.fill(t("$namespace.s${n}_body")), fontSize = 14.sp, color = TextPrimary, lineHeight = 20.sp)
                 Spacer(Modifier.height(18.dp))
             }
             extraLinks?.invoke(this)

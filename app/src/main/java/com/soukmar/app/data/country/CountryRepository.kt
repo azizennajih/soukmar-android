@@ -3,6 +3,7 @@ package com.soukmar.app.data.country
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.soukmar.app.BuildConfig
 import com.soukmar.app.data.local.CountryPreferences
 import com.soukmar.app.ui.model.isKnownCountry
 import kotlinx.coroutines.CoroutineScope
@@ -72,12 +73,13 @@ class CountryRepository @Inject constructor(
      * convenience default is not worth surfacing an error for. */
     private suspend fun detectCountryFromIp() {
         try {
-            val request = Request.Builder().url("https://ipapi.co/json/").build()
+            // Our own backend looks the country up locally from the request IP — no third-party service sees it.
+            val request = Request.Builder().url(BuildConfig.API_BASE_URL + "geo/country").build()
             val body = plainHttpClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return
                 response.body?.string() ?: return
             }
-            val code = json.parseToJsonElement(body).jsonObject["country_code"]
+            val code = json.parseToJsonElement(body).jsonObject["country"]
                 ?.jsonPrimitive?.content?.uppercase() ?: return
             if (isKnownCountry(code)) {
                 withContext(Dispatchers.Main.immediate) { country = code }

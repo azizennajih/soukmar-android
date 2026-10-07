@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 /** Mirrors soukmar-backend's POST /listings/:id/boost-request body. */
 @Serializable
-data class BoostRequestBody(val tiers: List<String>)
+data class BoostRequestBody(val tiers: List<String>, val withdrawalConsent: Boolean)
 
 /** Mirrors GET /listings/:id/boost-status. */
 @Serializable
