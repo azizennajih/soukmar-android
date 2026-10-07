@@ -30,8 +30,8 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "API_BASE_URL", "\"https://api.soukmar.ma/api/\"")
-            buildConfigField("String", "SOCKET_URL", "\"https://api.soukmar.ma\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://souqmar24.com/api/\"")
+            buildConfigField("String", "SOCKET_URL", "\"https://souqmar24.com\"")
         }
         debug {
             isMinifyEnabled = false
