@@ -213,6 +213,13 @@ fun HomeScreen(
                         CategoryIcon(cat.value, tint = cat.fg, modifier = Modifier.size(26.dp))
                         Spacer(Modifier.height(6.dp))
                         Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        val count = viewModel.categoryCounts[cat.value] ?: 0
+                        if (count > 0) {
+                            Text(
+                                if (count == 1) t("home.category_count_one") else t("home.category_count", "count" to count.toString()),
+                                fontSize = 10.sp, color = cat.fg.copy(alpha = 0.75f), textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
                     }
                 }
                 }

@@ -63,6 +63,10 @@ interface ApiService {
     @GET("listings/{id}/similar")
     suspend fun getSimilarListings(@Path("id") id: String): Response<List<ListingDto>>
 
+    /** Live listing count per category in a country — shown on the homepage's category tiles. */
+    @GET("stats/categories")
+    suspend fun getCategoryCounts(@Query("country") country: String): Response<Map<String, Int>>
+
     @GET("listings/interests")
     suspend fun getInterests(@Query("country") country: String): Response<List<InterestDto>>
 

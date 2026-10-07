@@ -35,6 +35,21 @@ class HomeViewModel @Inject constructor(
         if (code == country) return
         country = code
         countryRepository.updateCountry(code)
+        loadCategoryCounts()
+    }
+
+    var categoryCounts by mutableStateOf<Map<String, Int>>(emptyMap())
+        private set
+
+    private fun loadCategoryCounts() {
+        viewModelScope.launch {
+            try {
+                val res = api.getCategoryCounts(country)
+                categoryCounts = if (res.isSuccessful) res.body() ?: emptyMap() else emptyMap()
+            } catch (_: Exception) {
+                categoryCounts = emptyMap()
+            }
+        }
     }
 
     var user by mutableStateOf<UserDto?>(null)
@@ -56,6 +71,7 @@ class HomeViewModel @Inject constructor(
             } catch (_: Exception) { }
             loading = false
         }
+        loadCategoryCounts()
         registerFcmToken()
         startUnreadPolling()
     }
