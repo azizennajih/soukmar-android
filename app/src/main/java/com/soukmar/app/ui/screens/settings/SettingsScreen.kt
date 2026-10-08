@@ -90,6 +90,14 @@ fun SettingsScreen(
                 Spacer(Modifier.width(8.dp))
                 Text(t("nav.logout"))
             }
+            Spacer(Modifier.height(16.dp))
+            // GeoNames data (CC BY 4.0) feeds the town and village suggestions; the licence requires this credit.
+            Text(
+                "${t("footer.place_data")} GeoNames (CC BY 4.0)",
+                color = TextMuted,
+                fontSize = 11.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

@@ -11,6 +11,7 @@ import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.local.TokenManager
 import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
 import com.soukmar.app.data.remote.dto.ListingDto
+import com.soukmar.app.data.remote.dto.PlaceHitDto
 import com.soukmar.app.data.remote.dto.ListingUpsertRequest
 import com.soukmar.app.data.remote.dto.SubcategoryWithAttributesDto
 import com.soukmar.app.data.repository.ApiResult
@@ -317,6 +318,15 @@ class DeposerAnnonceViewModel @Inject constructor(
     }
 
     fun updatePremium(value: Boolean) { isPremium = value }
+
+    /** Towns and villages of the listing's country matching [query] (suggestions for the city fields). */
+    suspend fun searchPlaces(query: String): List<PlaceHitDto> = listingRepository.searchPlaces(form.country, query)
+
+    /** Start/destination listings (carpooling, transport…) call the first city the start city. */
+    val hasDestinationCity: Boolean get() = attributeDefs.any { it.code == "DESTINATION_CITY" }
+
+    /** A destination country is chosen separately for transport; then the destination city is free text. */
+    val hasDestinationCountry: Boolean get() = attributeDefs.any { it.code == "DESTINATION_COUNTRY" }
 
     fun updateForm(transform: (ListingFormState) -> ListingFormState) {
         form = transform(form)

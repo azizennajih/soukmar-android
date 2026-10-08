@@ -390,7 +390,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     OutlinedTextField(
                         value = viewModel.offerAmount,
                         onValueChange = { if (it.all { c -> c.isDigit() }) viewModel.offerAmount = it },
-                        placeholder = { Text("Montant en ${viewModel.conversation?.listing?.currency ?: "MAD"}") },
+                        placeholder = { Text(t("chat.amount_placeholder", "currency" to (viewModel.conversation?.listing?.currency ?: ""))) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
@@ -458,7 +458,7 @@ private fun SystemMessageRow(msg: MessageDto) {
 
 @Composable
 private fun MsgTimeLabel(iso: String) {
-    val (date, time) = formatMsgTimeParts(iso)
+    val (date, time) = formatMsgTimeParts(iso, com.soukmar.app.ui.i18n.LocalCountry.current)
     Column(horizontalAlignment = Alignment.Start) {
         Text(date, fontSize = 10.sp, color = TextMuted, lineHeight = 12.sp)
         Text(time, fontSize = 10.sp, color = TextMuted, lineHeight = 12.sp)
@@ -497,7 +497,8 @@ private fun OfferBubble(
     onReject: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val amountText = msg.offerAmount?.let { formatPricePartsT(it, currency).first } ?: "—"
+    val amountParts = msg.offerAmount?.let { formatPricePartsT(it, currency) }
+    val amountText = amountParts?.first ?: "—"
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         MsgTimeLabel(msg.createdAt)
@@ -516,7 +517,7 @@ private fun OfferBubble(
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(amountText, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(Modifier.width(4.dp))
-                Text(t("common.mad"), fontSize = 11.sp, color = TextMuted)
+                Text(amountParts?.second ?: currency, fontSize = 11.sp, color = TextMuted)
             }
             when (msg.offerStatus) {
                 "PENDING" -> StatusRow(Icons.Filled.HourglassEmpty, t("chat.pending"), TextMuted)
@@ -590,13 +591,13 @@ private fun ReportDialog(viewModel: ChatViewModel) {
     )
 }
 
-private val msgDateFormatter = DateTimeFormatter.ofPattern("dd.MM.").withZone(ZoneId.systemDefault())
 private val msgHourFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
 
-private fun formatMsgTimeParts(iso: String): Pair<String, String> {
+private fun formatMsgTimeParts(iso: String, country: String): Pair<String, String> {
     return try {
         val instant = Instant.parse(iso)
-        msgDateFormatter.format(instant) to msgHourFormatter.format(instant)
+        val day = instant.atZone(ZoneId.systemDefault()).toLocalDate()
+        com.soukmar.app.ui.model.formatDateForCountry(day, country, withYear = false) to msgHourFormatter.format(instant)
     } catch (e: DateTimeParseException) {
         "" to ""
     }

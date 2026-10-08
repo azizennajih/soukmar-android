@@ -10,6 +10,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
 
+/** The country the app is browsing/listing in (drives the numeric date format, like currency and city lists). */
+val LocalCountry = staticCompositionLocalOf { "MA" }
+
 val LocalI18n = staticCompositionLocalOf<I18nRepository> {
     error("LocalI18n not provided — wrap the app root in CompositionLocalProvider(LocalI18n provides ...)")
 }
@@ -62,8 +65,7 @@ fun dateAttrT(isoDate: String): String {
     val i18n = LocalI18n.current
     i18n.currentLang // read for recomposition on language change
     val date = try { LocalDate.parse(isoDate) } catch (e: DateTimeParseException) { return isoDate }
-    val locale = com.soukmar.app.ui.model.localeForLang(i18n.currentLang)
-    return date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
+    return com.soukmar.app.ui.model.formatDateForCountry(date, LocalCountry.current)
 }
 
 /** Locale- and currency-aware price split for direct use in @Composable UI

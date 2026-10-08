@@ -4,6 +4,7 @@ import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.BoostRequestBody
 import com.soukmar.app.data.remote.dto.BoostRequestDto
+import com.soukmar.app.data.remote.dto.PlaceHitDto
 import com.soukmar.app.data.remote.dto.BoostStatusDto
 import com.soukmar.app.data.remote.dto.InterestDto
 import com.soukmar.app.data.remote.dto.ListingDto
@@ -183,6 +184,16 @@ class ListingRepository @Inject constructor(
     suspend fun getInterests(country: String): List<InterestDto> {
         return try {
             val res = api.getInterests(country)
+            if (res.isSuccessful) res.body() ?: emptyList() else emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /** City-field suggestions; a best-effort convenience, so errors just mean no suggestions. */
+    suspend fun searchPlaces(country: String, query: String): List<PlaceHitDto> {
+        return try {
+            val res = api.searchPlaces(country, query)
             if (res.isSuccessful) res.body() ?: emptyList() else emptyList()
         } catch (e: Exception) {
             emptyList()

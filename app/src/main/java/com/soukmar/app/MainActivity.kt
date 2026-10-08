@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var tokenManager: TokenManager
     @Inject lateinit var i18nRepository: I18nRepository
+    @Inject lateinit var countryRepository: com.soukmar.app.data.country.CountryRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
             val layoutDirection = if (i18nRepository.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
             CompositionLocalProvider(
                 LocalI18n provides i18nRepository,
+                com.soukmar.app.ui.i18n.LocalCountry provides countryRepository.country,
                 LocalLayoutDirection provides layoutDirection
             ) {
             SoukMarTheme {

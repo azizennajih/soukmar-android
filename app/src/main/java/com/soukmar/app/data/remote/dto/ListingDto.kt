@@ -129,3 +129,7 @@ data class ListingFunnelDto(
     val offers: Int = 0,
     val offersAccepted: Int = 0
 )
+
+/** One suggestion from GET /api/places (a town or village; [admin1] is its region, shown beside the name). */
+@Serializable
+data class PlaceHitDto(val name: String, val admin1: String? = null, val population: Int = 0)

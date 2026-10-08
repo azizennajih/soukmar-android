@@ -67,6 +67,10 @@ interface ApiService {
     @GET("stats/categories")
     suspend fun getCategoryCounts(@Query("country") country: String): Response<Map<String, Int>>
 
+    /** Towns and villages of a country matching [q] (GeoNames data) — city field suggestions. */
+    @GET("places")
+    suspend fun searchPlaces(@Query("country") country: String, @Query("q") q: String, @Query("limit") limit: Int = 30): Response<List<PlaceHitDto>>
+
     @GET("listings/interests")
     suspend fun getInterests(@Query("country") country: String): Response<List<InterestDto>>
 

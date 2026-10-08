@@ -37,7 +37,9 @@ import coil.compose.AsyncImage
 import com.soukmar.app.data.remote.dto.BOOST_TIERS
 import com.soukmar.app.data.remote.dto.BoostTier
 import com.soukmar.app.data.remote.dto.BoostTierId
+import com.soukmar.app.data.remote.dto.boostCurrency
 import com.soukmar.app.data.remote.dto.quoteBoostPrice
+import com.soukmar.app.data.remote.dto.tierPrice
 import com.soukmar.app.ui.components.ErrorBanner
 import com.soukmar.app.ui.i18n.LocalI18n
 import com.soukmar.app.ui.i18n.formatPricePartsT
@@ -141,6 +143,7 @@ private fun BoostListingContent(viewModel: BoostListingViewModel) {
                 BOOST_TIERS.forEach { tier ->
                     TierCard(
                         tier = tier,
+                        price = money(tierPrice(tier.id, boostCurrency(viewModel.listing?.currency)), boostCurrency(viewModel.listing?.currency)),
                         selected = tier.id in viewModel.selectedTiers,
                         activeUntil = when (tier.id) {
                             BoostTierId.spotlight -> viewModel.boostStatus?.boostSpotlightUntil
@@ -160,8 +163,15 @@ private fun BoostListingContent(viewModel: BoostListingViewModel) {
     }
 }
 
+/** Amount with its currency symbol, formatted for the active language (boosts are charged in [currency]). */
 @Composable
-private fun TierCard(tier: BoostTier, selected: Boolean, activeUntil: String?, onToggle: () -> Unit) {
+private fun money(amount: Double, currency: String): String {
+    val parts = formatPricePartsT(amount, currency)
+    return "${parts.first} ${parts.second}"
+}
+
+@Composable
+private fun TierCard(tier: BoostTier, price: String, selected: Boolean, activeUntil: String?, onToggle: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,7 +194,7 @@ private fun TierCard(tier: BoostTier, selected: Boolean, activeUntil: String?, o
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(t("boost.tier_${tier.id.name}_name"), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
-                Text("${tier.priceMAD} MAD", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
+                Text(price, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
             }
             Spacer(Modifier.height(3.dp))
             Text(t("boost.tier_${tier.id.name}_desc"), color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
@@ -208,20 +218,21 @@ private fun TierCard(tier: BoostTier, selected: Boolean, activeUntil: String?, o
 
 @Composable
 private fun SummaryCard(viewModel: BoostListingViewModel) {
-    val quote = quoteBoostPrice(viewModel.selectedTiers)
+    val currency = boostCurrency(viewModel.listing?.currency)
+    val quote = quoteBoostPrice(viewModel.selectedTiers, currency)
     var showSelectOneError by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
     ) {
-        SummaryRow(t("boost.subtotal"), "${quote.subtotal} MAD")
+        SummaryRow(t("boost.subtotal"), money(quote.subtotal, currency))
         if (quote.discountPercent > 0) {
-            SummaryRow(t("boost.discount"), "-${quote.subtotal - quote.total} MAD", color = Primary)
+            SummaryRow(t("boost.discount"), "-" + money(quote.subtotal - quote.total, currency), color = Primary)
         }
         Spacer(Modifier.height(6.dp))
         HorizontalDivider(color = BorderColor)
         Spacer(Modifier.height(6.dp))
-        SummaryRow(t("boost.total"), "${quote.total} MAD", bold = true)
+        SummaryRow(t("boost.total"), money(quote.total, currency), bold = true)
 
         Spacer(Modifier.height(10.dp))
         Text(t("boost.payment_note"), color = TextMuted, fontSize = 11.sp, lineHeight = 16.sp)

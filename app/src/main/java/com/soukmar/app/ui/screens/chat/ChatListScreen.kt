@@ -111,11 +111,12 @@ private fun ConversationRow(conv: ConversationDto, myId: String?, onClick: () ->
     }
 }
 
+@Composable
 private fun lastMessagePreview(conv: ConversationDto): String {
-    val last = conv.messages.firstOrNull() ?: return "Aucun message"
+    val last = conv.messages.firstOrNull() ?: return t("chat.no_message")
     if (last.type == "OFFER") {
         val amount = last.offerAmount?.let { if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString() } ?: ""
-        return "Offre: $amount MAD"
+        return t("chat.offer_short", "amount" to amount, "currency" to conv.listing.currency)
     }
     return last.content.take(40)
 }

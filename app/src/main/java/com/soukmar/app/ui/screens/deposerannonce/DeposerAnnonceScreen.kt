@@ -46,20 +46,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import androidx.compose.ui.focus.onFocusChanged
 import com.soukmar.app.data.remote.dto.AttributeDefinitionDto
+import com.soukmar.app.data.remote.dto.PlaceHitDto
 import com.soukmar.app.data.remote.dto.SubcategoryWithAttributesDto
 import com.soukmar.app.ui.components.ErrorBanner
 import com.soukmar.app.ui.components.PrimaryButton
 import com.soukmar.app.ui.components.TextAutocompleteField
+import com.soukmar.app.ui.i18n.LocalCountry
 import com.soukmar.app.ui.i18n.LocalI18n
+import com.soukmar.app.ui.i18n.cityLabelT
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
+import com.soukmar.app.ui.model.CITIES_BY_COUNTRY
 import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.JOB_PROFESSIONS_BY_SECTOR
 import com.soukmar.app.ui.model.JOB_PROFESSION_CODES
 import com.soukmar.app.ui.model.categoryConfig
 import com.soukmar.app.ui.model.countryFlag
+import com.soukmar.app.ui.model.datePlaceholder
+import com.soukmar.app.ui.model.formatDateForCountry
 import com.soukmar.app.ui.model.localeForLang
 import java.util.Locale
 import com.soukmar.app.ui.theme.BorderColor
@@ -360,7 +367,10 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         value = form.title,
         onValueChange = { if (it.length <= 100) viewModel.updateForm { f -> f.copy(title = it) } },
         label = { Text(t("deposer.label_title")) },
-        placeholder = { Text(t("deposer.placeholder_title_${form.category.lowercase()}")) },
+        placeholder = {
+            val (from, to) = exampleCities(form.country)
+            Text(t("deposer.placeholder_title_${form.category.lowercase()}", "from" to from, "to" to to))
+        },
         supportingText = { Text("${form.title.length}/100 ${t("deposer.chars")}") },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
@@ -394,7 +404,13 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
     // still derive from form.country, which DeposerAnnonceViewModel keeps in
     // live sync with CountryRepository.country. Mirrors web's
     // deposer-annonce.component.html post-"zentral gesteuert" fix.
-    CityDropdown(selected = form.city, cities = form.citiesForCountry, onSelect = { viewModel.updateForm { f -> f.copy(city = it) } })
+    CityDropdown(
+        selected = form.city,
+        cities = form.citiesForCountry,
+        label = t(if (viewModel.hasDestinationCity) "deposer.label_start_city" else "deposer.label_city"),
+        suggest = { viewModel.searchPlaces(it) },
+        onSelect = { viewModel.updateForm { f -> f.copy(city = it) } }
+    )
 
     if (viewModel.showCondition) {
         Spacer(Modifier.height(12.dp))
@@ -427,32 +443,81 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
     }
 }
 
-/** [cities] empty means the chosen country has no curated list (most of the
- * ~195 countries don't) — falls back to a plain free-text field, exactly
- * like web's CountrySelectComponent/CityDropdown fallback (Listing.city is a
- * free string backend-side either way, only without suggestions). */
+/** Two big cities of the listing's country for the title examples ("Berlin → Hamburg"); never another country's. */
 @Composable
-private fun CityDropdown(selected: String, cities: List<String>, onSelect: (String) -> Unit) {
+private fun exampleCities(country: String): Pair<String, String> {
+    val list = if (country == "MA") listOf("Casablanca", "Marrakech") else (CITIES_BY_COUNTRY[country] ?: emptyList())
+    val from = list.getOrNull(0)?.let { cityLabelT(it) } ?: t("deposer.example_city_a")
+    val to = list.getOrNull(1)?.let { cityLabelT(it) } ?: t("deposer.example_city_b")
+    return from to to
+}
+
+/** City field with suggestions. [cities] is the country's curated list (empty for most countries);
+ * on top of it, towns and villages of the country come from the server as the user types ([suggest],
+ * GeoNames data), so any place down to the smallest village can be picked. Free text always stays possible
+ * (Listing.city is a free string backend-side) — suggestions are a shortcut, never a constraint. */
+@Composable
+private fun CityDropdown(
+    selected: String,
+    cities: List<String>,
+    label: String,
+    suggest: suspend (String) -> List<PlaceHitDto>,
+    onSelect: (String) -> Unit
+) {
+    var remote by remember { mutableStateOf(emptyList<PlaceHitDto>()) }
+
     if (cities.isEmpty()) {
-        OutlinedTextField(
-            value = selected,
-            onValueChange = onSelect,
-            label = { Text(t("deposer.label_city")) },
-            placeholder = { Text(t("deposer.city_default")) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
-        )
+        // No curated list: a plain text field with the server's suggestions listed right below it.
+        var focused by remember { mutableStateOf(false) }
+        val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+        LaunchedEffect(selected, focused) {
+            if (!focused) { remote = emptyList(); return@LaunchedEffect }
+            kotlinx.coroutines.delay(250)
+            remote = suggest(selected.trim())
+        }
+        Column {
+            OutlinedTextField(
+                value = selected,
+                onValueChange = onSelect,
+                label = { Text(label) },
+                placeholder = { Text(t("deposer.city_default")) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused },
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
+            )
+            val hits = remote.filter { !it.name.equals(selected.trim(), ignoreCase = true) }
+            if (focused && hits.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                        .heightIn(max = 240.dp)
+                        .background(WhiteColor, RoundedCornerShape(12.dp))
+                        .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    hits.forEach { hit ->
+                        PlaceRow(hit) { onSelect(hit.name); focusManager.clearFocus() }
+                    }
+                }
+            }
+        }
         return
     }
+
     var expanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
+    LaunchedEffect(query, expanded) {
+        if (!expanded || query.isBlank()) { remote = emptyList(); return@LaunchedEffect }
+        kotlinx.coroutines.delay(250)
+        remote = suggest(query.trim())
+    }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
             value = selected,
             onValueChange = {},
             readOnly = true,
-            label = { Text(t("deposer.label_city")) },
+            label = { Text(label) },
             placeholder = { Text(t("deposer.city_default")) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(),
@@ -467,10 +532,37 @@ private fun CityDropdown(selected: String, cities: List<String>, onSelect: (Stri
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
             )
-            cities.filter { it.contains(query, ignoreCase = true) }.take(60).forEach { city ->
+            val local = cities.filter { it.contains(query, ignoreCase = true) }.take(60)
+            local.forEach { city ->
                 DropdownMenuItem(text = { Text(city) }, onClick = { onSelect(city); expanded = false; query = "" })
             }
+            val known = local.map { it.lowercase() }.toSet()
+            remote.filter { it.name.lowercase() !in known }.forEach { hit ->
+                DropdownMenuItem(
+                    text = { PlaceLabel(hit) },
+                    onClick = { onSelect(hit.name); expanded = false; query = "" }
+                )
+            }
         }
+    }
+}
+
+/** A suggested place: its name, with the region in muted type to tell apart villages that share a name. */
+@Composable
+private fun PlaceLabel(hit: PlaceHitDto) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(hit.name)
+        if (!hit.admin1.isNullOrBlank()) {
+            Spacer(Modifier.width(6.dp))
+            Text(hit.admin1, color = TextMuted, fontSize = 12.sp)
+        }
+    }
+}
+
+@Composable
+private fun PlaceRow(hit: PlaceHitDto, onClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp)) {
+        PlaceLabel(hit)
     }
 }
 
@@ -508,6 +600,14 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                     labelPrefix = "job_professions."
                 )
             }
+            // Without a separately chosen destination country the destination is in the listing's own country.
+            def.code == "DESTINATION_CITY" && !viewModel.hasDestinationCountry -> CityDropdown(
+                selected = viewModel.attrTextValue(def.code),
+                cities = viewModel.form.citiesForCountry,
+                label = tCatalog("attrs.${def.code}", def.code),
+                suggest = { viewModel.searchPlaces(it) },
+                onSelect = { viewModel.setAttrText(def.code, it) }
+            )
             def.type == "TEXT" -> OutlinedTextField(
                 value = viewModel.attrTextValue(def.code),
                 onValueChange = { viewModel.setAttrText(def.code, it) },
@@ -600,10 +700,10 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                 val value = viewModel.attrTextValue(def.code)
                 Box {
                     OutlinedTextField(
-                        value = value,
+                        value = value.toLocalDateOrNull()?.let { formatDateForCountry(it, LocalCountry.current) } ?: value,
                         onValueChange = {},
                         readOnly = true,
-                        placeholder = { Text("jj/mm/aaaa") },
+                        placeholder = { Text(datePlaceholder(LocalCountry.current, LocalI18n.current.currentLang)) },
                         trailingIcon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
