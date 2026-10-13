@@ -131,12 +131,20 @@ fun ListingsScreen(
                     )
                 }
                 else -> {
+                    Column(Modifier.fillMaxSize()) {
+                    if (viewModel.showingOtherCountries) {
+                        Text(
+                            t("annonces.other_countries_hint", "country" to java.util.Locale("", viewModel.country).getDisplayCountry(java.util.Locale(com.soukmar.app.ui.i18n.LocalI18n.current.currentLang)).ifEmpty { viewModel.country }),
+                            color = TextMuted, style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                        )
+                    }
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxWidth().weight(1f)
                     ) {
                         items(viewModel.listings, key = { it.id }) { listing ->
                             ListingCard(listing = listing, onClick = { onOpenListing(listing.id) })
@@ -152,6 +160,7 @@ fun ListingsScreen(
                                 }
                             }
                         }
+                    }
                     }
                 }
             }

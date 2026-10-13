@@ -89,6 +89,10 @@ class ListingsViewModel @Inject constructor(
         private set
     var error by mutableStateOf<String?>(null)
         private set
+    /** True while the list shows other countries' listings because the visitor's own country has none yet
+     * (mirrors web's showingOtherCountries). */
+    var showingOtherCountries by mutableStateOf(false)
+        private set
     private var page = 1
     var hasMore by mutableStateOf(false)
         private set
@@ -267,7 +271,8 @@ class ListingsViewModel @Inject constructor(
     }
 
     private fun buildParams(targetPage: Int): Map<String, String> {
-        val params = mutableMapOf("page" to targetPage.toString(), "limit" to "20", "country" to country)
+        val params = mutableMapOf("page" to targetPage.toString(), "limit" to "20")
+        if (!showingOtherCountries) params["country"] = country
         if (query.isNotBlank()) params["q"] = query.trim()
         selectedCategory?.let { params["category"] = it }
         selectedSubcategoryId?.let { params["subcategoryId"] = it }
@@ -290,12 +295,27 @@ class ListingsViewModel @Inject constructor(
         return params
     }
 
+    /** A plain browse of the portal (optionally one category) — no search, filter, price or place narrowing. */
+    private val isPlainBrowse: Boolean
+        get() = query.isBlank() && selectedSubcategoryId == null && selectedCondition == null && selectedAccountType == null &&
+            minPrice.isBlank() && maxPrice.isBlank() && lat == null && attrSelections.values.all { it.isEmpty() } &&
+            attrRanges.values.all { it.first.isBlank() && it.second.isBlank() } && attrTextFilters.values.all { it.isBlank() }
+
     fun search() {
         page = 1
         loading = true
         error = null
+        showingOtherCountries = false
         viewModelScope.launch {
-            when (val result = listingRepository.getListings(buildParams(1))) {
+            var result = listingRepository.getListings(buildParams(1))
+            // A visitor from a country without listings would face an empty page: show the other countries' listings
+            // instead, with a hint (web does the same, see annonces.component.ts).
+            if (result is ApiResult.Success && result.data.total == 0 && isPlainBrowse) {
+                showingOtherCountries = true
+                val other = listingRepository.getListings(buildParams(1))
+                if (other is ApiResult.Success && other.data.total > 0) result = other else showingOtherCountries = false
+            }
+            when (result) {
                 is ApiResult.Success -> {
                     listings = result.data.listings
                     hasMore = result.data.page < result.data.pages

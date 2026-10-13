@@ -526,7 +526,8 @@ val MOROCCO_CITIES_AR: Map<String, String> = mapOf(
  * otherwise the French/Latin spelling — mirrors listing.model.ts's cityLabel(). */
 fun cityLabel(city: String, lang: String): String {
     if (city.isEmpty()) return city
-    return if (lang == "ar") MOROCCO_CITIES_AR[city] ?: city else city
+    if (lang == "ar") return MOROCCO_CITIES_AR[city] ?: CityNames.label("ar", city) ?: city
+    return CityNames.label(lang, city) ?: city
 }
 
 val HIGHLIGHT_ATTR_CODES: Map<String, List<String>> = mapOf(
@@ -546,6 +547,11 @@ fun localeForLang(lang: String): Locale = when (lang) {
     "de" -> Locale.GERMAN
     "es" -> Locale("es")
     "it" -> Locale.ITALIAN
+    "pt" -> Locale("pt")
+    "tr" -> Locale("tr")
+    "fa" -> Locale("fa")
+    "ur" -> Locale("ur")
+    "ps" -> Locale("ps")
     else -> Locale.FRENCH
 }
 

@@ -12,6 +12,7 @@ class SoukMarApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        com.soukmar.app.ui.model.CityNames.load(this)
         val channel = NotificationChannel(
             getString(R.string.default_notification_channel_id),
             "Notifications SoukMar",

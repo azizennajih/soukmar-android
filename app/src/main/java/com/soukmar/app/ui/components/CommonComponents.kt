@@ -30,6 +30,8 @@ import com.soukmar.app.ui.theme.TextPrimary
 
 @Composable
 fun SoukMarLogo(modifier: Modifier = Modifier) {
+    // The wordmark is a brand: it always reads "S SouqMar24" left to right, also in RTL languages.
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
@@ -44,6 +46,7 @@ fun SoukMarLogo(modifier: Modifier = Modifier) {
             Text("SouqMar", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 20.sp)
             Text("24", color = Primary, fontWeight = FontWeight.Black, fontSize = 20.sp)
         }
+    }
     }
 }
 

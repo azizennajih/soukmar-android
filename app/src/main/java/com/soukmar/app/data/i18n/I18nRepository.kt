@@ -32,10 +32,18 @@ val SUPPORTED_LANGUAGES = listOf(
     LanguageOption("ar", "🇸🇦", "AR"),
     LanguageOption("de", "🇩🇪", "DE"),
     LanguageOption("es", "🇪🇸", "ES"),
-    LanguageOption("it", "🇮🇹", "IT")
+    LanguageOption("it", "🇮🇹", "IT"),
+    LanguageOption("pt", "🇧🇷", "PT"),
+    LanguageOption("tr", "🇹🇷", "TR"),
+    LanguageOption("fa", "🇮🇷", "فا"),
+    LanguageOption("ur", "🇵🇰", "اردو"),
+    LanguageOption("ps", "🇦🇫", "پښتو")
 )
 
-/** Ports the web app's I18nService 1:1: same 6 languages, same JSON files
+/** Right-to-left scripts among the supported languages — Arabic, Persian, Urdu and Pashto (mirrors web RTL_LANGS). */
+val RTL_LANGUAGES = setOf("ar", "fa", "ur", "ps")
+
+/** Ports the web app's I18nService 1:1: same 11 languages, same JSON files
  * (copied verbatim into assets/i18n/), same dotted-key nested-object lookup,
  * same single-brace {param} interpolation, same fr fallback, same "missing
  * key renders as the raw key" behavior (no per-key language fallback). */
@@ -52,7 +60,7 @@ class I18nRepository @Inject constructor(
     var currentLang by mutableStateOf(DEFAULT_LANGUAGE)
         private set
 
-    val isRtl: Boolean get() = currentLang == "ar"
+    val isRtl: Boolean get() = currentLang in RTL_LANGUAGES
 
     private val repoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val json = Json { ignoreUnknownKeys = true }
