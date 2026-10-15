@@ -205,6 +205,8 @@ Reihenfolge pro Phase:
 4. Demo-Accounts: `ahmed@soukmar.ma` / `fatima@soukmar.ma` / `youssef@soukmar.ma`, Passwort jeweils `soukmar123`.
 5. Erst nach erfolgreichem Test committen + zu `github.com/azizennajih/soukmar-android` pushen.
 
+**Installierbarer Test-Build für ein echtes Handy/Tablet (seit 2026-10-15):** `./gradlew assembleLive` (JAVA_HOME wie oben, ca. 6 Min) -> `app/build/outputs/apk/live/app-live.apk`. Spricht mit https://souqmar24.com (wie Release), ist mit dem Debug-Schlüssel signiert und lässt sich per Sideload installieren (Quellen: unbekannte Apps erlauben). Der Debug-Build (`assembleDebug`) spricht dagegen nur mit 10.0.2.2 (Emulator). Für den Play Store braucht es später einen eigenen Release-Schlüssel.
+
 **Achtung Workflow-Datei:** `.github/workflows/android-build.yml` kann mit dem aktuellen GitHub-Token nicht gepusht werden (fehlender `workflow`-Scope) — bleibt lokal im Arbeitsverzeichnis, nicht versioniert. Nicht erneut versuchen zu pushen, bis der Nutzer den Token-Scope erweitert hat.
 
 ---

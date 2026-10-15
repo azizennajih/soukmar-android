@@ -36,6 +36,13 @@ android {
         debug {
             isMinifyEnabled = false
         }
+        // Installable test build for a real phone/tablet: same live server as release (souqmar24.com), signed with the
+        // debug key so it can be sideloaded. Not for the Play Store (that needs a proper release keystore).
+        create("live") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+        }
     }
 
     compileOptions {
