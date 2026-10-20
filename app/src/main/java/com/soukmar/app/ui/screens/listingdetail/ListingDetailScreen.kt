@@ -120,6 +120,24 @@ fun ListingDetailScreen(
             else -> {
                 val listing = viewModel.listing!!
                 Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
+                    // The owner and staff can open a listing that is not public yet; say so.
+                    if (listing.status == "PENDING" || listing.status == "CHANGES_REQUESTED" || listing.status == "REJECTED" || listing.status == "SUSPENDED") {
+                        val statusText = when (listing.status) {
+                            "PENDING" -> t("annonces.pending")
+                            "CHANGES_REQUESTED" -> t("annonces.changes_requested")
+                            "REJECTED" -> t("annonces.rejected")
+                            else -> t("annonces.suspended")
+                        }
+                        Text(
+                            t("listing.not_public_notice", "status" to statusText),
+                            fontSize = 13.sp,
+                            color = TextPrimary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(com.soukmar.app.ui.theme.GoldLight)
+                                .padding(12.dp)
+                        )
+                    }
                     ImageGallery(images = listing.images)
 
                     Column(modifier = Modifier.padding(16.dp)) {

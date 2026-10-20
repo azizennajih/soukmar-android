@@ -60,7 +60,11 @@ data class ListingDto(
     val boostSpotlightUntil: String? = null,
     val boostTopUntil: String? = null,
     val boostGlobalUntil: String? = null,
-    val boostRank: Int = 0
+    val boostRank: Int = 0,
+    // Review workflow: reason of the last staff decision (rejection, change request, suspension) — owner/staff only —
+    // and whether a rejected listing may be edited and submitted again.
+    val moderationReason: String? = null,
+    val resubmitAllowed: Boolean = false
 )
 
 @Serializable

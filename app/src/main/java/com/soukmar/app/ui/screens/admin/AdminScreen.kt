@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.RocketLaunch
@@ -89,11 +90,18 @@ fun AdminScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             val tabIndex = when (viewModel.currentTab) {
-                AdminTab.REPORTS -> 0
-                AdminTab.ID_VERIFICATIONS -> 1
-                AdminTab.BOOST_REQUESTS -> 2
+                AdminTab.MODERATION -> 0
+                AdminTab.REPORTS -> 1
+                AdminTab.ID_VERIFICATIONS -> 2
+                AdminTab.BOOST_REQUESTS -> 3
             }
-            TabRow(selectedTabIndex = tabIndex, containerColor = WhiteColor, contentColor = Primary) {
+            ScrollableTabRow(selectedTabIndex = tabIndex, containerColor = WhiteColor, contentColor = Primary, edgePadding = 0.dp) {
+                Tab(
+                    selected = viewModel.currentTab == AdminTab.MODERATION,
+                    onClick = { viewModel.currentTab = AdminTab.MODERATION },
+                    text = { Text(t("moderation.title")) },
+                    icon = { Icon(Icons.Filled.Gavel, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                )
                 Tab(
                     selected = viewModel.currentTab == AdminTab.REPORTS,
                     onClick = { viewModel.currentTab = AdminTab.REPORTS },
@@ -115,6 +123,7 @@ fun AdminScreen(
             }
 
             when (viewModel.currentTab) {
+              AdminTab.MODERATION -> ModerationPanel(onOpenListing = onOpenListing)
               AdminTab.REPORTS -> {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),

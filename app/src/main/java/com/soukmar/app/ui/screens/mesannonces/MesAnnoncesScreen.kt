@@ -53,6 +53,8 @@ private fun statusStyle(status: String): StatusStyle = when (status) {
     "SOLD" -> StatusStyle(t("annonces.sold"), Color(0xFFDBEAFE), Color(0xFF1D4ED8))
     "REJECTED" -> StatusStyle(t("annonces.rejected"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
     "EXPIRED" -> StatusStyle(t("annonces.expired"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
+    "CHANGES_REQUESTED" -> StatusStyle(t("annonces.changes_requested"), Color(0xFFFEF9C3), Color(0xFFA16207))
+    "SUSPENDED" -> StatusStyle(t("annonces.suspended"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
     else -> StatusStyle(status, BorderColor, TextMuted)
 }
 
@@ -201,6 +203,15 @@ private fun ListingRow(
     val priceParts = listing.price?.let { formatPricePartsT(it, listing.currency) }
     val style = statusStyle(listing.status)
     val canToggleReserve = listing.status == "ACTIVE" || listing.status == "RESERVED"
+    // A final rejection cannot be edited any more (the server refuses it too).
+    val canEdit = !(listing.status == "REJECTED" && !listing.resubmitAllowed)
+    val reviewHint = when (listing.status) {
+        "PENDING" -> t("mes_annonces.review_pending")
+        "CHANGES_REQUESTED" -> t("mes_annonces.review_changes")
+        "REJECTED" -> t(if (listing.resubmitAllowed) "mes_annonces.review_rejected_resubmit" else "mes_annonces.review_rejected_final")
+        "SUSPENDED" -> t("mes_annonces.review_suspended")
+        else -> null
+    }
 
     Column(
         modifier = Modifier
@@ -268,6 +279,23 @@ private fun ListingRow(
                 }
             }
         }
+        if (reviewHint != null) {
+            Spacer(Modifier.height(8.dp))
+            val rejected = listing.status == "REJECTED" || listing.status == "SUSPENDED"
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(if (rejected) PrimaryLight else Color(0xFFFEF6E4), RoundedCornerShape(8.dp))
+                    .border(1.dp, if (rejected) Primary else Color(0xFFC9941A), RoundedCornerShape(8.dp))
+                    .padding(8.dp)
+            ) {
+                Text(reviewHint, fontSize = 12.sp, color = TextPrimary)
+                if (!listing.moderationReason.isNullOrBlank() && listing.status != "PENDING") {
+                    Spacer(Modifier.height(4.dp))
+                    Text("${t("mes_annonces.reason_label")} ${listing.moderationReason}", fontSize = 12.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             RowActionButton(Icons.Filled.Visibility, t("mes_annonces.see"), onClick = onOpen)
@@ -279,7 +307,9 @@ private fun ListingRow(
                     onClick = onToggleReserve
                 )
             }
-            RowActionButton(Icons.Filled.Edit, t("mes_annonces.edit"), onClick = onEdit)
+            if (canEdit) {
+                RowActionButton(Icons.Filled.Edit, if (listing.status == "CHANGES_REQUESTED" || listing.status == "REJECTED") t("mes_annonces.edit_resubmit") else t("mes_annonces.edit"), onClick = onEdit)
+            }
             if (canToggleReserve) {
                 RowActionButton(Icons.Filled.ArrowUpward, if (canBump) t("mes_annonces.bump") else t("mes_annonces.bump_cooldown"), enabled = canBump && !bumping, onClick = onBump)
                 RowActionButton(Icons.Filled.RocketLaunch, t("mes_annonces.boost"), onClick = onBoost)

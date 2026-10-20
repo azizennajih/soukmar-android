@@ -174,6 +174,31 @@ interface ApiService {
     @PATCH("admin/boost-requests/{id}")
     suspend fun updateAdminBoostRequest(@Path("id") id: String, @Body body: BoostRequestReviewRequest): Response<BoostRequestDto>
 
+    // Listing review workflow (staff only): admin/moderation/*
+    @GET("admin/moderation/summary")
+    suspend fun getModerationSummary(): Response<ModerationSummaryDto>
+
+    @GET("admin/moderation/listings")
+    suspend fun getModerationQueue(
+        @Query("status") status: String,
+        @Query("country") country: String? = null,
+        @Query("category") category: String? = null,
+        @Query("q") q: String? = null,
+        @Query("sort") sort: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<ModerationQueueDto>
+
+    @GET("admin/moderation/listings/{id}")
+    suspend fun getModerationDetail(@Path("id") id: String): Response<ModerationDetailDto>
+
+    /** action: approve | reject | request-changes | suspend | requeue */
+    @POST("admin/moderation/listings/{id}/{action}")
+    suspend fun decideListing(@Path("id") id: String, @Path("action") action: String, @Body body: ModerationDecisionRequest): Response<ModerationDecisionResponseDto>
+
+    @POST("admin/moderation/events/{id}/resend-email")
+    suspend fun resendModerationMail(@Path("id") id: String): Response<ModerationResendResponseDto>
+
     @Multipart
     @POST("listings/search-by-image")
     suspend fun searchByImage(
