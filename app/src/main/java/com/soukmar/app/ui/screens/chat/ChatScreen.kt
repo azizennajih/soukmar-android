@@ -83,16 +83,6 @@ fun ChatScreen(
     LaunchedEffect(conversationId) { viewModel.load(conversationId) }
 
     val context = LocalContext.current
-    val micPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) viewModel.startCall()
-    }
-    fun startCallWithPermissionCheck() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            viewModel.startCall()
-        } else {
-            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-        }
-    }
     val micPermissionLauncherForAccept = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) viewModel.acceptCall() else viewModel.rejectCall()
     }
@@ -115,11 +105,6 @@ fun ChatScreen(
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     viewModel.conversation?.let { conv ->
-                        if (!conv.blockedByMe && !conv.blockedByThem && viewModel.callManager.phase == CallPhase.IDLE) {
-                            IconButton(onClick = { startCallWithPermissionCheck() }) {
-                                Icon(Icons.Filled.Call, contentDescription = t("chat.call_start"), tint = Primary)
-                            }
-                        }
                         IconButton(onClick = { viewModel.requestBlockToggle() }, enabled = !viewModel.blockSubmitting) {
                             Icon(
                                 if (conv.blockedByMe) Icons.Filled.RemoveCircleOutline else Icons.Filled.Block,
