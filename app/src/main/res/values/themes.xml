@@ -3,4 +3,13 @@
         <item name="android:statusBarColor">#D93D4A</item>
         <item name="android:windowBackground">#F8F7F5</item>
     </style>
+
+    <!-- Startbildschirm: Marken-Rot ueber die ganze Flaeche (wie bei CHECK24). Das weisse Logo zeichnet SplashContent.kt darauf, weil das System-Symbol ab Android 12 auf einen kleinen Kreis begrenzt ist. Danach Theme.SoukMar. -->
+    <style name="Theme.SoukMar.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#D93D4A</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_empty</item>
+        <item name="postSplashScreenTheme">@style/Theme.SoukMar</item>
+        <item name="android:statusBarColor">#D93D4A</item>
+        <item name="android:navigationBarColor">#D93D4A</item>
+    </style>
 </resources>
