@@ -3,10 +3,17 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,38 h40 a10,10 0 0 1 10,10 v20 a10,10 0 0 1 -10,10 h-40 a10,10 0 0 1 -10,-10 v-20 a10,10 0 0 1 10,-10 Z" />
-    <path
-        android:fillColor="#D93D4A"
-        android:pathData="M46,50 h16 v16 h-16 z" />
+    <!-- Das S des SouqMar24-Logos (public/favicon.svg, 64er Raster) um 1,25 vergroessert und mittig in die 66-dp-Sicherheitszone gesetzt. -->
+    <group
+        android:scaleX="1.25"
+        android:scaleY="1.25"
+        android:translateX="14"
+        android:translateY="15.9">
+        <path
+            android:pathData="M43,21.5C41.5,15.5 22,14.5 22,25.5c0,10.5 21,5.5 21,15.5 0,11 -19.5,10 -22,3"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="8"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>
