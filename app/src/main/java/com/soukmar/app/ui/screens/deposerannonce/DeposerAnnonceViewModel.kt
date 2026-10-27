@@ -1,5 +1,6 @@
 package com.soukmar.app.ui.screens.deposerannonce
 
+import com.soukmar.app.data.i18n.appText
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +19,7 @@ import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.CatalogRepository
 import com.soukmar.app.data.repository.ListingRepository
 import com.soukmar.app.data.repository.UploadRepository
+import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.model.CITIES_BY_COUNTRY
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
 import com.soukmar.app.ui.model.MOROCCO_CITIES
@@ -126,13 +128,15 @@ class DeposerAnnonceViewModel @Inject constructor(
 
     val maxPhotos: Int get() = if (isPremium) 20 else 10
 
-    fun init(id: String?) {
+    fun init(id: String?, presetCategory: String? = null) {
         viewModelScope.launch { isLoggedIn = tokenManager.isLoggedIn() }
         if (id != null && editId == null) {
             editId = id
             loadForEdit(id)
         } else if (id == null && !countrySyncStarted) {
             countrySyncStarted = true
+            // Opened from a category's listing page: skip the category step (web: ?categorie=).
+            if (presetCategory != null && form.category.isBlank() && CATEGORIES.any { it.value == presetCategory }) selectCategory(presetCategory)
             // Country is centrally controlled by the app-wide CountrySwitcher
             // (Home/Login/Listings), never a separate choice within this
             // form — kept in live sync with CountryRepository.country for as
@@ -346,7 +350,7 @@ class DeposerAnnonceViewModel @Inject constructor(
                     is ApiResult.Error -> {
                         uploading = false
                         loading = false
-                        error = "Le téléchargement des photos a échoué."
+                        error = appText("deposer.error_upload", "Le téléchargement des photos a échoué.")
                         return@launch
                     }
                 }
@@ -380,7 +384,7 @@ class DeposerAnnonceViewModel @Inject constructor(
                 }
                 is ApiResult.Error -> {
                     loading = false
-                    error = "La publication a échoué. Réessayez."
+                    error = appText("deposer.error_publish", "La publication a échoué. Réessayez.")
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -33,7 +34,7 @@ class UploadRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
+        return ApiResult.Error(parsed?.error ?: genericErrorText())
     }
 
     /** Downscales+re-encodes each picked gallery Uri into a cache JPEG file
@@ -58,7 +59,7 @@ class UploadRepository @Inject constructor(
             val res = api.uploadImages(parts, typeBody)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!.urls) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         } finally {
             tempFiles.forEach { it.delete() }
         }
@@ -77,7 +78,7 @@ class UploadRepository @Inject constructor(
             val res = api.searchByImage(part, country)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         } finally {
             tempFile.delete()
         }

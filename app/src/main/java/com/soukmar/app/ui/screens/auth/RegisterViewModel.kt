@@ -1,5 +1,6 @@
 package com.soukmar.app.ui.screens.auth
 
+import com.soukmar.app.data.i18n.appText
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,10 +32,10 @@ class RegisterViewModel @Inject constructor(
     var resendOk by mutableStateOf(false)
 
     fun submit() {
-        if (accountType.isBlank()) { error = "Veuillez sélectionner un type de compte."; return }
-        if (password != confirmPassword) { error = "Les mots de passe ne correspondent pas."; return }
-        if (password.length < 6) { error = "Le mot de passe doit contenir au moins 6 caractères."; return }
-        if (name.isBlank() || email.isBlank()) { error = "Champs requis manquants."; return }
+        if (accountType.isBlank()) { error = appText("auth.account_type_required", "Veuillez sélectionner un type de compte."); return }
+        if (password != confirmPassword) { error = appText("auth.reset_mismatch", "Les mots de passe ne correspondent pas."); return }
+        if (password.length < 6) { error = appText("auth.reset_too_short", "Le mot de passe doit contenir au moins 6 caractères."); return }
+        if (name.isBlank() || email.isBlank()) { error = appText("auth.fill_all_fields", "Champs requis manquants."); return }
 
         loading = true
         error = null

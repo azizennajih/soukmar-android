@@ -106,7 +106,8 @@ fun SoukMarNavGraph(startDestination: String) {
                 savedSearchId = backStackEntry.arguments?.getString("savedSearchId"),
                 editSearchId = backStackEntry.arguments?.getString("editSearchId"),
                 onBack = { navController.popBackStack() },
-                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onPostListing = { category -> navController.navigate(Routes.deposerAnnonce(category = category)) }
             )
         }
         composable(
@@ -124,10 +125,14 @@ fun SoukMarNavGraph(startDestination: String) {
         }
         composable(
             route = Routes.DEPOSER_ANNONCE,
-            arguments = listOf(navArgument("id") { type = NavType.StringType; nullable = true; defaultValue = null })
+            arguments = listOf(
+                navArgument("id") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("category") { type = NavType.StringType; nullable = true; defaultValue = null }
+            )
         ) { backStackEntry ->
             DeposerAnnonceScreen(
                 editId = backStackEntry.arguments?.getString("id"),
+                presetCategory = backStackEntry.arguments?.getString("category"),
                 onBack = { navController.popBackStack() },
                 onRequireLogin = { navController.navigate(Routes.LOGIN) },
                 onPublished = { id ->

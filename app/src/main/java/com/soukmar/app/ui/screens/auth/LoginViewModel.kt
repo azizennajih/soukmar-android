@@ -1,5 +1,6 @@
 package com.soukmar.app.ui.screens.auth
 
+import com.soukmar.app.data.i18n.appText
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -40,7 +41,7 @@ class LoginViewModel @Inject constructor(
 
     fun submit(onSuccess: () -> Unit) {
         if (email.isBlank() || password.isBlank()) {
-            error = "Veuillez remplir tous les champs."
+            error = appText("auth.fill_all_fields", "Veuillez remplir tous les champs.")
             return
         }
         loading = true

@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.country.CountryRepository
 import com.soukmar.app.data.i18n.I18nRepository
 import com.soukmar.app.data.local.TokenManager
@@ -28,7 +29,7 @@ class AuthRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.", parsed?.unverified ?: false)
+        return ApiResult.Error(parsed?.error ?: genericErrorText(), parsed?.unverified ?: false)
     }
 
     suspend fun login(email: String, password: String): ApiResult<UserDto> {
@@ -40,7 +41,7 @@ class AuthRepository @Inject constructor(
                 ApiResult.Success(body.user)
             } else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -49,7 +50,7 @@ class AuthRepository @Inject constructor(
             val res = api.register(RegisterRequest(name, email, password, phone, city, accountType, i18n.currentLang, countryRepository.country))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -58,7 +59,7 @@ class AuthRepository @Inject constructor(
             val res = api.resendVerification(ForgotPasswordRequest(email, i18n.currentLang))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -67,7 +68,7 @@ class AuthRepository @Inject constructor(
             val res = api.forgotPassword(ForgotPasswordRequest(email, i18n.currentLang))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -76,7 +77,7 @@ class AuthRepository @Inject constructor(
             val res = api.resetPassword(ResetPasswordRequest(token, password))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -89,7 +90,7 @@ class AuthRepository @Inject constructor(
                 ApiResult.Success(true)
             } else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -98,7 +99,7 @@ class AuthRepository @Inject constructor(
             val res = api.sendPhoneCode()
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -107,7 +108,7 @@ class AuthRepository @Inject constructor(
             val res = api.verifyPhoneCode(PhoneVerifyRequest(code))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -116,7 +117,7 @@ class AuthRepository @Inject constructor(
             val res = api.me()
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -125,7 +126,7 @@ class AuthRepository @Inject constructor(
             val res = api.updateProfile(ProfileUpdateRequest(name, phone, city, accountType))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -134,7 +135,7 @@ class AuthRepository @Inject constructor(
             val res = api.updateProfileImage(ProfileImageUpdateRequest(imageUrl))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -143,7 +144,7 @@ class AuthRepository @Inject constructor(
             val res = api.deleteAccount(DeleteAccountRequest(password))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -154,7 +155,7 @@ class AuthRepository @Inject constructor(
             val res = api.getIdVerificationStatus()
             if (res.isSuccessful) ApiResult.Success(res.body()) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -163,7 +164,7 @@ class AuthRepository @Inject constructor(
             val res = api.submitIdVerification(IdVerificationSubmitRequest(idImageUrl, selfieImageUrl))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 

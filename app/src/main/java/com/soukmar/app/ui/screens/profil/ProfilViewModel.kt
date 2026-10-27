@@ -1,5 +1,6 @@
 package com.soukmar.app.ui.screens.profil
 
+import com.soukmar.app.data.i18n.appText
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,7 +116,7 @@ class ProfilViewModel @Inject constructor(
         val idUri = idImageUri
         val selfieUri = selfieImageUri
         if (idUri == null || selfieUri == null) {
-            idVerificationErrorMessage = "Veuillez ajouter les deux photos."
+            idVerificationErrorMessage = appText("profil.id_verification_files_required", "Veuillez ajouter les deux photos.")
             return
         }
         if (submittingIdVerification) return
@@ -128,7 +129,7 @@ class ProfilViewModel @Inject constructor(
             val idUrl = (idUpload as? ApiResult.Success)?.data?.firstOrNull()
             val selfieUrl = (selfieUpload as? ApiResult.Success)?.data?.firstOrNull()
             if (idUrl == null || selfieUrl == null) {
-                idVerificationErrorMessage = "L'envoi a échoué. Réessayez."
+                idVerificationErrorMessage = appText("profil.id_verification_error", "L'envoi a échoué. Réessayez.")
                 submittingIdVerification = false
                 return@launch
             }
@@ -146,7 +147,7 @@ class ProfilViewModel @Inject constructor(
     }
 
     fun saveProfile() {
-        if (name.isBlank()) { errorMessage = "Le nom est requis."; return }
+        if (name.isBlank()) { errorMessage = appText("profil.name_required", "Le nom est requis."); return }
         if (saving) return
         saving = true
         successMessage = null
@@ -224,7 +225,7 @@ class ProfilViewModel @Inject constructor(
                         }
                     }
                 }
-                is ApiResult.Error -> errorMessage = "Erreur lors du téléchargement de la photo."
+                is ApiResult.Error -> errorMessage = appText("profil.photo_upload_error", "Erreur lors du téléchargement de la photo.")
             }
             uploadingImage = false
         }

@@ -11,7 +11,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Paid
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Flag
@@ -49,6 +55,33 @@ import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
 
+@Composable
+private fun tabTitle(tab: AdminTab): String = when (tab) {
+    AdminTab.OVERVIEW -> t("admin.tab_overview")
+    AdminTab.MODERATION -> t("moderation.title")
+    AdminTab.LISTINGS -> t("admin.tab_listings")
+    AdminTab.USERS -> t("admin.tab_users")
+    AdminTab.VISITORS -> t("admin.tab_visitors")
+    AdminTab.REVENUE -> t("admin.tab_revenue")
+    AdminTab.REPORTS -> t("admin.reports_title")
+    AdminTab.ID_VERIFICATIONS -> t("admin.tab_id_verifications")
+    AdminTab.BOOST_REQUESTS -> t("admin.tab_boost_requests")
+    AdminTab.SECURITY -> t("admin.tab_security")
+}
+
+private fun tabIcon(tab: AdminTab) = when (tab) {
+    AdminTab.OVERVIEW -> Icons.Filled.BarChart
+    AdminTab.MODERATION -> Icons.Filled.Gavel
+    AdminTab.LISTINGS -> Icons.AutoMirrored.Filled.List
+    AdminTab.USERS -> Icons.Filled.People
+    AdminTab.VISITORS -> Icons.Filled.Public
+    AdminTab.REVENUE -> Icons.Filled.Paid
+    AdminTab.REPORTS -> Icons.Filled.Flag
+    AdminTab.ID_VERIFICATIONS -> Icons.Filled.Badge
+    AdminTab.BOOST_REQUESTS -> Icons.Filled.RocketLaunch
+    AdminTab.SECURITY -> Icons.Filled.Shield
+}
+
 private val FILTERS = listOf("PENDING", "RESOLVED", "DISMISSED", "ALL")
 private val ID_VERIFICATION_FILTERS = listOf("PENDING", "APPROVED", "REJECTED", "ALL")
 private val BOOST_REQUEST_FILTERS = listOf("PENDING", "APPROVED", "REJECTED", "ALL")
@@ -75,54 +108,42 @@ private fun idVerificationStatusLabel(status: String, i18n: I18nRepository): Str
 fun AdminScreen(
     onBack: () -> Unit,
     onOpenListing: (String) -> Unit,
-    viewModel: AdminViewModel = hiltViewModel()
+    viewModel: AdminViewModel = hiltViewModel(),
+    dashboard: AdminDashboardViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) { viewModel.load() }
+    // Follows the browsing country: switching country elsewhere reloads the dashboard data.
+    LaunchedEffect(dashboard.scopeCountry, dashboard.allCountries) { dashboard.ensureLoaded() }
     val i18n = LocalI18n.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(t("admin.reports_title")) },
+                title = { Text(t("admin.title")) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
             )
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            val tabIndex = when (viewModel.currentTab) {
-                AdminTab.MODERATION -> 0
-                AdminTab.REPORTS -> 1
-                AdminTab.ID_VERIFICATIONS -> 2
-                AdminTab.BOOST_REQUESTS -> 3
-            }
-            ScrollableTabRow(selectedTabIndex = tabIndex, containerColor = WhiteColor, contentColor = Primary, edgePadding = 0.dp) {
-                Tab(
-                    selected = viewModel.currentTab == AdminTab.MODERATION,
-                    onClick = { viewModel.currentTab = AdminTab.MODERATION },
-                    text = { Text(t("moderation.title")) },
-                    icon = { Icon(Icons.Filled.Gavel, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                )
-                Tab(
-                    selected = viewModel.currentTab == AdminTab.REPORTS,
-                    onClick = { viewModel.currentTab = AdminTab.REPORTS },
-                    text = { Text(t("admin.reports_title")) },
-                    icon = { Icon(Icons.Filled.Flag, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                )
-                Tab(
-                    selected = viewModel.currentTab == AdminTab.ID_VERIFICATIONS,
-                    onClick = { viewModel.currentTab = AdminTab.ID_VERIFICATIONS },
-                    text = { Text(t("admin.tab_id_verifications")) },
-                    icon = { Icon(Icons.Filled.Badge, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                )
-                Tab(
-                    selected = viewModel.currentTab == AdminTab.BOOST_REQUESTS,
-                    onClick = { viewModel.currentTab = AdminTab.BOOST_REQUESTS },
-                    text = { Text(t("admin.tab_boost_requests")) },
-                    icon = { Icon(Icons.Filled.RocketLaunch, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                )
+            AdminScopeBar(dashboard)
+            ScrollableTabRow(selectedTabIndex = viewModel.currentTab.ordinal, containerColor = WhiteColor, contentColor = Primary, edgePadding = 0.dp) {
+                AdminTab.values().forEach { tab ->
+                    Tab(
+                        selected = viewModel.currentTab == tab,
+                        onClick = { viewModel.currentTab = tab },
+                        text = { Text(tabTitle(tab)) },
+                        icon = { Icon(tabIcon(tab), contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    )
+                }
             }
 
             when (viewModel.currentTab) {
+              AdminTab.OVERVIEW -> AdminOverviewPanel(dashboard)
+              AdminTab.LISTINGS -> AdminListingsPanel(dashboard, onOpenListing)
+              AdminTab.USERS -> AdminUsersPanel(dashboard)
+              AdminTab.VISITORS -> AdminVisitorsPanel(dashboard)
+              AdminTab.REVENUE -> AdminRevenuePanel(dashboard)
+              AdminTab.SECURITY -> AdminSecurityPanel(dashboard)
               AdminTab.MODERATION -> ModerationPanel(onOpenListing = onOpenListing)
               AdminTab.REPORTS -> {
                 Row(

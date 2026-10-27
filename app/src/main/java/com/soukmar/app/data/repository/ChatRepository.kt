@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.ConversationDto
@@ -20,7 +21,7 @@ class ChatRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
+        return ApiResult.Error(parsed?.error ?: genericErrorText())
     }
 
     /** Get-or-create the buyer<->listing conversation. */
@@ -29,7 +30,7 @@ class ChatRepository @Inject constructor(
             val res = api.createConversation(CreateConversationRequest(listingId))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -38,7 +39,7 @@ class ChatRepository @Inject constructor(
             val res = api.getConversations()
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -47,7 +48,7 @@ class ChatRepository @Inject constructor(
             val res = api.getMessages(conversationId)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 }

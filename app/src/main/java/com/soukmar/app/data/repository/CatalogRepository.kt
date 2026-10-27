@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.CategoryFullResponse
@@ -18,7 +19,7 @@ class CatalogRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
+        return ApiResult.Error(parsed?.error ?: genericErrorText())
     }
 
     /** All subcategories of a category, each with its attribute definitions —
@@ -28,7 +29,7 @@ class CatalogRepository @Inject constructor(
             val res = api.getCategoryFull(category)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 }

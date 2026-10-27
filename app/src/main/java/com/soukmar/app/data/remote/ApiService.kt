@@ -162,6 +162,24 @@ interface ApiService {
     @PATCH("reports/admin/{id}")
     suspend fun updateAdminReport(@Path("id") id: String, @Body body: AdminReportUpdateRequest): Response<AdminReportDto>
 
+    @GET("admin/users")
+    suspend fun getAdminUsers(@QueryMap params: Map<String, String>): Response<List<AdminUserDto>>
+
+    @PATCH("admin/users/{id}")
+    suspend fun updateAdminUserRole(@Path("id") id: String, @Body body: AdminUserRoleRequest): Response<okhttp3.ResponseBody>
+
+    @GET("admin/activity")
+    suspend fun getAdminActivity(@QueryMap params: Map<String, String>): Response<List<AdminActivityDto>>
+
+    @GET("admin/analytics")
+    suspend fun getAdminAnalytics(@QueryMap params: Map<String, String>): Response<AdminAnalyticsDto>
+
+    @GET("admin/security-events")
+    suspend fun getAdminSecurityEvents(): Response<List<SecurityEventDto>>
+
+    @PUT("listings/{id}")
+    suspend fun updateListingPremium(@Path("id") id: String, @Body body: ListingPremiumUpdateRequest): Response<ListingDto>
+
     @GET("admin/id-verifications")
     suspend fun getAdminIdVerifications(): Response<List<AdminIdVerificationDto>>
 

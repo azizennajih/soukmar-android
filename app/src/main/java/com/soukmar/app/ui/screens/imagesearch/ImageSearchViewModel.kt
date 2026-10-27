@@ -1,5 +1,6 @@
 package com.soukmar.app.ui.screens.imagesearch
 
+import com.soukmar.app.data.i18n.appText
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +46,7 @@ class ImageSearchViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = uploadRepository.searchByImage(uri, countryRepository.country)) {
                 is ApiResult.Success -> results = result.data
-                is ApiResult.Error -> errorMessage = "La recherche a échoué. Veuillez réessayer."
+                is ApiResult.Error -> errorMessage = appText("image_search.error", "La recherche a échoué. Veuillez réessayer.")
             }
             loading = false
         }

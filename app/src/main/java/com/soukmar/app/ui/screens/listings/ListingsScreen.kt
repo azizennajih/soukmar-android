@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckCircle
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.automirrored.filled.List as ListIcon
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +64,7 @@ fun ListingsScreen(
     editSearchId: String? = null,
     onBack: () -> Unit,
     onOpenListing: (String) -> Unit,
+    onPostListing: (String?) -> Unit = {},
     viewModel: ListingsViewModel = hiltViewModel()
 ) {
     var showFilters by remember { mutableStateOf(false) }
@@ -112,6 +115,16 @@ fun ListingsScreen(
                 if (viewModel.isLoggedIn) SaveSearchSection(viewModel)
                 if (showFilters) FiltersPanel(viewModel)
             }
+        }
+    ,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { onPostListing(viewModel.selectedCategory) },
+                containerColor = Primary,
+                contentColor = Color.White,
+                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                text = { Text(t("nav.post_btn")) }
+            )
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {

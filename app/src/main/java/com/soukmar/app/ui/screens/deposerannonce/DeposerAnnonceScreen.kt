@@ -81,12 +81,13 @@ import com.soukmar.app.ui.theme.WhiteColor
 @Composable
 fun DeposerAnnonceScreen(
     editId: String?,
+    presetCategory: String? = null,
     onBack: () -> Unit,
     onRequireLogin: () -> Unit,
     onPublished: (String) -> Unit,
     viewModel: DeposerAnnonceViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(editId) { viewModel.init(editId) }
+    LaunchedEffect(editId) { viewModel.init(editId, presetCategory) }
 
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         if (uris.isNotEmpty()) viewModel.addPhotos(uris)

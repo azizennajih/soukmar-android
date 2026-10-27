@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.SavedSearchCreateRequest
@@ -19,7 +20,7 @@ class SavedSearchRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
+        return ApiResult.Error(parsed?.error ?: genericErrorText())
     }
 
     suspend fun getAll(): ApiResult<List<SavedSearchDto>> {
@@ -27,7 +28,7 @@ class SavedSearchRepository @Inject constructor(
             val res = api.getSavedSearches()
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -36,7 +37,7 @@ class SavedSearchRepository @Inject constructor(
             val res = api.createSavedSearch(body)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -45,7 +46,7 @@ class SavedSearchRepository @Inject constructor(
             val res = api.updateSavedSearch(id, body)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -54,7 +55,7 @@ class SavedSearchRepository @Inject constructor(
             val res = api.deleteSavedSearch(id)
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 }

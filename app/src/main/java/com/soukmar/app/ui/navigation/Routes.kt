@@ -18,8 +18,13 @@ object Routes {
     }
     const val LISTING_DETAIL = "listing/{id}"
     fun listingDetail(id: String) = "listing/$id"
-    const val DEPOSER_ANNONCE = "deposer_annonce?id={id}"
-    fun deposerAnnonce(id: String? = null) = if (id != null) "deposer_annonce?id=$id" else "deposer_annonce"
+    const val DEPOSER_ANNONCE = "deposer_annonce?id={id}&category={category}"
+    /** [category] pre-selects the category of a new listing (the one being browsed), like web's ?categorie= on the post button. */
+    fun deposerAnnonce(id: String? = null, category: String? = null) = when {
+        id != null -> "deposer_annonce?id=$id"
+        category != null -> "deposer_annonce?category=$category"
+        else -> "deposer_annonce"
+    }
     const val CHAT_LIST = "chat"
     const val CHAT_DETAIL = "chat/{conversationId}"
     fun chatDetail(conversationId: String) = "chat/$conversationId"

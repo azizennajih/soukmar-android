@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.BoostRequestBody
@@ -27,7 +28,7 @@ class ListingRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
+        return ApiResult.Error(parsed?.error ?: genericErrorText())
     }
 
     /** [filters] mirrors the web ListingFilters shape flattened into query
@@ -38,7 +39,7 @@ class ListingRepository @Inject constructor(
             val res = api.getListings(filters)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -47,7 +48,7 @@ class ListingRepository @Inject constructor(
             val res = api.getListing(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -67,7 +68,7 @@ class ListingRepository @Inject constructor(
             val res = api.getFavorites()
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -76,7 +77,7 @@ class ListingRepository @Inject constructor(
             val res = api.createListing(body)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -85,7 +86,7 @@ class ListingRepository @Inject constructor(
             val res = api.updateListing(id, body)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -94,7 +95,7 @@ class ListingRepository @Inject constructor(
             val res = api.getMyListings()
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -103,7 +104,7 @@ class ListingRepository @Inject constructor(
             val res = api.getViewStats(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -112,7 +113,7 @@ class ListingRepository @Inject constructor(
             val res = api.getFunnel(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -121,7 +122,7 @@ class ListingRepository @Inject constructor(
             val res = api.bumpListing(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -130,7 +131,7 @@ class ListingRepository @Inject constructor(
             val res = api.getBoostStatus(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -139,7 +140,7 @@ class ListingRepository @Inject constructor(
             val res = api.requestBoost(id, BoostRequestBody(tiers, withdrawalConsent = true))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -148,7 +149,7 @@ class ListingRepository @Inject constructor(
             val res = api.extendListing(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -157,7 +158,7 @@ class ListingRepository @Inject constructor(
             val res = api.updateListingStatus(id, ListingStatusUpdateRequest(status))
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -166,7 +167,7 @@ class ListingRepository @Inject constructor(
             val res = api.deleteListing(id)
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 
@@ -175,7 +176,7 @@ class ListingRepository @Inject constructor(
             val res = api.getSimilarListings(id)
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
         } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Erreur réseau.")
+            ApiResult.Error(genericErrorText())
         }
     }
 

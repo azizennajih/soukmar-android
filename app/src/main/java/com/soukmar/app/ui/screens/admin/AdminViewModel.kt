@@ -14,14 +14,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class AdminTab { MODERATION, REPORTS, ID_VERIFICATIONS, BOOST_REQUESTS }
+/** Same order as the web dashboard's tabs. */
+enum class AdminTab { OVERVIEW, MODERATION, LISTINGS, USERS, VISITORS, REVENUE, REPORTS, ID_VERIFICATIONS, BOOST_REQUESTS, SECURITY }
 
 @HiltViewModel
 class AdminViewModel @Inject constructor(
     private val adminRepository: AdminRepository
 ) : ViewModel() {
 
-    var currentTab by mutableStateOf(AdminTab.MODERATION)
+    var currentTab by mutableStateOf(AdminTab.OVERVIEW)
 
     var reports by mutableStateOf<List<AdminReportDto>>(emptyList())
         private set

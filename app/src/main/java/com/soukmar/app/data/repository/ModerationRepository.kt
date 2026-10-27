@@ -1,5 +1,6 @@
 package com.soukmar.app.data.repository
 
+import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.ModerationDecisionRequest
@@ -30,13 +31,13 @@ class ModerationRepository @Inject constructor(
         val parsed = try {
             body?.let { json.decodeFromString(ApiErrorDto.serializer(), it) }
         } catch (e: Exception) { null }
-        return ApiResult.Error(parsed?.error ?: "Une erreur est survenue.")
+        return ApiResult.Error(parsed?.error ?: genericErrorText())
     }
 
     suspend fun summary(): ApiResult<ModerationSummaryDto> = try {
         val res = api.getModerationSummary()
         if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
-    } catch (e: Exception) { ApiResult.Error(e.message ?: "Erreur réseau.") }
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
 
     suspend fun queue(status: String, country: String, category: String, query: String, sort: String, page: Int): ApiResult<ModerationQueueDto> = try {
         val res = api.getModerationQueue(
@@ -48,12 +49,12 @@ class ModerationRepository @Inject constructor(
             page = page
         )
         if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
-    } catch (e: Exception) { ApiResult.Error(e.message ?: "Erreur réseau.") }
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
 
     suspend fun detail(id: String): ApiResult<ModerationDetailDto> = try {
         val res = api.getModerationDetail(id)
         if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
-    } catch (e: Exception) { ApiResult.Error(e.message ?: "Erreur réseau.") }
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
 
     /** [action] is the URL form: approve | reject | request-changes | suspend | requeue. */
     suspend fun decide(id: String, action: String, reason: String?, allowResubmit: Boolean?, expectedStatus: String): DecisionResult = try {
@@ -66,11 +67,11 @@ class ModerationRepository @Inject constructor(
             res.code() == 400 -> DecisionResult.ReasonInvalid
             else -> DecisionResult.Failed((parseError(res)).message)
         }
-    } catch (e: Exception) { DecisionResult.Failed(e.message ?: "Erreur réseau.") }
+    } catch (e: Exception) { DecisionResult.Failed(genericErrorText()) }
 
     /** True when the mail went out this time. */
     suspend fun resendMail(eventId: String): ApiResult<Boolean> = try {
         val res = api.resendModerationMail(eventId)
         if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!.ok) else parseError(res)
-    } catch (e: Exception) { ApiResult.Error(e.message ?: "Erreur réseau.") }
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
 }

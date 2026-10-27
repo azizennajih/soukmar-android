@@ -55,7 +55,12 @@ class I18nRepository @Inject constructor(
 ) {
     companion object {
         const val DEFAULT_LANGUAGE = "fr"
+
+        /** The app-wide singleton, for [appText] (set once Hilt creates it). */
+        @Volatile var instance: I18nRepository? = null
     }
+
+    init { instance = this }
 
     var currentLang by mutableStateOf(DEFAULT_LANGUAGE)
         private set
@@ -132,3 +137,11 @@ class I18nRepository @Inject constructor(
         return if (result == key) humanizeCode(code) else result
     }
 }
+
+/** Current-language text for code paths without a Composable or injected [I18nRepository]
+ * (repositories, ViewModels) — falls back to the given text before the app has started. */
+fun appText(key: String, fallback: String): String =
+    I18nRepository.instance?.t(key)?.takeIf { it != key } ?: fallback
+
+/** Shown when a request fails without a server message (offline, timeout, unreadable answer). */
+fun genericErrorText(): String = appText("auth.generic_error_retry", "Une erreur est survenue. Veuillez réessayer.")
