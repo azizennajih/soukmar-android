@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ fun SettingsScreen(
     onOpenProfil: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenLegal: () -> Unit,
+    onOpenMesDonnees: () -> Unit,
     onOpenDeleteAccount: () -> Unit,
     onLoggedOut: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
@@ -69,6 +71,7 @@ fun SettingsScreen(
 
             SettingsRow(Icons.Filled.Person, t("parametres.profile_account"), t("parametres.profile_account_sub"), onOpenProfil)
             SettingsRow(Icons.Filled.NotificationsNone, t("parametres.notifications"), t("parametres.notifications_sub"), onOpenNotifications)
+            SettingsRow(Icons.Filled.Shield, t("parametres.privacy_data"), t("parametres.privacy_data_sub"), onOpenMesDonnees)
             SettingsRow(Icons.Filled.Gavel, t("parametres.legal"), t("parametres.legal_sub"), onOpenLegal)
 
             Spacer(Modifier.height(20.dp))

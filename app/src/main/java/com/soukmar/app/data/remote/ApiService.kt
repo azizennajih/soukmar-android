@@ -138,6 +138,19 @@ interface ApiService {
     @GET("users/{id}/listings")
     suspend fun getSellerListings(@Path("id") id: String): Response<List<ListingDto>>
 
+    @GET("auth/email-preferences")
+    suspend fun getEmailPreferences(): Response<EmailPreferencesDto>
+
+    @PUT("auth/email-preferences")
+    suspend fun setEmailPreferences(@Body body: EmailPreferencesDto): Response<EmailPreferencesDto>
+
+    @GET("users/me/blocked")
+    suspend fun getBlockedUsers(): Response<List<BlockedUserDto>>
+
+    /** Everything stored about the account (GDPR Art. 15/20) as raw JSON, saved to a file by the screen. */
+    @GET("auth/export")
+    suspend fun exportMyData(): Response<okhttp3.ResponseBody>
+
     @POST("users/{id}/block")
     suspend fun blockUser(@Path("id") id: String): Response<BlockStatusDto>
 

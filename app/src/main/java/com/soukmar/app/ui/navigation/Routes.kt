@@ -42,6 +42,7 @@ object Routes {
     const val LEGAL_TERMS = "legal_terms"
     const val LEGAL_WITHDRAWAL = "legal_withdrawal"
     const val SETTINGS = "settings"
+    const val MES_DONNEES = "mes_donnees"
     const val DELETE_ACCOUNT = "delete_account"
     const val IMAGE_SEARCH = "image_search"
     const val BOOST_LISTING = "boost_listing/{listingId}"

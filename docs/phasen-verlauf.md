@@ -101,3 +101,8 @@ Ab hier wächst die App nicht mehr in nummerierten Phasen, sondern in gebündelt
 - **Anzeige aus Kategorie:** `ListingsScreen` hat einen „Anzeige aufgeben“-Button (ExtendedFAB); `Routes.deposerAnnonce(category=)` + `DeposerAnnonceViewModel.init(id, presetCategory)` überspringen den Kategorieschritt.
 - **Admin:** Länderwahl + Tabs Übersicht, Anzeigen, Benutzer, Besucher, Einnahmen, Sicherheit (`AdminDashboardPanels.kt`, `AdminDashboardViewModel.kt`, `AdminDashboardDto.kt`). Reihenfolge der Tabs wie im Web.
 - **Getestet:** `assembleDebug` grün. **Nicht getestet:** Emulator-Durchlauf. Lücke: Benutzer sperren/entsperren fehlt.
+
+## Tranche 23 — Meine Daten & Datenschutz (2026-10-28)
+- **Neu:** `ui/screens/mesdonnees/MesDonneesScreen.kt` + `MesDonneesViewModel.kt`, `AccountDataDto.kt`, vier Endpunkte in `ApiService`/`UserRepository`: E-Mail-Einstellungen (3 Schalter), Blockliste mit Entblocken, Datenexport per System-„Speichern unter“-Dialog (`CreateDocument`, keine Speicherberechtigung nötig). Einstieg: Zeile in `SettingsScreen` (`Routes.MES_DONNEES`). Kein Cookie-Abschnitt (App hat keinen Banner).
+- i18n-JSONs neu aus dem Web kopiert (`mes_donnees.*`, `parametres.privacy_data*`). Backend: siehe soukmar-backend (Migration `20261028100000_email_preferences`).
+- **Getestet:** `assembleDebug` grün.

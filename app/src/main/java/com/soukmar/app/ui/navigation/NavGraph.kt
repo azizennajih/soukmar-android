@@ -36,6 +36,7 @@ import com.soukmar.app.ui.screens.admin.AdminScreen
 import com.soukmar.app.ui.screens.boostlisting.BoostListingScreen
 import com.soukmar.app.ui.screens.legal.LegalLinkRow
 import com.soukmar.app.ui.screens.legal.LegalPageScreen
+import com.soukmar.app.ui.screens.mesdonnees.MesDonneesScreen
 import com.soukmar.app.ui.screens.settings.SettingsScreen
 import com.soukmar.app.ui.screens.settings.DeleteAccountScreen
 import com.soukmar.app.ui.i18n.t
@@ -271,6 +272,7 @@ fun SoukMarNavGraph(startDestination: String) {
                 onOpenProfil = { navController.navigate(Routes.PROFIL) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onOpenLegal = { navController.navigate(Routes.LEGAL_NOTICE) },
+                onOpenMesDonnees = { navController.navigate(Routes.MES_DONNEES) },
                 onOpenDeleteAccount = { navController.navigate(Routes.DELETE_ACCOUNT) },
                 onLoggedOut = {
                     navController.navigate(Routes.LOGIN) {
@@ -278,6 +280,9 @@ fun SoukMarNavGraph(startDestination: String) {
                     }
                 }
             )
+        }
+        composable(Routes.MES_DONNEES) {
+            MesDonneesScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.DELETE_ACCOUNT) {
             DeleteAccountScreen(

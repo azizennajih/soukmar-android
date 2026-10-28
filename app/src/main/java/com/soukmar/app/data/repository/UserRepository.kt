@@ -4,6 +4,8 @@ import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
 import com.soukmar.app.data.remote.dto.BlockStatusDto
+import com.soukmar.app.data.remote.dto.BlockedUserDto
+import com.soukmar.app.data.remote.dto.EmailPreferencesDto
 import com.soukmar.app.data.remote.dto.FollowStatusDto
 import com.soukmar.app.data.remote.dto.FollowedUserDto
 import com.soukmar.app.data.remote.dto.ListingDto
@@ -44,6 +46,27 @@ class UserRepository @Inject constructor(
             ApiResult.Error(genericErrorText())
         }
     }
+
+    suspend fun getEmailPreferences(): ApiResult<EmailPreferencesDto> = try {
+        val res = api.getEmailPreferences()
+        if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
+
+    suspend fun setEmailPreferences(prefs: EmailPreferencesDto): ApiResult<EmailPreferencesDto> = try {
+        val res = api.setEmailPreferences(prefs)
+        if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
+
+    suspend fun getBlockedUsers(): ApiResult<List<BlockedUserDto>> = try {
+        val res = api.getBlockedUsers()
+        if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
+
+    suspend fun exportMyData(): ApiResult<ByteArray> = try {
+        val res = api.exportMyData()
+        val bytes = if (res.isSuccessful) res.body()?.bytes() else null
+        if (bytes != null) ApiResult.Success(bytes) else parseError(res)
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
 
     suspend fun blockUser(id: String): ApiResult<BlockStatusDto> {
         return try {
