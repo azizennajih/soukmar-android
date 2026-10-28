@@ -46,7 +46,9 @@ data class RegisterRequest(
     val accountType: String,
     // Language of the confirmation e-mail and the visitor's country (decides currency/default listings).
     val lang: String,
-    val country: String
+    val country: String,
+    // Optional advertising consent, only true when the (unticked by default) box was ticked.
+    val marketingConsent: Boolean = false
 )
 
 @Serializable

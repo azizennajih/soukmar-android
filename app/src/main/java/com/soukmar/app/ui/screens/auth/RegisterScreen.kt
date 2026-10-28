@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -83,7 +84,12 @@ fun RegisterScreen(
         AppTextField(value = viewModel.password, onValueChange = { viewModel.password = it }, label = t("auth.password"), isPassword = true)
         Spacer(Modifier.height(12.dp))
         AppTextField(value = viewModel.confirmPassword, onValueChange = { viewModel.confirmPassword = it }, label = t("auth.reset_confirm_password"), isPassword = true)
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.Top) {
+            Checkbox(checked = viewModel.marketingConsent, onCheckedChange = { viewModel.marketingConsent = it })
+            Text(t("auth.marketing_consent"), color = TextMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
+        }
+        Spacer(Modifier.height(8.dp))
         PrimaryButton(text = t("auth.register_btn"), onClick = { viewModel.submit() }, loading = viewModel.loading)
         Spacer(Modifier.height(20.dp))
         Row {

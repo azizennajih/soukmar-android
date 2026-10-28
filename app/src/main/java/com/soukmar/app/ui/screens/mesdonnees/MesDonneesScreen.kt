@@ -74,6 +74,9 @@ fun MesDonneesScreen(
                     PrefRow(t("mes_donnees.email_saved_searches"), prefs.emailSavedSearches) { on -> viewModel.setPref { it.copy(emailSavedSearches = on) } }
                     PrefRow(t("mes_donnees.email_listing_reminders"), prefs.emailListingReminders) { on -> viewModel.setPref { it.copy(emailListingReminders = on) } }
                     Text(t("mes_donnees.email_always"), fontSize = 11.sp, color = TextMuted)
+                    HorizontalDivider(color = BorderColor)
+                    PrefRow(t("mes_donnees.email_marketing"), prefs.emailMarketing) { on -> viewModel.setPref { it.copy(emailMarketing = on) } }
+                    Text(t("mes_donnees.marketing_hint"), fontSize = 11.sp, color = TextMuted)
                 }
             }
 

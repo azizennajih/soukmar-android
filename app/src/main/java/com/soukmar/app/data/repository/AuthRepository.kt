@@ -45,9 +45,9 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun register(name: String, email: String, password: String, phone: String?, city: String?, accountType: String): ApiResult<Boolean> {
+    suspend fun register(name: String, email: String, password: String, phone: String?, city: String?, accountType: String, marketingConsent: Boolean = false): ApiResult<Boolean> {
         return try {
-            val res = api.register(RegisterRequest(name, email, password, phone, city, accountType, i18n.currentLang, countryRepository.country))
+            val res = api.register(RegisterRequest(name, email, password, phone, city, accountType, i18n.currentLang, countryRepository.country, marketingConsent))
             if (res.isSuccessful) ApiResult.Success(true) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(genericErrorText())

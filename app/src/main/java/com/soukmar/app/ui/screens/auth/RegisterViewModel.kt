@@ -24,6 +24,8 @@ class RegisterViewModel @Inject constructor(
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
     var accountType by mutableStateOf("")
+    /** Advertising e-mail consent: never ticked by default. */
+    var marketingConsent by mutableStateOf(false)
     var loading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     var registeredEmail by mutableStateOf<String?>(null)
@@ -40,7 +42,7 @@ class RegisterViewModel @Inject constructor(
         loading = true
         error = null
         viewModelScope.launch {
-            val result = authRepository.register(name.trim(), email.trim(), password, phone.ifBlank { null }, city.ifBlank { null }, accountType)
+            val result = authRepository.register(name.trim(), email.trim(), password, phone.ifBlank { null }, city.ifBlank { null }, accountType, marketingConsent)
             loading = false
             when (result) {
                 is ApiResult.Success -> {

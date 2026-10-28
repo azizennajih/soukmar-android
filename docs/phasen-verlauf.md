@@ -106,3 +106,7 @@ Ab hier wächst die App nicht mehr in nummerierten Phasen, sondern in gebündelt
 - **Neu:** `ui/screens/mesdonnees/MesDonneesScreen.kt` + `MesDonneesViewModel.kt`, `AccountDataDto.kt`, vier Endpunkte in `ApiService`/`UserRepository`: E-Mail-Einstellungen (3 Schalter), Blockliste mit Entblocken, Datenexport per System-„Speichern unter“-Dialog (`CreateDocument`, keine Speicherberechtigung nötig). Einstieg: Zeile in `SettingsScreen` (`Routes.MES_DONNEES`). Kein Cookie-Abschnitt (App hat keinen Banner).
 - i18n-JSONs neu aus dem Web kopiert (`mes_donnees.*`, `parametres.privacy_data*`). Backend: siehe soukmar-backend (Migration `20261028100000_email_preferences`).
 - **Getestet:** `assembleDebug` grün.
+
+## Tranche 24 — Werbe-E-Mails: Einwilligung (2026-10-28)
+- **Registrierung:** Checkbox „Neuigkeiten und Angebote per E-Mail“ (nie vorangekreuzt, `RegisterRequest.marketingConsent`). **Meine Daten:** vierter Schalter `emailMarketing` (Standard aus). Kampagnen schreibt und versendet nur der Admin im Web.
+- i18n-JSONs neu aus dem Web kopiert. **Getestet:** `assembleDebug` grün, kein Emulator-Lauf.

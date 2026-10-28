@@ -7,7 +7,9 @@ import kotlinx.serialization.Serializable
 data class EmailPreferencesDto(
     val emailMessages: Boolean = true,
     val emailSavedSearches: Boolean = true,
-    val emailListingReminders: Boolean = true
+    val emailListingReminders: Boolean = true,
+    // Advertising is opt-in: off until the user switches it on.
+    val emailMarketing: Boolean = false
 )
 
 /** An account the user has blocked, shown with the public (shortened) name. */
