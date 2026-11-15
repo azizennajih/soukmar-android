@@ -25,8 +25,19 @@ class HomeViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val pushRepository: PushRepository,
     private val listingRepository: ListingRepository,
-    private val countryRepository: CountryRepository
+    private val countryRepository: CountryRepository,
+    private val sponsorRepository: com.soukmar.app.data.repository.SponsorRepository
 ) : ViewModel() {
+
+    /** Advertising banner shown once on the home screen (first INLINE banner of the country). */
+    var inlineBanners by mutableStateOf<List<com.soukmar.app.data.remote.dto.SponsorBannerDto>>(emptyList())
+        private set
+
+    private fun loadBanners() {
+        viewModelScope.launch { inlineBanners = sponsorRepository.inlineBanners(country) }
+    }
+
+    fun bannerClicked(id: String) = sponsorRepository.click(id)
 
     var country by mutableStateOf(countryRepository.country)
         private set
@@ -36,6 +47,7 @@ class HomeViewModel @Inject constructor(
         country = code
         countryRepository.updateCountry(code)
         loadCategoryCounts()
+        loadBanners()
     }
 
     var categoryCounts by mutableStateOf<Map<String, Int>>(emptyMap())
@@ -72,6 +84,7 @@ class HomeViewModel @Inject constructor(
             loading = false
         }
         loadCategoryCounts()
+        loadBanners()
         registerFcmToken()
         startUnreadPolling()
     }

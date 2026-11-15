@@ -119,7 +119,7 @@ fun ModerationPanel(
 ) {
     LaunchedEffect(Unit) { viewModel.start() }
     val snackbar = remember { SnackbarHostState() }
-    val message = viewModel.messageKey?.let { t(it) }
+    val message = viewModel.messageKey?.let { t(it, *viewModel.messageParams.toTypedArray()) }
     val extra = viewModel.extraMessageKey?.let { t(it) }
     LaunchedEffect(message) {
         if (message != null) {
@@ -139,6 +139,15 @@ fun ModerationPanel(
             ModerationQueue(viewModel)
         }
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
+    }
+
+    if (viewModel.bulkConfirmOpen) {
+        AlertDialog(
+            onDismissRequest = { viewModel.bulkConfirmOpen = false },
+            text = { Text(t("moderation.confirm_bulk_approve", "count" to (viewModel.summary?.pending ?: 0).toString())) },
+            confirmButton = { TextButton(onClick = { viewModel.approveAll() }) { Text(t("moderation.bulk_approve"), color = Primary) } },
+            dismissButton = { TextButton(onClick = { viewModel.bulkConfirmOpen = false }) { Text(t("common.cancel")) } }
+        )
     }
 
     viewModel.confirmAction?.let { action ->
@@ -225,6 +234,15 @@ private fun ModerationQueue(viewModel: ModerationViewModel) {
                     SummaryCard(s.suspended.toString(), t("moderation.sum_suspended")) { viewModel.selectStatus("SUSPENDED") }
                     SummaryCard(s.decidedToday.toString(), t("moderation.sum_today"))
                 }
+            }
+        }
+        if (viewModel.status == "PENDING" && (viewModel.summary?.pending ?: 0) > 0) {
+            item {
+                Button(
+                    onClick = { viewModel.bulkConfirmOpen = true },
+                    enabled = !viewModel.bulkBusy,
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) { Text("${t("moderation.bulk_approve")} (${viewModel.summary?.pending ?: 0})") }
             }
         }
         item {

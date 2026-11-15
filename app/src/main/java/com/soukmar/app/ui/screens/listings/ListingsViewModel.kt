@@ -30,8 +30,19 @@ class ListingsViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
     private val savedSearchRepository: SavedSearchRepository,
     private val tokenManager: TokenManager,
-    private val countryRepository: CountryRepository
+    private val countryRepository: CountryRepository,
+    private val sponsorRepository: com.soukmar.app.data.repository.SponsorRepository
 ) : ViewModel() {
+
+    /** Advertising banners shown after every 8th listing (same rhythm as the web). */
+    var inlineBanners by mutableStateOf<List<com.soukmar.app.data.remote.dto.SponsorBannerDto>>(emptyList())
+        private set
+
+    private fun loadBanners() {
+        viewModelScope.launch { inlineBanners = sponsorRepository.inlineBanners(country) }
+    }
+
+    fun bannerClicked(id: String) = sponsorRepository.click(id)
 
     /** Defaults to whatever the visitor is currently browsing app-wide
      * (mirrors web's `annonces.component.ts` reading `countryService.country()`
@@ -115,6 +126,7 @@ class ListingsViewModel @Inject constructor(
 
     init {
         search()
+        loadBanners()
         viewModelScope.launch { isLoggedIn = tokenManager.isLoggedIn() }
     }
 
@@ -225,6 +237,7 @@ class ListingsViewModel @Inject constructor(
         country = code
         countryRepository.updateCountry(code)
         search()
+        loadBanners()
     }
 
     /** Mirrors web's `onGpsSelected()`: defaults the radius to 10 km if none

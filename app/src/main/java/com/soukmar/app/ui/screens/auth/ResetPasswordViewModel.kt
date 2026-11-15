@@ -23,7 +23,7 @@ class ResetPasswordViewModel @Inject constructor(
     var error by mutableStateOf<String?>(null)
 
     fun submit(token: String) {
-        if (password.length < 6) { error = appText("auth.reset_too_short", "Le mot de passe doit contenir au moins 6 caractères."); return }
+        if (password.length < 8) { error = appText("auth.reset_too_short", "Le mot de passe doit contenir au moins 8 caractères."); return }
         if (password != confirmPassword) { error = appText("auth.reset_mismatch", "Les mots de passe ne correspondent pas."); return }
         loading = true
         error = null

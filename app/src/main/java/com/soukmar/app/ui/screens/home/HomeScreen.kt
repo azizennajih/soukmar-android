@@ -223,6 +223,11 @@ fun HomeScreen(
                     }
                 }
                 }
+                viewModel.inlineBanners.firstOrNull()?.let { banner ->
+                    item(span = { GridItemSpan(maxLineSpan) }, key = "sponsor") {
+                        com.soukmar.app.ui.components.SponsorBanner(banner, onClick = { viewModel.bannerClicked(banner.id) }, modifier = Modifier.padding(top = 10.dp))
+                    }
+                }
                 // The country lives at the very bottom (like the web footer), not in the top bar.
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {

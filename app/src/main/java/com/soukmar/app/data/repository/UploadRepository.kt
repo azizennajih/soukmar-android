@@ -23,6 +23,13 @@ import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
+/** Outcome of the AI listing assistant: [Failed.message] is the server's text in the app language, if any. */
+sealed class AiDraftResult {
+    data class Success(val draft: com.soukmar.app.data.remote.dto.AiListingDraftDto) : AiDraftResult()
+    data class Failed(val message: String?, val unavailable: Boolean) : AiDraftResult()
+}
+
 @Singleton
 class UploadRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -60,6 +67,37 @@ class UploadRepository @Inject constructor(
             if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!.urls) else parseError(res)
         } catch (e: Exception) {
             ApiResult.Error(genericErrorText())
+        } finally {
+            tempFiles.forEach { it.delete() }
+        }
+    }
+
+    /** AI listing assistant: null when the status cannot be read (treated as "not configured"). */
+    suspend fun aiStatus(): com.soukmar.app.data.remote.dto.AiStatusDto? = try {
+        val res = api.getAiStatus()
+        if (res.isSuccessful) res.body() else null
+    } catch (e: Exception) { null }
+
+    /** AI listing assistant: sends downscaled copies of the photos (same compression as a normal upload). */
+    suspend fun aiListingDraft(uris: List<Uri>, force: Boolean): AiDraftResult = withContext(Dispatchers.IO) {
+        val tempFiles = mutableListOf<File>()
+        try {
+            val parts = uris.mapIndexed { index, uri ->
+                val tempFile = File.createTempFile("ai_${index}_", ".jpg", context.cacheDir)
+                tempFiles += tempFile
+                compressToJpeg(uri, tempFile, 1600)
+                MultipartBody.Part.createFormData("images", tempFile.name, tempFile.asRequestBody("image/jpeg".toMediaType()))
+            }
+            val res = api.aiListingDraft(parts, if (force) "1".toRequestBody("text/plain".toMediaTypeOrNull()) else null)
+            val body = res.body()
+            if (res.isSuccessful && body != null) return@withContext AiDraftResult.Success(body)
+            val parsed = try {
+                res.errorBody()?.string()?.let { json.decodeFromString(com.soukmar.app.data.remote.dto.AiErrorDto.serializer(), it) }
+            } catch (e: Exception) { null }
+            // Our API already answers in the app language (limit reached, busy, unavailable, invalid file).
+            AiDraftResult.Failed(parsed?.error, unavailable = parsed?.code == "AI_UNAVAILABLE")
+        } catch (e: Exception) {
+            AiDraftResult.Failed(null, unavailable = e is java.io.IOException)
         } finally {
             tempFiles.forEach { it.delete() }
         }

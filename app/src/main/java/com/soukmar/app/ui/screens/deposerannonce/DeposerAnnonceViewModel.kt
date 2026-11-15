@@ -19,6 +19,8 @@ import com.soukmar.app.data.repository.ApiResult
 import com.soukmar.app.data.repository.CatalogRepository
 import com.soukmar.app.data.repository.ListingRepository
 import com.soukmar.app.data.repository.UploadRepository
+import com.soukmar.app.data.repository.AiDraftResult
+import com.soukmar.app.data.remote.dto.AiListingDraftDto
 import com.soukmar.app.ui.model.CATEGORIES
 import com.soukmar.app.ui.model.CITIES_BY_COUNTRY
 import com.soukmar.app.ui.model.CONDITION_CATEGORIES
@@ -62,6 +64,9 @@ data class ListingFormState(
     val derivedCurrency: String get() = currencyForCountry(country)
     val citiesForCountry: List<String> get() = if (country == "MA") MOROCCO_CITIES else (CITIES_BY_COUNTRY[country] ?: emptyList())
 }
+
+/** Which question the AI assistant is waiting on. */
+enum class AiConfirm { EDITED_PREVIEW, FORM_TEXTS }
 
 @HiltViewModel
 class DeposerAnnonceViewModel @Inject constructor(
@@ -135,6 +140,7 @@ class DeposerAnnonceViewModel @Inject constructor(
             loadForEdit(id)
         } else if (id == null && !countrySyncStarted) {
             countrySyncStarted = true
+            checkAiStatus()
             // Opened from a category's listing page: skip the category step (web: ?categorie=).
             if (presetCategory != null && form.category.isBlank() && CATEGORIES.any { it.value == presetCategory }) selectCategory(presetCategory)
             // Country is centrally controlled by the app-wide CountrySwitcher
@@ -331,6 +337,170 @@ class DeposerAnnonceViewModel @Inject constructor(
 
     /** A destination country is chosen separately for transport; then the destination city is free text. */
     val hasDestinationCountry: Boolean get() = attributeDefs.any { it.code == "DESTINATION_COUNTRY" }
+
+    // ───────────── AI assistant ("create the listing with AI", mirrors the web component) ─────────────
+    // State lives here, above the wizard steps, so photos, result and edited texts survive back/next.
+
+    /** false until the server says an AI machine is set up: then the assistant is not shown at all. */
+    var aiConfigured by mutableStateOf(false)
+        private set
+    /** null = not checked yet */
+    var aiAvailable by mutableStateOf<Boolean?>(null)
+        private set
+    var aiMaxImages by mutableStateOf(6)
+        private set
+    var aiOpen by mutableStateOf(false)
+        private set
+    var aiLoading by mutableStateOf(false)
+        private set
+    var aiElapsed by mutableStateOf(0)
+        private set
+    var aiError by mutableStateOf<String?>(null)
+        private set
+    var aiNotice by mutableStateOf<String?>(null)
+        private set
+    var aiDraft by mutableStateOf<AiListingDraftDto?>(null)
+        private set
+    var aiTitle by mutableStateOf("")
+    var aiDescription by mutableStateOf("")
+    /** index into (main suggestion + alternatives) */
+    var aiSelectedCategory by mutableStateOf(0)
+    var aiConfirm by mutableStateOf<AiConfirm?>(null)
+        private set
+
+    /** photos the current draft was made from */
+    private var aiSignature = ""
+    private var aiPendingDraft: Pair<AiListingDraftDto, String>? = null
+    /** Title/description as last written by the assistant: tells "still the AI text" from "typed by the user". */
+    private var aiAppliedTitle = ""
+    private var aiAppliedDescription = ""
+
+    /** Only freshly picked photos can be analysed (they are still local files). */
+    val aiUris: List<Uri> get() = photos.mapNotNull { it.localUri }.take(aiMaxImages)
+    val aiTooManyPhotos: Boolean get() = photos.count { it.localUri != null } > aiMaxImages
+    private fun aiSignatureNow(): String = aiUris.joinToString("|")
+    val aiPhotosChanged: Boolean get() = aiDraft != null && aiSignatureNow() != aiSignature
+    private val aiTitleEdited: Boolean get() = aiDraft?.let { aiTitle.trim() != it.suggestedTitle } ?: false
+    private val aiDescriptionEdited: Boolean get() = aiDraft?.let { aiDescription.trim() != it.suggestedDescription } ?: false
+
+    fun checkAiStatus() {
+        viewModelScope.launch {
+            val status = uploadRepository.aiStatus()
+            aiConfigured = status?.configured == true
+            aiAvailable = status?.available == true
+            aiMaxImages = status?.maxImages?.takeIf { it > 0 } ?: 6
+        }
+    }
+
+    fun toggleAi() {
+        aiOpen = !aiOpen
+        aiNotice = null
+        if (aiOpen && aiAvailable == false) checkAiStatus()
+    }
+
+    fun aiAnalyse(force: Boolean = false) {
+        val uris = aiUris
+        if (uris.isEmpty() || aiLoading) return
+        val signature = aiSignatureNow()
+        aiLoading = true
+        aiError = null
+        aiNotice = null
+        aiElapsed = 0
+        val timer = viewModelScope.launch { while (true) { kotlinx.coroutines.delay(1000); aiElapsed++ } }
+        viewModelScope.launch {
+            val result = uploadRepository.aiListingDraft(uris, force)
+            timer.cancel()
+            aiLoading = false
+            when (result) {
+                is AiDraftResult.Success -> {
+                    aiAvailable = true
+                    // A new result never silently replaces texts the user edited in the preview.
+                    if (aiTitleEdited || aiDescriptionEdited) {
+                        aiPendingDraft = result.draft to signature
+                        aiConfirm = AiConfirm.EDITED_PREVIEW
+                    } else takeAiDraft(result.draft, signature, replaceTexts = true)
+                }
+                is AiDraftResult.Failed -> {
+                    if (result.unavailable) aiAvailable = false
+                    aiError = result.message ?: appText(if (result.unavailable) "ai.unavailable" else "ai.error_generic", "L'analyse des photos a échoué. Réessayez ou continuez manuellement.")
+                }
+            }
+        }
+    }
+
+    private fun takeAiDraft(draft: AiListingDraftDto, signature: String, replaceTexts: Boolean) {
+        val keepTitle = if (!replaceTexts && aiTitleEdited) aiTitle else null
+        val keepDescription = if (!replaceTexts && aiDescriptionEdited) aiDescription else null
+        aiDraft = draft
+        aiSignature = signature
+        aiSelectedCategory = 0
+        aiTitle = keepTitle ?: draft.suggestedTitle
+        aiDescription = keepDescription ?: draft.suggestedDescription
+    }
+
+    /** "Apply suggestion": texts the user wrote in the form are only replaced after a confirmation. */
+    fun aiApply() {
+        val title = aiTitle.trim()
+        val description = aiDescription.trim()
+        if (aiDraft == null || title.isEmpty() || description.isEmpty()) return
+        val titleIsMine = form.title.isNotBlank() && form.title != aiAppliedTitle && form.title != title
+        val descIsMine = form.description.isNotBlank() && form.description != aiAppliedDescription && form.description != description
+        if (titleIsMine || descIsMine) aiConfirm = AiConfirm.FORM_TEXTS else applyAiDraft(replaceTexts = true)
+    }
+
+    fun aiResolveConfirm(replace: Boolean) {
+        val kind = aiConfirm ?: return
+        aiConfirm = null
+        when (kind) {
+            AiConfirm.EDITED_PREVIEW -> aiPendingDraft?.let { (draft, signature) -> takeAiDraft(draft, signature, replaceTexts = replace) }
+            AiConfirm.FORM_TEXTS -> applyAiDraft(replaceTexts = replace)
+        }
+        aiPendingDraft = null
+    }
+
+    private fun applyAiDraft(replaceTexts: Boolean) {
+        val draft = aiDraft ?: return
+        val title = aiTitle.trim()
+        val description = aiDescription.trim()
+        val titleIsMine = form.title.isNotBlank() && form.title != aiAppliedTitle && form.title != title
+        val descIsMine = form.description.isNotBlank() && form.description != aiAppliedDescription && form.description != description
+        if (replaceTexts || !titleIsMine) { form = form.copy(title = title); aiAppliedTitle = title }
+        if (replaceTexts || !descIsMine) { form = form.copy(description = description); aiAppliedDescription = description }
+
+        val main = aiSelectedCategory == 0
+        val choice = (listOf(draft.suggestedCategory) + draft.alternativeCategories).getOrNull(aiSelectedCategory) ?: draft.suggestedCategory
+        // Attributes belong to the main suggestion's subcategory; they are dropped if the user picked an alternative.
+        val suggested = if (main) draft.attributes else emptyMap()
+        aiOpen = false
+        viewModelScope.launch {
+            val sameSub = form.category == choice.category && form.subcategoryId == (choice.subcategoryId ?: "")
+            if (!sameSub) {
+                form = form.copy(category = choice.category, subcategoryId = "", attributes = emptyMap())
+                attributeDefs = emptyList()
+                loadingSubcats = true
+                subcategories = when (val result = catalogRepository.getCategoryFull(choice.category)) {
+                    is ApiResult.Success -> result.data.subcategories
+                    is ApiResult.Error -> emptyList()
+                }
+                loadingSubcats = false
+                subcategories.find { it.id == choice.subcategoryId }?.let { sub ->
+                    form = form.copy(subcategoryId = sub.id)
+                    attributeDefs = sub.attributeDefinitions
+                }
+                if (!showCondition) form = form.copy(condition = "")
+            }
+            // Only attributes this subcategory really has, and never over a value the user already entered.
+            var attrs = form.attributes
+            for (def in attributeDefs) {
+                val value = suggested[def.code] ?: continue
+                if (attrs[def.code] == null) attrs = attrs + (def.code to value)
+            }
+            form = form.copy(attributes = attrs)
+            // Subcategory still open (the AI only knew the category): let the user choose it, otherwise go to the details.
+            step = if (subcategories.isNotEmpty() && form.subcategoryId.isEmpty()) 1 else 2
+            aiNotice = if (replaceTexts) appText("ai.applied", "Proposition reprise.") else appText("ai.applied_kept_texts", "Vos textes ont été conservés.")
+        }
+    }
 
     fun updateForm(transform: (ListingFormState) -> ListingFormState) {
         form = transform(form)

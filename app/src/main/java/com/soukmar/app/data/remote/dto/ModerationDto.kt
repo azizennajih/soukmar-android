@@ -7,6 +7,10 @@ import kotlinx.serialization.json.JsonPrimitive
 /** Mirrors the staff API of the listing review workflow (`/api/admin/moderation`, backend routes/moderation.ts).
  * Only ADMIN and MODERATOR accounts get answers; everything is checked again on the server. */
 
+/** Answer of the admin-only "approve all waiting listings". */
+@Serializable
+data class ModerationBulkApproveDto(val approved: Int = 0, val skippedHighRisk: Int = 0)
+
 @Serializable
 data class ModerationSummaryDto(
     val pending: Int = 0,

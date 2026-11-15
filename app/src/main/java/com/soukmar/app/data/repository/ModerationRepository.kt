@@ -3,6 +3,7 @@ package com.soukmar.app.data.repository
 import com.soukmar.app.data.i18n.genericErrorText
 import com.soukmar.app.data.remote.ApiService
 import com.soukmar.app.data.remote.dto.ApiErrorDto
+import com.soukmar.app.data.remote.dto.ModerationBulkApproveDto
 import com.soukmar.app.data.remote.dto.ModerationDecisionRequest
 import com.soukmar.app.data.remote.dto.ModerationDecisionResponseDto
 import com.soukmar.app.data.remote.dto.ModerationDetailDto
@@ -48,6 +49,11 @@ class ModerationRepository @Inject constructor(
             sort = sort,
             page = page
         )
+        if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
+    } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
+
+    suspend fun approveAll(): ApiResult<ModerationBulkApproveDto> = try {
+        val res = api.approveAllListings()
         if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!) else parseError(res)
     } catch (e: Exception) { ApiResult.Error(genericErrorText()) }
 

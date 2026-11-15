@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soukmar.app.data.i18n.appText
 import com.soukmar.app.data.remote.dto.ListingDto
 import com.soukmar.app.data.remote.dto.ListingFunnelDto
 import com.soukmar.app.data.remote.dto.ViewStatDayDto
@@ -30,13 +31,23 @@ class MesAnnoncesViewModel @Inject constructor(
 
     var sortBy by mutableStateOf(SortKey.NEWEST)
 
+    var searchTerm by mutableStateOf("")
+
+    /** Case-insensitive match on title, description, city and category label (same rule as the web). */
+    private fun matchesSearch(l: ListingDto): Boolean {
+        val q = searchTerm.trim().lowercase()
+        if (q.isEmpty()) return true
+        val cat = appText("cats.${l.category}", l.category)
+        return listOf(l.title, l.description, l.city, cat).any { it.lowercase().contains(q) }
+    }
+
     val sortedListings: List<ListingDto>
-        get() = when (sortBy) {
+        get() = listings.filter { matchesSearch(it) }.let { listings -> when (sortBy) {
             SortKey.NEWEST -> listings.sortedByDescending { parseInstantOrNull(it.createdAt) }
             SortKey.OLDEST -> listings.sortedBy { parseInstantOrNull(it.createdAt) }
             SortKey.PRICE_ASC -> listings.sortedBy { it.price ?: Double.MAX_VALUE }
             SortKey.PRICE_DESC -> listings.sortedByDescending { it.price ?: Double.MIN_VALUE }
-        }
+        } }
 
     var bumpingId by mutableStateOf<String?>(null)
         private set

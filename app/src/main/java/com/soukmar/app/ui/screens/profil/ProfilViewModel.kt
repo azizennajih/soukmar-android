@@ -234,7 +234,7 @@ class ProfilViewModel @Inject constructor(
     fun changePassword() {
         pwSuccessMessage = null
         pwErrorMessage = null
-        if (newPassword.length < 6) { pwErrorMessage = "Le mot de passe doit contenir au moins 6 caractères."; return }
+        if (newPassword.length < 8) { pwErrorMessage = appText("auth.reset_too_short", "Le mot de passe doit contenir au moins 8 caractères."); return }
         if (newPassword != confirmPassword) { pwErrorMessage = "Les mots de passe ne correspondent pas."; return }
         if (pwSaving) return
         pwSaving = true

@@ -134,7 +134,34 @@ class ModerationViewModel @Inject constructor(
     var extraMessageKey by mutableStateOf<String?>(null)
         private set
 
-    fun clearMessage() { messageKey = null; extraMessageKey = null }
+    /** Placeholders of [messageKey] (only the bulk approval has any). */
+    var messageParams by mutableStateOf<List<Pair<String, String>>>(emptyList())
+        private set
+
+    fun clearMessage() { messageKey = null; extraMessageKey = null; messageParams = emptyList() }
+
+    // ── approve all waiting listings (admin only; the server skips high-risk ones and sends no e-mails) ──
+    var bulkConfirmOpen by mutableStateOf(false)
+    var bulkBusy by mutableStateOf(false)
+        private set
+
+    fun approveAll() {
+        bulkConfirmOpen = false
+        if (bulkBusy) return
+        viewModelScope.launch {
+            bulkBusy = true
+            when (val r = repository.approveAll()) {
+                is ApiResult.Success -> {
+                    messageParams = listOf("approved" to r.data.approved.toString(), "skipped" to r.data.skippedHighRisk.toString())
+                    messageKey = "moderation.done_bulk_approve"
+                    loadSummary()
+                    loadQueue()
+                }
+                is ApiResult.Error -> messageKey = "auth.generic_error"
+            }
+            bulkBusy = false
+        }
+    }
 
     fun openDetail(id: String) {
         viewModelScope.launch {

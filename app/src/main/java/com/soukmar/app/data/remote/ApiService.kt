@@ -63,6 +63,14 @@ interface ApiService {
     @GET("listings/{id}/similar")
     suspend fun getSimilarListings(@Path("id") id: String): Response<List<ListingDto>>
 
+    /** Advertising banners for a placement (SIDE | INLINE), filtered by country. Public. */
+    @GET("banners")
+    suspend fun getBanners(@Query("placement") placement: String, @Query("country") country: String): Response<List<SponsorBannerDto>>
+
+    /** Counts a banner click (an aggregate number only). */
+    @POST("banners/{id}/click")
+    suspend fun clickBanner(@Path("id") id: String): Response<Unit>
+
     /** Live listing count per category in a country — shown on the homepage's category tiles. */
     @GET("stats/categories")
     suspend fun getCategoryCounts(@Query("country") country: String): Response<Map<String, Int>>
@@ -106,6 +114,19 @@ interface ApiService {
 
     @DELETE("listings/{id}")
     suspend fun deleteListing(@Path("id") id: String): Response<SuccessDto>
+
+    /** AI listing assistant: whether the server has an AI machine set up and reachable. Public. */
+    @GET("ai/status")
+    suspend fun getAiStatus(): Response<AiStatusDto>
+
+    /** AI listing assistant: photos of one item -> suggested title, description, category, attributes.
+     * The answer language follows the Accept-Language header. [force] = "1" skips the server's cached result. */
+    @Multipart
+    @POST("ai/listing-draft")
+    suspend fun aiListingDraft(
+        @Part images: List<MultipartBody.Part>,
+        @Part("force") force: okhttp3.RequestBody?
+    ): Response<AiListingDraftDto>
 
     @Multipart
     @POST("upload")
@@ -219,6 +240,10 @@ interface ApiService {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20
     ): Response<ModerationQueueDto>
+
+    /** ADMIN only: approves every waiting listing except high-risk ones; no e-mails. */
+    @POST("admin/moderation/approve-all")
+    suspend fun approveAllListings(): Response<ModerationBulkApproveDto>
 
     @GET("admin/moderation/listings/{id}")
     suspend fun getModerationDetail(@Path("id") id: String): Response<ModerationDetailDto>

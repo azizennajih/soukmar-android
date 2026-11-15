@@ -209,6 +209,7 @@ private fun DeposerAnnonceContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
+            if (!viewModel.isEdit) AiAssistantCard(viewModel, onPickPhotos)
             when (viewModel.step) {
                 0 -> CategoryStep(viewModel)
                 1 -> SubcategoryStep(viewModel)

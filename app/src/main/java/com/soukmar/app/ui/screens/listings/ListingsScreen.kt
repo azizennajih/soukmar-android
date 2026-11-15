@@ -57,6 +57,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 
+
+/** An advertising banner after every 8th listing (web: adsEvery). */
+private const val ADS_EVERY = 8
+
 @Composable
 fun ListingsScreen(
     initialCategory: String?,
@@ -159,8 +163,17 @@ fun ListingsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.fillMaxWidth().weight(1f)
                     ) {
-                        items(viewModel.listings, key = { it.id }) { listing ->
-                            ListingCard(listing = listing, onClick = { onOpenListing(listing.id) })
+                        val banners = viewModel.inlineBanners
+                        viewModel.listings.forEachIndexed { i, listing ->
+                            item(key = listing.id) {
+                                ListingCard(listing = listing, onClick = { onOpenListing(listing.id) })
+                            }
+                            if ((i + 1) % ADS_EVERY == 0 && i < viewModel.listings.size - 1 && banners.isNotEmpty()) {
+                                val banner = banners[((i + 1) / ADS_EVERY - 1) % banners.size]
+                                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }, key = "sponsor_" + i) {
+                                    com.soukmar.app.ui.components.SponsorBanner(banner, onClick = { viewModel.bannerClicked(banner.id) })
+                                }
+                            }
                         }
                         if (viewModel.hasMore) {
                             item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {

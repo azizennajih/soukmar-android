@@ -36,7 +36,13 @@ object NetworkModule {
             // Accept-Language makes the API answer errors in the app's current language.
             val builder = chain.request().newBuilder().header("Accept-Language", i18n.currentLang)
             if (token != null) builder.addHeader("Authorization", "Bearer $token")
-            chain.proceed(builder.build())
+            val request = builder.build()
+            // The AI listing assistant answers only when the vision model has finished (up to minutes on a CPU).
+            if (request.url.encodedPath.endsWith("/ai/listing-draft")) {
+                chain.withReadTimeout(6, java.util.concurrent.TimeUnit.MINUTES).withWriteTimeout(2, java.util.concurrent.TimeUnit.MINUTES).proceed(request)
+            } else {
+                chain.proceed(request)
+            }
         }
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE

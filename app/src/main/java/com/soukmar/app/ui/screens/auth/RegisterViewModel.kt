@@ -36,7 +36,7 @@ class RegisterViewModel @Inject constructor(
     fun submit() {
         if (accountType.isBlank()) { error = appText("auth.account_type_required", "Veuillez sélectionner un type de compte."); return }
         if (password != confirmPassword) { error = appText("auth.reset_mismatch", "Les mots de passe ne correspondent pas."); return }
-        if (password.length < 6) { error = appText("auth.reset_too_short", "Le mot de passe doit contenir au moins 6 caractères."); return }
+        if (password.length < 8) { error = appText("auth.reset_too_short", "Le mot de passe doit contenir au moins 8 caractères."); return }
         if (name.isBlank() || email.isBlank()) { error = appText("auth.fill_all_fields", "Champs requis manquants."); return }
 
         loading = true

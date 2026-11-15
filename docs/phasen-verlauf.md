@@ -110,3 +110,12 @@ Ab hier wächst die App nicht mehr in nummerierten Phasen, sondern in gebündelt
 ## Tranche 24 — Werbe-E-Mails: Einwilligung (2026-10-28)
 - **Registrierung:** Checkbox „Neuigkeiten und Angebote per E-Mail“ (nie vorangekreuzt, `RegisterRequest.marketingConsent`). **Meine Daten:** vierter Schalter `emailMarketing` (Standard aus). Kampagnen schreibt und versendet nur der Admin im Web.
 - i18n-JSONs neu aus dem Web kopiert. **Getestet:** `assembleDebug` grün, kein Emulator-Lauf.
+
+## Tranche 25 — Web-Sync: Passwort 8 Zeichen, Suchfeld Meine Anzeigen, Alle freigeben, Werbe-Banner, KI-Assistent (2026-11-15)
+- **Passwort:** Mindestlänge 8 statt 6 (`RegisterViewModel`, `ResetPasswordViewModel`, `ProfilViewModel`), wie Backend und Web.
+- **Meine Anzeigen:** Suchfeld als erstes Listenelement (`MesAnnoncesViewModel.searchTerm`: Titel, Beschreibung, Ort, Kategorie).
+- **Moderation:** „Alle freigeben“ (`POST admin/moderation/approve-all`, nur ADMIN serverseitig) mit Rückfrage; Meldung mit Platzhaltern über `messageParams`.
+- **Werbe-Banner:** `SponsorDto.kt`, `SponsorRepository.kt`, `ui/components/SponsorBanner.kt`; nur Platzierung INLINE: in `ListingsScreen` nach jeder 8. Anzeige über beide Spalten, in `HomeScreen` das erste Banner über der Länderwahl. Immer mit Label `sponsor.label`, nur https-Links, Klick wird gezählt.
+- **KI-Assistent:** `AiDto.kt`, `ui/screens/deposerannonce/AiAssistantCard.kt`, Zustand in `DeposerAnnonceViewModel` (Abschnitt „AI assistant“), `UploadRepository.aiStatus()/aiListingDraft()`, in `NetworkModule` 6 Minuten Lese-Timeout nur für `ai/listing-draft`. Karte steht über den Schritten, nutzt die Fotoliste des Formulars, schreibt erst nach „Vorschlag übernehmen“; selbst geschriebene Texte nur nach Rückfrage ersetzen. **Unsichtbar, solange `/api/ai/status` `configured: false` meldet** (Thema ist zurückgestellt, siehe `soukmar/docs/ki-anzeigenassistent.md`).
+- i18n-JSONs neu aus dem Web kopiert.
+- **Getestet:** `assembleDebug` grün. **Nicht getestet:** Emulator-Durchlauf; der KI-Assistent ist auch im Web nur gegen einen Test-Stellvertreter geprüft.

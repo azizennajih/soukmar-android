@@ -94,6 +94,20 @@ fun MesAnnoncesScreen(
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.listings.isEmpty() -> EmptyMesAnnonces(onNewListing)
                 else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    item(key = "search") {
+                        OutlinedTextField(
+                            value = viewModel.searchTerm,
+                            onValueChange = { viewModel.searchTerm = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            placeholder = { Text(t("mes_annonces.search_placeholder")) },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                            trailingIcon = {
+                                if (viewModel.searchTerm.isNotEmpty()) IconButton(onClick = { viewModel.searchTerm = "" }) { Icon(Icons.Filled.Close, contentDescription = t("common.close")) }
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
                     items(viewModel.sortedListings, key = { it.id }) { listing ->
                         Column {
                             ListingRow(
