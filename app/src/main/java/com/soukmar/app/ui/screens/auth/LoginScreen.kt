@@ -92,7 +92,7 @@ fun LoginScreen(
             loading = viewModel.loading
         )
         Spacer(Modifier.height(20.dp))
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text("${t("auth.no_account")} ", color = TextMuted)
             TextButton(onClick = onNavigateToRegister, contentPadding = PaddingValues(0.dp)) {
                 Text(t("auth.register_link"), color = Primary, fontWeight = FontWeight.Bold)

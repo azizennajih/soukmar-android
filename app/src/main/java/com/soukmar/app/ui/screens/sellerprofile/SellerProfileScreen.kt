@@ -199,7 +199,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
 private fun StarRow(rating: Int) {
     Row {
         (1..5).forEach { s ->
-            Text("★", fontSize = 15.sp, color = if (s <= rating) Gold else BorderColor)
+            Text("★", fontSize = 15.sp, color = if (s <= rating) com.soukmar.app.ui.theme.Accent else BorderColor)
         }
     }
 }

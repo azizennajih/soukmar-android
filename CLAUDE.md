@@ -52,28 +52,20 @@ Debug-Build zeigt auf `http://10.0.2.2:3000/api/` (Emulator-Alias für den Host-
 
 ---
 
-## Design System — IMMER mit `soukmar/src/styles.scss` synchron halten
+## Design System (Redesign 2026-11, Tranche 26)
 
-`ui/theme/Color.kt` spiegelt die CSS-Variablen der Web-App 1:1:
+Markenidentität: **Rot** nur für wichtige Aktionen und aktive Zustände (nie als große Fläche), **Weiß** als Grund, **Gelb** als gezielter Akzent für Angebote, Boosts, Premium und Hinweise. Nur helles Erscheinungsbild.
 
-| Compose-Konstante | Wert | Verwendung |
-|--------------------|------|------------|
-| `Primary` | `#D93D4A` | Buttons, CTAs, Logo, Hover |
-| `PrimaryDark` | `#B8313C` | Hover-Zustand |
-| `PrimaryLight` | `#FEF1F2` | Hintergrund für Primär-Highlights |
-| `Gold` | `#C9941A` | Premium-Badges |
-| `GoldLight` | `#FEF6E4` | Hintergrund für Gold-Highlights |
-| `Secondary` | `#1E3A5F` | sekundäre Elemente |
-| `TextPrimary` | `#111827` | Haupttext |
-| `TextMuted` | `#6B7280` | Sekundärtext |
-| `BorderColor` | `#E5E9EE` | Rahmen |
-| `BgColor` | `#F8F7F5` | Seitenhintergrund |
-| `ErrorColor` | `#DC2626` | Fehler |
-| `SuccessColor` | `#16A34A` | Erfolg |
+| Wo | Was |
+|----|-----|
+| `ui/theme/Color.kt` | `Primary` #D93D4A, `PrimaryDark`, `PrimaryLight`; `Accent` #FFC533 (gelbe Fläche, immer dunkler Text), `Gold` #8F5F00 (Text/Icon auf hellem Grund), `GoldLight`; `TextPrimary`, `TextMuted`, `TextSubtle`, `BorderColor`, `SurfaceMuted`, `BgColor` (weiß); Status-Töne `Success/Error/Info/Warning` je `Light`/`Dark` |
+| `ui/theme/Dimens.kt` | `Spacing` (4/8/12/16/24/32), `Radius` (Badge 8, Feld 12, Karte 16, rund), `IconSize` (16/20/24/28), `ControlHeight` 52 dp |
+| `ui/theme/Type.kt`, `Theme.kt` | Schriftskala; Material-Palette und -Formen auf die Marke abgebildet |
+| `ui/components/CommonComponents.kt` | `SoukTopBar`, `PrimaryButton`, `OutlineButtonSoukMar`, `AccentButton`, `SearchPill`, `SectionHeader`, `EmptyState`, `SoukBadge`, `MenuRow`, `Modifier.soukCard()`, Banner |
 
-Kategorie-Badge-Farben (bg/fg-Paare) in `ui/model/CatalogModels.kt` — spiegeln `.cat-*`-Klassen aus `soukmar/src/styles.scss`.
+Regeln: Icons aus `Icons.Outlined` (gefüllt nur für aktive Zustände), Zurück-Pfeil `AutoMirrored`; Touch-Flächen mindestens 48 dp; **keine hartcodierten Farben** außerhalb von `Color.kt`. Mit `soukmar-ios/SoukMar/Views/DesignSystem.swift` synchron halten; das Web (`soukmar/src/styles.scss`) hat den gelben Akzent und den weißen Grund noch nicht übernommen.
 
-**Keine hardcodierten Farben** außerhalb von `Color.kt` — immer die benannten Konstanten importieren.
+Kategorie-Farben (bg/fg-Paare) in `ui/model/CatalogModels.kt` — spiegeln die `.cat-*`-Klassen des Web.
 
 ---
 
@@ -104,7 +96,7 @@ Kategorien haben Unterkategorien (`Subcategory`), jede mit eigenen `AttributeDef
 
 ## Phasenplan / Verlauf
 
-Alle Phasen (1–13) und Tranchen 1–21 sind abgeschlossen. Das ausführliche Protokoll (je Eintrag: Was, Warum, Fallstricke, Testergebnis) steht in `docs/phasen-verlauf.md`. **Nicht komplett lesen**, nur gezielt nach dem passenden Stichwort suchen (Grep) — es ist sehr lang.
+Alle Phasen (1–13) und Tranchen 1–26 sind abgeschlossen. Das ausführliche Protokoll (je Eintrag: Was, Warum, Fallstricke, Testergebnis) steht in `docs/phasen-verlauf.md`. **Nicht komplett lesen**, nur gezielt nach dem passenden Stichwort suchen (Grep) — es ist sehr lang.
 
 Bei einer neuen Tranche: Eintrag **unten an `docs/phasen-verlauf.md` anhängen** (kurz: Datum, Thema, Dateien, Fallstricke, was getestet/nicht getestet ist) — nicht in diese Datei.
 

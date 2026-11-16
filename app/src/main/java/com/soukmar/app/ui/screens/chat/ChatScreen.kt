@@ -293,7 +293,7 @@ private fun CompactStars(avgRating: Double?) {
     val rating = avgRating?.let { Math.round(it).toInt() } ?: 0
     Row {
         (1..5).forEach { s ->
-            Text("★", fontSize = 10.sp, color = if (s <= rating) Gold else BorderColor)
+            Text("★", fontSize = 10.sp, color = if (s <= rating) com.soukmar.app.ui.theme.Accent else BorderColor)
         }
     }
 }

@@ -52,7 +52,7 @@ fun AccountScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val user = viewModel.user
-    Scaffold(containerColor = WhiteColor, topBar = { SoukTopBar(title = t("nav.account")) }) { padding ->
+    Scaffold(containerColor = WhiteColor, topBar = { SoukTopBar(title = t("nav.account"), actions = { com.soukmar.app.ui.components.LanguageSwitcher() }) }) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.lg)

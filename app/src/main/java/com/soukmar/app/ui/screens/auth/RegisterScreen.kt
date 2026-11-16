@@ -94,7 +94,7 @@ fun RegisterScreen(
         Spacer(Modifier.height(8.dp))
         PrimaryButton(text = t("auth.register_btn"), onClick = { viewModel.submit() }, loading = viewModel.loading)
         Spacer(Modifier.height(20.dp))
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text("${t("auth.has_account")} ", color = TextMuted)
             TextButton(onClick = onNavigateToLogin, contentPadding = PaddingValues(0.dp)) {
                 Text(t("auth.login_link"), color = Primary, fontWeight = FontWeight.Bold)
