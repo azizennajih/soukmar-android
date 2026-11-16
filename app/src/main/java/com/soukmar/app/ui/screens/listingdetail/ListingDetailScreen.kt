@@ -15,20 +15,20 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.RemoveRedEye
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.RemoveRedEye
+import androidx.compose.material.icons.automirrored.outlined.TrendingDown
+import androidx.compose.material.icons.automirrored.outlined.TrendingUp
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -94,13 +94,13 @@ fun ListingDetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Annonce") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") } },
+                title = { Text(viewModel.listing?.let { tCatalog("cats.${it.category}", it.category) } ?: "", style = MaterialTheme.typography.titleLarge, maxLines = 1) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     if (viewModel.isLoggedIn) {
                         IconButton(onClick = { viewModel.toggleFavorite() }) {
                             Icon(
-                                if (viewModel.favorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                if (viewModel.favorited) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                                 contentDescription = t(if (viewModel.favorited) "listing.fav_remove" else "listing.fav_add"),
                                 tint = if (viewModel.favorited) Primary else TextPrimary
                             )
@@ -115,7 +115,7 @@ fun ListingDetailScreen(
                 CircularProgressIndicator(color = Primary)
             }
             viewModel.loadError || viewModel.listing == null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(t("listing.not_found"), color = TextMuted)
+                com.soukmar.app.ui.components.EmptyState(Icons.Outlined.PhotoCamera, t("listing.not_found"))
             }
             else -> {
                 val listing = viewModel.listing!!
@@ -135,37 +135,18 @@ fun ListingDetailScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(com.soukmar.app.ui.theme.GoldLight)
-                                .padding(12.dp)
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
                         )
                     }
                     ImageGallery(images = listing.images)
 
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(listing.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Spacer(Modifier.height(6.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(2.dp))
-                            Text(cityLabelT(listing.city), color = TextMuted, fontSize = 13.sp)
-                            if (listing.country != "MA") {
-                                Spacer(Modifier.width(4.dp))
-                                Text(countryFlag(listing.country), fontSize = 13.sp)
-                            }
-                            Spacer(Modifier.width(10.dp))
-                            Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 13.sp)
-                            Spacer(Modifier.width(10.dp))
-                            Icon(Icons.Filled.RemoveRedEye, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(2.dp))
-                            Text("${listing.views}", color = TextMuted, fontSize = 13.sp)
-                        }
-
-                        Spacer(Modifier.height(14.dp))
                         val priceParts = listing.price?.let { formatPricePartsT(it, listing.currency) }
                         Row(verticalAlignment = Alignment.Bottom) {
-                            Text(priceParts?.first ?: t("listing.negotiate"), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text(priceParts?.first ?: t("listing.negotiate"), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
                             if (priceParts != null) {
                                 Spacer(Modifier.width(6.dp))
-                                Text(priceParts.second, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextMuted)
+                                Text(priceParts.second, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary, modifier = Modifier.padding(bottom = 3.dp))
                             }
                         }
                         viewModel.priceComparisonPct?.let { pct ->
@@ -173,7 +154,7 @@ fun ListingDetailScreen(
                             val good = pct < 0
                             val trendColor = if (good) SuccessColor else if (pct > 10) ErrorColor else TextMuted
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(if (good) Icons.AutoMirrored.Filled.TrendingDown else Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = trendColor, modifier = Modifier.size(14.dp))
+                                Icon(if (good) Icons.AutoMirrored.Outlined.TrendingDown else Icons.AutoMirrored.Outlined.TrendingUp, contentDescription = null, tint = trendColor, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
                                 Text(
                                     if (good) t("listing.price_below", "pct" to (-pct).toString()) else t("listing.price_above", "pct" to pct.toString()),
@@ -184,22 +165,42 @@ fun ListingDetailScreen(
                             }
                         }
 
+                        Spacer(Modifier.height(8.dp))
+                        Text(listing.title, style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+                        Spacer(Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(2.dp))
+                            Text(cityLabelT(listing.city), color = TextMuted, fontSize = 13.sp)
+                            if (listing.country != "MA") {
+                                Spacer(Modifier.width(4.dp))
+                                Text(countryFlag(listing.country), fontSize = 13.sp)
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 13.sp)
+                            Spacer(Modifier.width(10.dp))
+                            Icon(Icons.Outlined.RemoveRedEye, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(2.dp))
+                            Text("${listing.views}", color = TextMuted, fontSize = 13.sp)
+                        }
+
+
                         categoryConfig(listing.category)?.let { cat ->
                             Spacer(Modifier.height(10.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                modifier = Modifier.background(cat.bg, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)
+                                modifier = Modifier.background(com.soukmar.app.ui.theme.SurfaceMuted, RoundedCornerShape(999.dp)).padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                CategoryIcon(category = cat.value, tint = cat.fg, modifier = Modifier.size(13.dp))
-                                Text(tCatalog("cats.${cat.value}", cat.value), color = cat.fg, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                CategoryIcon(category = cat.value, tint = TextPrimary, modifier = Modifier.size(14.dp))
+                                Text(tCatalog("cats.${cat.value}", cat.value), color = TextPrimary, style = MaterialTheme.typography.labelMedium)
                             }
                         }
 
                         Spacer(Modifier.height(18.dp))
-                        Text(t("listing.description"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text(t("listing.description"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                         Spacer(Modifier.height(6.dp))
-                        Text(listing.description, color = TextPrimary, fontSize = 14.sp, lineHeight = 20.sp)
+                        Text(listing.description, color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
 
                         // MULTI_SELECT attributes produce one ListingAttributeValue row
                         // per selected option (same attributeDefinitionId) — group them
@@ -210,7 +211,7 @@ fun ListingDetailScreen(
                             .sortedBy { it.first().attributeDefinition!!.sortOrder }
                         if (specGroups.isNotEmpty()) {
                             Spacer(Modifier.height(18.dp))
-                            Text(t("listing.specs_title"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text(t("listing.specs_title"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                             Spacer(Modifier.height(8.dp))
                             Column(
                                 modifier = Modifier.fillMaxWidth().border(1.dp, BorderColor, RoundedCornerShape(12.dp)).padding(4.dp)
@@ -258,7 +259,7 @@ fun ListingDetailScreen(
                             if (viewModel.reviewSubmitted) {
                                 Spacer(Modifier.height(10.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
+                                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
                                     Text(t("listing.review_thanks"), color = SuccessColor, fontSize = 13.sp)
                                 }
                             }
@@ -287,10 +288,10 @@ fun ListingDetailScreen(
 @Composable
 private fun SimilarListingsSection(listings: List<com.soukmar.app.data.remote.dto.ListingDto>, onOpenListing: (String) -> Unit) {
     Column {
-        Text(t("listing.similar"), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+        Text(t("listing.similar"), style = MaterialTheme.typography.titleLarge, color = TextPrimary)
         Spacer(Modifier.height(10.dp))
         listings.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 row.forEach { item ->
                     ListingCard(listing = item, onClick = { onOpenListing(item.id) }, modifier = Modifier.weight(1f))
                 }
@@ -304,14 +305,14 @@ private fun SimilarListingsSection(listings: List<com.soukmar.app.data.remote.dt
 @Composable
 private fun ImageGallery(images: List<String>) {
     if (images.isEmpty()) {
-        Box(Modifier.fillMaxWidth().height(260.dp).background(Color(0xFFF1F5F9)), contentAlignment = Alignment.Center) {
-            Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = TextMuted)
+        Box(Modifier.fillMaxWidth().aspectRatio(4f / 3f).background(com.soukmar.app.ui.theme.SurfaceMuted), contentAlignment = Alignment.Center) {
+            Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = com.soukmar.app.ui.theme.TextSubtle, modifier = Modifier.size(40.dp))
         }
         return
     }
     val pagerState = rememberPagerState(pageCount = { images.size })
     Column {
-        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth().height(260.dp)) { page ->
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).background(com.soukmar.app.ui.theme.SurfaceMuted)) { page ->
             AsyncImage(
                 model = images[page],
                 contentDescription = null,
@@ -379,11 +380,11 @@ private fun ContactCard(
     onCallWhatsapp: (String) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         if (!isLoggedIn) {
-            Button(onClick = onLogin, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-                Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
+            Button(onClick = onLogin, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
+                Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("listing.login_contact"))
             }
@@ -391,18 +392,18 @@ private fun ContactCard(
         }
         phone?.let {
             Row(
-                modifier = Modifier.fillMaxWidth().background(SuccessColor.copy(alpha = 0.08f), RoundedCornerShape(10.dp)).padding(12.dp),
+                modifier = Modifier.fillMaxWidth().background(com.soukmar.app.ui.theme.SuccessLight, RoundedCornerShape(12.dp)).padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.Phone, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(16.dp))
+                Icon(Icons.Outlined.Phone, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(it, color = SuccessColor, fontWeight = FontWeight.SemiBold)
             }
             Spacer(Modifier.height(8.dp))
         }
         whatsapp?.let { number ->
-            OutlinedButton(onClick = { onCallWhatsapp(number) }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(16.dp))
+            OutlinedButton(onClick = { onCallWhatsapp(number) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text("WhatsApp · $number")
             }
@@ -411,12 +412,12 @@ private fun ContactCard(
         Button(
             onClick = onChat,
             enabled = !chatStarting,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Primary)
         ) {
             if (chatStarting) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
             else {
-                Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("listing.contact"))
             }
@@ -428,12 +429,12 @@ private fun ContactCard(
 private fun LocationMapSection(listing: ListingDto) {
     var showMap by remember { mutableStateOf(false) }
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(16.dp))
+            Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(4.dp))
-            Text(t("listing.location_title"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.weight(1f))
+            Text(t("listing.location_title"), style = MaterialTheme.typography.titleMedium, color = TextPrimary, modifier = Modifier.weight(1f))
             TextButton(onClick = { showMap = !showMap }) {
                 Text(t(if (showMap) "listing.hide_map" else "listing.show_map"), fontSize = 12.sp)
             }
@@ -448,21 +449,21 @@ private fun LocationMapSection(listing: ListingDto) {
 @Composable
 private fun SellerCard(name: String, city: String?, accountType: String?, emailVerified: Boolean, phoneVerified: Boolean, idVerified: Boolean = false, onSeeListings: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier.size(44.dp).background(Primary, RoundedCornerShape(999.dp)),
+                modifier = Modifier.size(48.dp).background(Primary, RoundedCornerShape(999.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(name.firstOrNull()?.uppercase() ?: "?", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(name.firstOrNull()?.uppercase() ?: "?", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 city?.let {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(13.dp))
+                        Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(13.dp))
                         Spacer(Modifier.width(2.dp))
                         Text(cityLabelT(it), color = TextMuted, fontSize = 12.sp)
                     }
@@ -474,7 +475,7 @@ private fun SellerCard(name: String, city: String?, accountType: String?, emailV
             }
         }
         Spacer(Modifier.height(10.dp))
-        OutlinedButton(onClick = onSeeListings, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = onSeeListings, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
             Text(t("listing.seller_listings"), fontSize = 13.sp)
         }
     }
@@ -483,11 +484,11 @@ private fun SellerCard(name: String, city: String?, accountType: String?, emailV
 @Composable
 private fun ReviewCard(viewModel: ListingDetailViewModel) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         if (!viewModel.showReviewForm) {
-            OutlinedButton(onClick = { viewModel.showReviewForm = true }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(16.dp))
+            OutlinedButton(onClick = { viewModel.showReviewForm = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Icon(Icons.Outlined.Star, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("listing.leave_review"))
             }
@@ -498,8 +499,8 @@ private fun ReviewCard(viewModel: ListingDetailViewModel) {
                 (1..5).forEach { s ->
                     Text(
                         "★",
-                        fontSize = 26.sp,
-                        color = if (s <= viewModel.reviewRating) Primary else BorderColor,
+                        fontSize = 32.sp,
+                        color = if (s <= viewModel.reviewRating) com.soukmar.app.ui.theme.Accent else BorderColor,
                         modifier = Modifier.clickable { viewModel.reviewRating = s }.padding(end = 4.dp)
                     )
                 }
@@ -516,7 +517,7 @@ private fun ReviewCard(viewModel: ListingDetailViewModel) {
             Button(
                 onClick = { viewModel.submitReview() },
                 enabled = !viewModel.reviewSubmitting,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
                 Text(if (viewModel.reviewSubmitting) "Envoi…" else t("listing.submit_review"))
@@ -529,7 +530,7 @@ private fun ReviewCard(viewModel: ListingDetailViewModel) {
 private fun ReportSection(viewModel: ListingDetailViewModel) {
     if (viewModel.reportSubmitted) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
+            Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
             Spacer(Modifier.width(6.dp))
             Text(t("report.thanks"), color = SuccessColor, fontSize = 13.sp)
         }
@@ -537,13 +538,13 @@ private fun ReportSection(viewModel: ListingDetailViewModel) {
     }
     if (!viewModel.reportOpen) {
         TextButton(onClick = { viewModel.reportOpen = true }) {
-            Icon(Icons.Filled.Flag, contentDescription = null, tint = TextMuted, modifier = Modifier.size(15.dp))
+            Icon(Icons.Outlined.Flag, contentDescription = null, tint = TextMuted, modifier = Modifier.size(15.dp))
             Spacer(Modifier.width(6.dp))
             Text(t("listing.report"), color = TextMuted)
         }
     } else {
         Column(
-            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
         ) {
             Text(t("report.form_title"), fontWeight = FontWeight.SemiBold, color = TextPrimary)
             Spacer(Modifier.height(8.dp))

@@ -12,9 +12,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.PersonAddAlt
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +56,7 @@ fun MesAbonnementsScreen(
         topBar = {
             TopAppBar(
                 title = { Text("${t("mes_abonnements.title")} (${viewModel.users.size})") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -65,8 +65,8 @@ fun MesAbonnementsScreen(
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.users.isEmpty() -> EmptyAbonnements(onBrowse)
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(viewModel.users, key = { it.id }) { user ->
@@ -88,8 +88,8 @@ private fun FollowedUserRow(user: FollowedUserDto, submitting: Boolean, onOpenSe
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+            .background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
             .clickable { onOpenSeller(user.id) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -110,7 +110,7 @@ private fun FollowedUserRow(user: FollowedUserDto, submitting: Boolean, onOpenSe
             VerifiedBadge(user.emailVerified, user.phoneVerified, user.idVerified)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 user.city?.let {
-                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
                     Text(cityLabelT(it), color = TextMuted, fontSize = 11.sp)
                 }
                 Text("${user.activeListingsCount} ${t("seller.listings_title")}", color = TextMuted, fontSize = 11.sp)
@@ -127,7 +127,7 @@ private fun EmptyAbonnements(onBrowse: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.PersonAddAlt, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.PersonAddAlt)
         Spacer(Modifier.height(12.dp))
         Text(t("mes_abonnements.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary, textAlign = TextAlign.Center)
         Spacer(Modifier.height(4.dp))

@@ -9,9 +9,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,18 +37,16 @@ import com.soukmar.app.ui.theme.TextPrimary
 
 @Composable
 fun ChatListScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onOpenConversation: (String) -> Unit,
     viewModel: ChatListViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) { viewModel.load() }
 
     Scaffold(
+        containerColor = com.soukmar.app.ui.theme.WhiteColor,
         topBar = {
-            TopAppBar(
-                title = { Text(t("chat.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } }
-            )
+            com.soukmar.app.ui.components.SoukTopBar(title = t("chat.title"), onBack = onBack)
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -68,16 +66,8 @@ fun ChatListScreen(
 
 @Composable
 private fun EmptyConversations() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
-        Spacer(Modifier.height(12.dp))
-        Text(t("chat.no_conv"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-        Spacer(Modifier.height(4.dp))
-        Text(t("chat.no_conv_sub"), color = TextMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        com.soukmar.app.ui.components.EmptyState(Icons.Outlined.ChatBubbleOutline, t("chat.no_conv"), subtitle = t("chat.no_conv_sub"))
     }
 }
 
@@ -100,7 +90,7 @@ private fun ConversationRow(conv: ConversationDto, myId: String?, onClick: () ->
                 Text(name, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (conv.messagingBlocked) {
                     Spacer(Modifier.width(4.dp))
-                    Icon(Icons.Filled.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
+                    Icon(Icons.Outlined.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                 }
             }
             VerifiedBadge(conv.partnerUser(myId).emailVerified, conv.partnerUser(myId).phoneVerified, conv.partnerUser(myId).idVerified, modifier = Modifier.padding(vertical = 2.dp))

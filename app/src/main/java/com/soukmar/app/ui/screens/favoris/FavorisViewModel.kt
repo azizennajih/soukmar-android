@@ -14,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FavorisViewModel @Inject constructor(
-    private val listingRepository: ListingRepository
+    private val listingRepository: ListingRepository,
+    private val favoritesStore: com.soukmar.app.data.local.FavoritesStore
 ) : ViewModel() {
 
     var listings by mutableStateOf<List<ListingDto>>(emptyList())
@@ -26,7 +27,7 @@ class FavorisViewModel @Inject constructor(
         viewModelScope.launch {
             loading = true
             when (val result = listingRepository.getFavorites()) {
-                is ApiResult.Success -> listings = result.data
+                is ApiResult.Success -> { listings = result.data; result.data.forEach { favoritesStore.set(it.id, true) } }
                 is ApiResult.Error -> { /* empty list is a fine fallback here */ }
             }
             loading = false
@@ -40,7 +41,7 @@ class FavorisViewModel @Inject constructor(
         listings = listings.filter { it.id != id }
         viewModelScope.launch {
             val ok = listingRepository.removeFavorite(id)
-            if (!ok) listings = previous
+            if (!ok) listings = previous else favoritesStore.set(id, false)
         }
     }
 }

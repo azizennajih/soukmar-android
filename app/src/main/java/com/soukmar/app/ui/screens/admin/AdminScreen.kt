@@ -10,19 +10,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Paid
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Badge
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Paid
+import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,16 +70,16 @@ private fun tabTitle(tab: AdminTab): String = when (tab) {
 }
 
 private fun tabIcon(tab: AdminTab) = when (tab) {
-    AdminTab.OVERVIEW -> Icons.Filled.BarChart
-    AdminTab.MODERATION -> Icons.Filled.Gavel
-    AdminTab.LISTINGS -> Icons.AutoMirrored.Filled.List
-    AdminTab.USERS -> Icons.Filled.People
-    AdminTab.VISITORS -> Icons.Filled.Public
-    AdminTab.REVENUE -> Icons.Filled.Paid
-    AdminTab.REPORTS -> Icons.Filled.Flag
-    AdminTab.ID_VERIFICATIONS -> Icons.Filled.Badge
-    AdminTab.BOOST_REQUESTS -> Icons.Filled.RocketLaunch
-    AdminTab.SECURITY -> Icons.Filled.Shield
+    AdminTab.OVERVIEW -> Icons.Outlined.BarChart
+    AdminTab.MODERATION -> Icons.Outlined.Gavel
+    AdminTab.LISTINGS -> Icons.AutoMirrored.Outlined.List
+    AdminTab.USERS -> Icons.Outlined.People
+    AdminTab.VISITORS -> Icons.Outlined.Public
+    AdminTab.REVENUE -> Icons.Outlined.Paid
+    AdminTab.REPORTS -> Icons.Outlined.Flag
+    AdminTab.ID_VERIFICATIONS -> Icons.Outlined.Badge
+    AdminTab.BOOST_REQUESTS -> Icons.Outlined.RocketLaunch
+    AdminTab.SECURITY -> Icons.Outlined.Shield
 }
 
 private val FILTERS = listOf("PENDING", "RESOLVED", "DISMISSED", "ALL")
@@ -120,7 +120,7 @@ fun AdminScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("admin.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -168,8 +168,8 @@ fun AdminScreen(
                         }
                         viewModel.filteredReports.isEmpty() -> EmptyState()
                         else -> LazyColumn(
-                            contentPadding = PaddingValues(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(viewModel.filteredReports, key = { it.id }) { report ->
@@ -207,8 +207,8 @@ fun AdminScreen(
                         }
                         viewModel.filteredIdVerifications.isEmpty() -> IdVerificationEmptyState()
                         else -> LazyColumn(
-                            contentPadding = PaddingValues(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(viewModel.filteredIdVerifications, key = { it.id }) { v ->
@@ -245,8 +245,8 @@ fun AdminScreen(
                         }
                         viewModel.filteredBoostRequests.isEmpty() -> BoostRequestEmptyState()
                         else -> LazyColumn(
-                            contentPadding = PaddingValues(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(viewModel.filteredBoostRequests, key = { it.id }) { r ->
@@ -374,7 +374,7 @@ private fun ReportCard(
 ) {
     val i18n = LocalI18n.current
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val (bg, fg) = when (report.status) {
@@ -400,7 +400,7 @@ private fun ReportCard(
         report.listing?.let { listing ->
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onOpenListing(listing.id) }) {
-                Icon(Icons.Filled.Link, contentDescription = null, tint = Primary, modifier = Modifier.size(14.dp))
+                Icon(Icons.Outlined.Link, contentDescription = null, tint = Primary, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(4.dp))
                 Text(listing.title, color = Primary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             }
@@ -412,7 +412,7 @@ private fun ReportCard(
         report.adminNote?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(Icons.Filled.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                Icon(Icons.Outlined.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                 Text(it, color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
             }
         }
@@ -438,7 +438,7 @@ private fun EmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.Flag, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.Flag)
         Spacer(Modifier.height(12.dp))
         Text(t("admin.reports_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }
@@ -456,7 +456,7 @@ private fun IdVerificationCard(
 ) {
     val i18n = LocalI18n.current
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val (bg, fg) = when (v.status) {
@@ -476,7 +476,7 @@ private fun IdVerificationCard(
         Text("${v.user?.name ?: "?"} · ${v.user?.email ?: ""}", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
 
         Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 AsyncImage(
                     model = v.idImageUrl,
@@ -502,7 +502,7 @@ private fun IdVerificationCard(
         v.adminNote?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(Icons.Filled.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                Icon(Icons.Outlined.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                 Text(it, color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
             }
         }
@@ -528,7 +528,7 @@ private fun IdVerificationEmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.Badge, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.Badge)
         Spacer(Modifier.height(12.dp))
         Text(t("admin.id_verifications_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }
@@ -549,7 +549,7 @@ private fun BoostRequestCard(
     val i18n = LocalI18n.current
     val priceParts = formatPricePartsT(r.totalPrice, r.currency)
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val (bg, fg) = when (r.status) {
@@ -567,7 +567,7 @@ private fun BoostRequestCard(
         Spacer(Modifier.height(10.dp))
         Text(t("admin.boost_requests_listing"), color = TextMuted, fontSize = 11.sp)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onOpenListing(r.listingId) }) {
-            Icon(Icons.Filled.Link, contentDescription = null, tint = Primary, modifier = Modifier.size(14.dp))
+            Icon(Icons.Outlined.Link, contentDescription = null, tint = Primary, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
             Text(r.listing?.title ?: "?", color = Primary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         }
@@ -585,7 +585,7 @@ private fun BoostRequestCard(
         r.adminNote?.takeIf { it.isNotBlank() }?.let {
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(Icons.Filled.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                Icon(Icons.Outlined.Edit, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                 Text(it, color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
             }
         }
@@ -611,7 +611,7 @@ private fun BoostRequestEmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.RocketLaunch, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.RocketLaunch)
         Spacer(Modifier.height(12.dp))
         Text(t("admin.boost_requests_empty"), color = TextMuted, textAlign = TextAlign.Center)
     }

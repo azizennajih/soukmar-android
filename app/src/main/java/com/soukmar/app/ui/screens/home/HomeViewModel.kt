@@ -26,8 +26,38 @@ class HomeViewModel @Inject constructor(
     private val pushRepository: PushRepository,
     private val listingRepository: ListingRepository,
     private val countryRepository: CountryRepository,
-    private val sponsorRepository: com.soukmar.app.data.repository.SponsorRepository
+    private val sponsorRepository: com.soukmar.app.data.repository.SponsorRepository,
+    private val favoritesStore: com.soukmar.app.data.local.FavoritesStore
 ) : ViewModel() {
+
+    /** Newest listings of the country (the home feed) and the paid-visibility ones among them. */
+    var recentListings by mutableStateOf<List<com.soukmar.app.data.remote.dto.ListingDto>>(emptyList())
+        private set
+    var featuredListings by mutableStateOf<List<com.soukmar.app.data.remote.dto.ListingDto>>(emptyList())
+        private set
+    var feedLoading by mutableStateOf(true)
+        private set
+
+    fun loadFeed() {
+        viewModelScope.launch {
+            feedLoading = true
+            when (val r = listingRepository.getListings(mapOf("limit" to "20", "country" to country))) {
+                is com.soukmar.app.data.repository.ApiResult.Success -> {
+                    val all = r.data.listings
+                    featuredListings = all.filter {
+                        it.isFeatured || com.soukmar.app.ui.model.isBoostActive(it.boostGlobalUntil) || com.soukmar.app.ui.model.isBoostActive(it.boostTopUntil)
+                    }.take(8)
+                    val featuredIds = featuredListings.map { it.id }.toSet()
+                    recentListings = all.filter { it.id !in featuredIds }
+                }
+                is com.soukmar.app.data.repository.ApiResult.Error -> {
+                    recentListings = emptyList()
+                    featuredListings = emptyList()
+                }
+            }
+            feedLoading = false
+        }
+    }
 
     /** Advertising banner shown once on the home screen (first INLINE banner of the country). */
     var inlineBanners by mutableStateOf<List<com.soukmar.app.data.remote.dto.SponsorBannerDto>>(emptyList())
@@ -48,6 +78,7 @@ class HomeViewModel @Inject constructor(
         countryRepository.updateCountry(code)
         loadCategoryCounts()
         loadBanners()
+        loadFeed()
     }
 
     var categoryCounts by mutableStateOf<Map<String, Int>>(emptyMap())
@@ -85,6 +116,8 @@ class HomeViewModel @Inject constructor(
         }
         loadCategoryCounts()
         loadBanners()
+        loadFeed()
+        favoritesStore.refresh()
         registerFcmToken()
         startUnreadPolling()
     }

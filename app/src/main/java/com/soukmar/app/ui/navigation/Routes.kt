@@ -7,6 +7,8 @@ object Routes {
     const val RESET_PASSWORD = "reset_password?token={token}"
     fun resetPassword(token: String) = "reset_password?token=$token"
     const val HOME = "home"
+    const val CATEGORIES = "categories"
+    const val ACCOUNT = "account"
     const val LISTINGS = "listings?category={category}&savedSearchId={savedSearchId}&editSearchId={editSearchId}"
     fun listings(category: String? = null, savedSearchId: String? = null, editSearchId: String? = null): String {
         val params = buildList {

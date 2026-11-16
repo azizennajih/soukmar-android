@@ -1,15 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.SoukMar" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">#D93D4A</item>
-        <item name="android:windowBackground">#F8F7F5</item>
+        <item name="android:statusBarColor">#FFFFFF</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:windowBackground">#FFFFFF</item>
     </style>
 
-    <!-- Startbildschirm: Marken-Rot ueber die ganze Flaeche (wie bei CHECK24). Das weisse Logo zeichnet SplashContent.kt darauf, weil das System-Symbol ab Android 12 auf einen kleinen Kreis begrenzt ist. Danach Theme.SoukMar. -->
+    <!-- Startbildschirm: ruhiger weisser Grund, die rote Logo-Kachel mittig (splash_mark). SplashContent.kt zeichnet dieselbe Kachel an
+         derselben Stelle weiter und blendet den Schriftzug ein, deshalb ist die Uebergabe nahtlos. Danach Theme.SoukMar. -->
     <style name="Theme.SoukMar.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#D93D4A</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_empty</item>
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_mark</item>
         <item name="postSplashScreenTheme">@style/Theme.SoukMar</item>
-        <item name="android:statusBarColor">#D93D4A</item>
-        <item name="android:navigationBarColor">#D93D4A</item>
+        <item name="android:statusBarColor">#FFFFFF</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

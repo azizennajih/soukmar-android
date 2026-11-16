@@ -1,0 +1,23 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <!-- Rote Logo-Kachel (96 dp) in der Mitte der 288-dp-Flaeche des System-Startbildschirms; das System zeigt nur den inneren Kreis
+         (192 dp), die Kachel liegt vollstaendig darin. Gleiche Groesse und Form wie SoukMarMark(96.dp) in SplashContent.kt. -->
+    <path
+        android:pathData="M122.88,96h42.24a26.88,26.88 0 0 1 26.88,26.88v42.24a26.88,26.88 0 0 1 -26.88,26.88h-42.24a26.88,26.88 0 0 1 -26.88,-26.88v-42.24a26.88,26.88 0 0 1 26.88,-26.88z"
+        android:fillColor="#D93D4A" />
+    <group
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:translateX="96"
+        android:translateY="96">
+        <path
+            android:pathData="M43,21.5C41.5,15.5 22,14.5 22,25.5c0,10.5 21,5.5 21,15.5 0,11 -19.5,10 -22,3"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="8"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>

@@ -24,15 +24,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.outlined.AddAPhoto
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -127,7 +127,7 @@ fun DeposerAnnonceScreen(
                 title = { Text(if (viewModel.isEdit) t("deposer.header_title_edit") else t("deposer.header_title")) },
                 navigationIcon = {
                     IconButton(onClick = { if (viewModel.requestClose()) onBack() }) {
-                        Icon(Icons.Filled.Close, contentDescription = t("common.cancel"))
+                        Icon(Icons.Outlined.Close, contentDescription = t("common.cancel"))
                     }
                 }
             )
@@ -164,7 +164,7 @@ private fun LoginGate(onRequireLogin: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.Lock, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.Lock)
         Spacer(Modifier.height(12.dp))
         Text(t("deposer.gate_title"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(Modifier.height(8.dp))
@@ -181,7 +181,9 @@ private fun PublishSuccess(isEdit: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(40.dp))
+        Box(Modifier.size(72.dp).background(com.soukmar.app.ui.theme.SuccessLight, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessDark, modifier = Modifier.size(36.dp))
+        }
         Spacer(Modifier.height(12.dp))
         Text(
             if (isEdit) t("deposer.success_title_edit") else t("deposer.success_title"),
@@ -200,7 +202,7 @@ private fun DeposerAnnonceContent(
     onPublished: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Stepper(step = viewModel.step, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp))
+        Stepper(step = viewModel.step, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp))
 
         Column(
             modifier = Modifier
@@ -226,25 +228,29 @@ private fun DeposerAnnonceContent(
 
         HorizontalDivider(color = BorderColor)
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (viewModel.step > 0) {
-                OutlinedButton(onClick = { viewModel.goBack() }, enabled = !viewModel.loading) { Text(t("deposer.back")) }
-            } else {
-                Spacer(Modifier.width(1.dp))
+                OutlinedButton(
+                    onClick = { viewModel.goBack() }, enabled = !viewModel.loading,
+                    modifier = Modifier.weight(1f).height(52.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
+                ) { Text(t("deposer.back"), style = MaterialTheme.typography.labelLarge) }
             }
             if (viewModel.step < DEPOSER_STEPS.size - 1) {
                 Button(
                     onClick = { viewModel.goNext() },
                     enabled = viewModel.canNext,
+                    modifier = Modifier.weight(2f).height(52.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary, contentColor = Color.White)
-                ) { Text(t("deposer.next")) }
+                ) { Text(t("deposer.next"), style = MaterialTheme.typography.labelLarge) }
             } else {
                 Button(
                     onClick = { viewModel.publish(onPublished) },
                     enabled = viewModel.canNext && !viewModel.loading,
+                    modifier = Modifier.weight(2f).height(52.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary, contentColor = Color.White)
                 ) {
                     if (viewModel.uploading) {
@@ -272,29 +278,25 @@ private val DEPOSER_STEP_KEYS = listOf(
 
 @Composable
 private fun Stepper(step: Int, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
-        DEPOSER_STEPS.forEachIndexed { index, _ ->
-            val done = index < step
-            val active = index == step
-            Box(
-                modifier = Modifier
-                    .size(26.dp)
-                    .clip(CircleShape)
-                    .background(if (done || active) Primary else BorderColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    if (done) "✓" else "${index + 1}",
-                    color = if (done || active) Color.White else TextMuted,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+    Column(modifier = modifier) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            DEPOSER_STEPS.forEachIndexed { index, _ ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(4.dp)
+                        .clip(CircleShape)
+                        .background(if (index <= step) Primary else BorderColor)
                 )
             }
-            Spacer(Modifier.width(6.dp))
-            Text(t(DEPOSER_STEP_KEYS[index]), fontSize = 12.sp, color = if (active) TextPrimary else TextMuted, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal)
-            if (index < DEPOSER_STEPS.size - 1) {
-                Box(modifier = Modifier.width(16.dp).height(1.dp).background(if (done) Primary else BorderColor))
-            }
+        }
+        Spacer(Modifier.height(10.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                t(DEPOSER_STEP_KEYS[step.coerceIn(0, DEPOSER_STEP_KEYS.size - 1)]),
+                style = MaterialTheme.typography.titleMedium, color = TextPrimary, modifier = Modifier.weight(1f)
+            )
+            Text("${step + 1} / ${DEPOSER_STEPS.size}", style = MaterialTheme.typography.labelMedium, color = TextMuted)
         }
     }
 }
@@ -305,8 +307,8 @@ private fun CategoryStep(viewModel: DeposerAnnonceViewModel) {
     Spacer(Modifier.height(12.dp))
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.heightIn(max = 2000.dp)
     ) {
         items(CATEGORIES, key = { it.value }) { cat ->
@@ -314,15 +316,15 @@ private fun CategoryStep(viewModel: DeposerAnnonceViewModel) {
             Column(
                 modifier = Modifier
                     .clickable { viewModel.selectCategory(cat.value) }
-                    .background(if (selected) PrimaryLight else cat.bg, RoundedCornerShape(14.dp))
-                    .border(if (selected) 2.dp else 0.dp, Primary, RoundedCornerShape(14.dp))
+                    .background(if (selected) PrimaryLight else com.soukmar.app.ui.theme.SurfaceMuted, RoundedCornerShape(16.dp))
+                    .border(1.5.dp, if (selected) Primary else Color.Transparent, RoundedCornerShape(16.dp))
                     .padding(vertical = 16.dp, horizontal = 8.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CategoryIcon(cat.value, tint = if (selected) Primary else cat.fg, modifier = Modifier.size(26.dp))
+                CategoryIcon(cat.value, tint = if (selected) Primary else TextPrimary, modifier = Modifier.size(28.dp))
                 Spacer(Modifier.height(6.dp))
-                Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = if (selected) Primary else cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (selected) Primary else TextPrimary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
@@ -338,8 +340,8 @@ private fun SubcategoryStep(viewModel: DeposerAnnonceViewModel) {
     }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.heightIn(max = 2000.dp)
     ) {
         items(viewModel.subcategories, key = { it.id }) { sub: SubcategoryWithAttributesDto ->
@@ -418,7 +420,7 @@ private fun DetailsStep(viewModel: DeposerAnnonceViewModel) {
         Spacer(Modifier.height(12.dp))
         Text(t("deposer.label_condition"), fontSize = 13.sp, color = TextMuted)
         Spacer(Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             listOf("NEW" to "Neuf", "USED" to "Occasion").forEach { (value, label) ->
                 val selected = form.condition == value
                 Box(
@@ -627,7 +629,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
             )
             def.type == "BOOLEAN" -> {
                 val value = viewModel.attrBoolValue(def.code)
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     listOf(true to t("common.yes"), false to t("common.no")).forEach { (v, label) ->
                         val selected = value == v
                         Box(
@@ -706,7 +708,7 @@ private fun AttributeField(def: AttributeDefinitionDto, viewModel: DeposerAnnonc
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text(datePlaceholder(LocalCountry.current, LocalI18n.current.currentLang)) },
-                        trailingIcon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
+                        trailingIcon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
                     )
@@ -762,36 +764,9 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
     }
     Spacer(Modifier.height(16.dp))
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = viewModel.photos.size < viewModel.maxPhotos, onClick = onPickPhotos)
-            .background(PrimaryLight, RoundedCornerShape(14.dp))
-            .border(1.dp, Primary, RoundedCornerShape(14.dp))
-            .padding(20.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Filled.AddAPhoto, contentDescription = null, tint = Primary)
-        Spacer(Modifier.width(8.dp))
-        Text(t("deposer.upload_hint"), color = Primary, fontWeight = FontWeight.SemiBold)
-    }
-
-    Spacer(Modifier.height(10.dp))
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = viewModel.photos.size < viewModel.maxPhotos, onClick = onTakePhoto)
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, Primary, RoundedCornerShape(14.dp))
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = Primary)
-        Spacer(Modifier.width(8.dp))
-        Text(t("deposer.take_photo"), color = Primary, fontWeight = FontWeight.SemiBold)
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        PhotoSourceTile(Icons.Outlined.AddAPhoto, t("deposer.upload_hint"), enabled = viewModel.photos.size < viewModel.maxPhotos, onClick = onPickPhotos, modifier = Modifier.weight(1f))
+        PhotoSourceTile(Icons.Outlined.PhotoCamera, t("deposer.take_photo"), enabled = viewModel.photos.size < viewModel.maxPhotos, onClick = onTakePhoto, modifier = Modifier.weight(1f))
     }
 
     if (viewModel.photos.isNotEmpty()) {
@@ -809,25 +784,25 @@ private fun PhotosStep(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> U
                         model = photo.previewModel,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp))
+                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp))
                     )
                     if (index == 0) {
                         Box(
                             modifier = Modifier.align(Alignment.BottomStart).padding(4.dp)
-                                .background(Primary, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
+                                .background(Primary, RoundedCornerShape(8.dp)).padding(horizontal = 6.dp, vertical = 2.dp)
                         ) { Text(t("deposer.photo_main"), color = Color.White, fontSize = 9.sp) }
                     } else {
                         IconButton(
                             onClick = { viewModel.makePrimary(index) },
                             modifier = Modifier.align(Alignment.BottomStart).size(24.dp)
                                 .background(WhiteColor.copy(alpha = 0.85f), CircleShape)
-                        ) { Icon(Icons.Filled.StarBorder, contentDescription = "Définir comme principale", tint = Gold, modifier = Modifier.size(14.dp)) }
+                        ) { Icon(Icons.Outlined.StarBorder, contentDescription = "Définir comme principale", tint = Gold, modifier = Modifier.size(14.dp)) }
                     }
                     IconButton(
                         onClick = { viewModel.removePhoto(index) },
                         modifier = Modifier.align(Alignment.TopEnd).size(24.dp)
                             .background(WhiteColor.copy(alpha = 0.85f), CircleShape)
-                    ) { Icon(Icons.Filled.Close, contentDescription = "Retirer", tint = TextPrimary, modifier = Modifier.size(14.dp)) }
+                    ) { Icon(Icons.Outlined.Close, contentDescription = "Retirer", tint = TextPrimary, modifier = Modifier.size(14.dp)) }
                 }
             }
         }
@@ -861,7 +836,7 @@ private fun ContactStep(viewModel: DeposerAnnonceViewModel) {
 
     Spacer(Modifier.height(20.dp))
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(12.dp)).border(1.dp, BorderColor, RoundedCornerShape(12.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(12.dp)).border(1.dp, BorderColor, RoundedCornerShape(12.dp)).padding(16.dp)
     ) {
         Text(t("deposer.summary_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(Modifier.height(8.dp))
@@ -885,5 +860,24 @@ private fun SummaryRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, fontSize = 13.sp, color = TextMuted)
         Text(value, fontSize = 13.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+    }
+}
+
+/** One way to add photos (gallery or camera): icon above the label, the whole tile is the touch target. */
+@Composable
+private fun PhotoSourceTile(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, enabled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(PrimaryLight)
+            .clickable(enabled = enabled, onClick = onClick)
+            .heightIn(min = 96.dp)
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(icon, contentDescription = null, tint = if (enabled) Primary else TextMuted, modifier = Modifier.size(28.dp))
+        Spacer(Modifier.height(8.dp))
+        Text(label, color = if (enabled) Primary else TextMuted, style = MaterialTheme.typography.labelLarge, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
 }

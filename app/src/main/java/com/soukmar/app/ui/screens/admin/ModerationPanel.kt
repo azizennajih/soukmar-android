@@ -17,13 +17,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,10 +78,10 @@ private fun statusLabel(status: String): String = when (status) {
 }
 
 private fun statusColors(status: String): Pair<Color, Color> = when (status) {
-    "ACTIVE" -> Color(0xFFDCFCE7) to Color(0xFF15803D)
-    "SOLD" -> Color(0xFFDBEAFE) to Color(0xFF1D4ED8)
-    "REJECTED", "SUSPENDED", "EXPIRED" -> Color(0xFFFEE2E2) to Color(0xFFB91C1C)
-    else -> Color(0xFFFEF9C3) to Color(0xFFA16207)
+    "ACTIVE" -> com.soukmar.app.ui.theme.SuccessLight to com.soukmar.app.ui.theme.SuccessDark
+    "SOLD" -> com.soukmar.app.ui.theme.InfoLight to com.soukmar.app.ui.theme.InfoDark
+    "REJECTED", "SUSPENDED", "EXPIRED" -> com.soukmar.app.ui.theme.ErrorLight to com.soukmar.app.ui.theme.ErrorDark
+    else -> com.soukmar.app.ui.theme.WarningLight to com.soukmar.app.ui.theme.WarningDark
 }
 
 @Composable
@@ -219,8 +219,8 @@ fun ModerationPanel(
 private fun ModerationQueue(viewModel: ModerationViewModel) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
             Text(t("moderation.subtitle"), color = TextMuted, fontSize = 12.sp)
@@ -289,7 +289,7 @@ private fun ModerationQueue(viewModel: ModerationViewModel) {
                 value = viewModel.query,
                 onValueChange = { viewModel.query = it },
                 placeholder = { Text(t("moderation.f_search_ph"), fontSize = 13.sp) },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { viewModel.search() }),
@@ -311,7 +311,7 @@ private fun ModerationQueue(viewModel: ModerationViewModel) {
                 items(viewModel.items, key = { it.id }) { item -> QueueRow(item) { viewModel.openDetail(item.id) } }
                 if (viewModel.page < viewModel.pages) {
                     item {
-                        OutlinedButton(onClick = { viewModel.loadMore() }, enabled = !viewModel.loadingMore, modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { viewModel.loadMore() }, enabled = !viewModel.loadingMore, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                             Text(if (viewModel.loadingMore) t("admin.loading") else t("moderation.next"))
                         }
                     }
@@ -360,13 +360,13 @@ private fun QueueRow(item: ModerationQueueItemDto, onOpen: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+            .background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
             .clickable(onClick = onOpen)
             .padding(10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(modifier = Modifier.size(64.dp).clip(RoundedCornerShape(10.dp)).background(BorderColor)) {
+        Box(modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)).background(BorderColor)) {
             item.images.firstOrNull()?.let {
                 AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             }
@@ -405,7 +405,7 @@ private fun ModerationDetail(viewModel: ModerationViewModel, d: ModerationDetail
     val l = d.listing
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { viewModel.closeDetail() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("moderation.back")) }
+            IconButton(onClick = { viewModel.closeDetail() }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("moderation.back")) }
             StatusBadge(l.status)
             Spacer(Modifier.width(8.dp))
             Text("ID ${l.id}", fontSize = 10.sp, color = TextMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -418,7 +418,7 @@ private fun ModerationDetail(viewModel: ModerationViewModel, d: ModerationDetail
             if (l.images.isNotEmpty()) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(l.images) { url ->
-                        AsyncImage(model = url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(width = 220.dp, height = 165.dp).clip(RoundedCornerShape(10.dp)))
+                        AsyncImage(model = url, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(width = 220.dp, height = 165.dp).clip(RoundedCornerShape(12.dp)))
                     }
                 }
             } else {
@@ -500,28 +500,28 @@ private fun DecisionBlock(viewModel: ModerationViewModel, d: ModerationDetailDto
     }
     val busy = viewModel.submitting
     if ("approve" in d.allowedActions) {
-        Button(onClick = { viewModel.askConfirm("approve") }, enabled = !busy, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-            Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_approve"))
+        Button(onClick = { viewModel.askConfirm("approve") }, enabled = !busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
+            Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_approve"))
         }
     }
     if ("request_changes" in d.allowedActions) {
-        OutlinedButton(onClick = { viewModel.startReason("request-changes") }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_request"))
+        OutlinedButton(onClick = { viewModel.startReason("request-changes") }, enabled = !busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+            Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_request"))
         }
     }
     if ("reject" in d.allowedActions) {
-        OutlinedButton(onClick = { viewModel.startReason("reject") }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Close, contentDescription = null, tint = ErrorColor, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_reject"), color = ErrorColor)
+        OutlinedButton(onClick = { viewModel.startReason("reject") }, enabled = !busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+            Icon(Icons.Outlined.Close, contentDescription = null, tint = ErrorColor, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_reject"), color = ErrorColor)
         }
     }
     if ("suspend" in d.allowedActions) {
-        OutlinedButton(onClick = { viewModel.startReason("suspend") }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Pause, contentDescription = null, tint = ErrorColor, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_suspend"), color = ErrorColor)
+        OutlinedButton(onClick = { viewModel.startReason("suspend") }, enabled = !busy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+            Icon(Icons.Outlined.Pause, contentDescription = null, tint = ErrorColor, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_suspend"), color = ErrorColor)
         }
     }
     if ("requeue" in d.allowedActions) {
         TextButton(onClick = { viewModel.askConfirm("requeue") }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_requeue"))
+            Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(t("moderation.act_requeue"))
         }
     }
 }
@@ -531,8 +531,8 @@ private fun PanelCard(content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+            .background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         content = content

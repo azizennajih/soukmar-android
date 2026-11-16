@@ -29,22 +29,28 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var tokenManager: TokenManager
     private companion object {
-        const val SPLASH_MIN_MS = 700L
+        const val SPLASH_MIN_MS = 900L
     }
 
     @Inject lateinit var i18nRepository: I18nRepository
+    @Inject lateinit var favoritesStore: com.soukmar.app.data.local.FavoritesStore
     @Inject lateinit var countryRepository: com.soukmar.app.data.country.CountryRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The system start screen is plain brand red (Theme.SoukMar.Starting); the logo is drawn right on it by SplashContent below,
-        // because Android 12+ limits a system start-screen icon to a small circle.
+        // The system start screen shows the red logo tile on white (Theme.SoukMar.Starting); SplashContent continues it and fades in the wordmark.
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // Light bars on every device: the app has one (light) appearance, so the system icons must stay dark.
+        val transparent = android.graphics.Color.TRANSPARENT
+        enableEdgeToEdge(
+            statusBarStyle = androidx.activity.SystemBarStyle.light(transparent, transparent),
+            navigationBarStyle = androidx.activity.SystemBarStyle.light(transparent, transparent)
+        )
         setContent {
             val layoutDirection = if (i18nRepository.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
             CompositionLocalProvider(
                 LocalI18n provides i18nRepository,
+                com.soukmar.app.ui.i18n.LocalFavorites provides favoritesStore,
                 com.soukmar.app.ui.i18n.LocalCountry provides countryRepository.country,
                 LocalLayoutDirection provides layoutDirection
             ) {
@@ -63,11 +69,13 @@ class MainActivity : ComponentActivity() {
                         startDestination = destination
                     }
 
-                    val dest = startDestination
-                    if (dest == null) {
-                        SplashContent()
-                    } else {
-                        SoukMarNavGraph(startDestination = dest)
+                    // Calm hand-over from the start screen to the first screen.
+                    androidx.compose.animation.Crossfade(targetState = startDestination, animationSpec = androidx.compose.animation.core.tween(250), label = "splash") { dest ->
+                        if (dest == null) {
+                            SplashContent()
+                        } else {
+                            SoukMarNavGraph(startDestination = dest)
+                        }
                     }
                 }
             }

@@ -19,16 +19,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.automirrored.filled.List as ListIcon
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.automirrored.outlined.List as ListIcon
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.*
@@ -93,26 +93,32 @@ fun ListingsScreen(
                             onValueChange = { viewModel.query = it },
                             placeholder = { Text(t("nav.search_placeholder")) },
                             singleLine = true,
-                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                             shape = RoundedCornerShape(999.dp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary),
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Primary, cursorColor = Primary,
+                                unfocusedBorderColor = Color.Transparent,
+                                unfocusedContainerColor = com.soukmar.app.ui.theme.SurfaceMuted,
+                                focusedContainerColor = com.soukmar.app.ui.theme.WhiteColor
+                            ),
+                            textStyle = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
                             keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { viewModel.search() }),
                             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search)
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Retour") }
+                        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) }
                     },
                     actions = {
                         IconButton(onClick = { showMapView = !showMapView }) {
                             Icon(
-                                if (showMapView) Icons.AutoMirrored.Filled.ListIcon else Icons.Filled.Map,
+                                if (showMapView) Icons.AutoMirrored.Outlined.ListIcon else Icons.Outlined.Map,
                                 contentDescription = t(if (showMapView) "annonces.view_list" else "annonces.view_map"),
                                 tint = if (showMapView) Primary else TextPrimary
                             )
                         }
-                        IconButton(onClick = { showFilters = !showFilters }) { Icon(Icons.Filled.FilterList, contentDescription = t("annonces.filters"), tint = if (showFilters) Primary else TextPrimary) }
+                        IconButton(onClick = { showFilters = !showFilters }) { Icon(Icons.Outlined.FilterList, contentDescription = t("annonces.filters"), tint = if (showFilters) Primary else TextPrimary) }
                     }
                 )
                 CategoryChipsRow(selected = viewModel.selectedCategory, onSelect = { viewModel.setCategory(it) })
@@ -126,7 +132,7 @@ fun ListingsScreen(
                 onClick = { onPostListing(viewModel.selectedCategory) },
                 containerColor = Primary,
                 contentColor = Color.White,
-                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
                 text = { Text(t("nav.post_btn")) }
             )
         }
@@ -135,10 +141,10 @@ fun ListingsScreen(
             when {
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(viewModel.error ?: t("common.error"), color = TextMuted)
+                    com.soukmar.app.ui.components.EmptyState(Icons.Outlined.Search, viewModel.error ?: t("common.error"))
                 }
                 viewModel.listings.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(t("annonces.empty"), color = TextMuted)
+                    com.soukmar.app.ui.components.EmptyState(Icons.Outlined.Search, t("annonces.empty"))
                 }
                 showMapView -> {
                     ListingsMapView(
@@ -153,14 +159,14 @@ fun ListingsScreen(
                         Text(
                             t("annonces.other_countries_hint", "country" to java.util.Locale("", viewModel.country).getDisplayCountry(java.util.Locale(com.soukmar.app.ui.i18n.LocalI18n.current.currentLang)).ifEmpty { viewModel.country }),
                             color = TextMuted, style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                     }
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        columns = GridCells.Adaptive(minSize = 160.dp),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth().weight(1f)
                     ) {
                         val banners = viewModel.inlineBanners
@@ -170,19 +176,17 @@ fun ListingsScreen(
                             }
                             if ((i + 1) % ADS_EVERY == 0 && i < viewModel.listings.size - 1 && banners.isNotEmpty()) {
                                 val banner = banners[((i + 1) / ADS_EVERY - 1) % banners.size]
-                                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }, key = "sponsor_" + i) {
+                                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }, key = "sponsor_" + i) {
                                     com.soukmar.app.ui.components.SponsorBanner(banner, onClick = { viewModel.bannerClicked(banner.id) })
                                 }
                             }
                         }
                         if (viewModel.hasMore) {
-                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
+                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                                 Box(Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
-                                    if (viewModel.loadingMore) {
-                                        CircularProgressIndicator(color = Primary, modifier = Modifier.size(28.dp))
-                                    } else {
-                                        OutlinedButton(onClick = { viewModel.loadMore() }) { Text("Charger plus") }
-                                    }
+                                    // Endless list: the next page loads as soon as the end comes into view.
+                                    LaunchedEffect(viewModel.listings.size) { if (!viewModel.loadingMore) viewModel.loadMore() }
+                                    CircularProgressIndicator(color = Primary, modifier = Modifier.size(28.dp))
                                 }
                             }
                         }
@@ -215,7 +219,7 @@ private fun CategoryChipsRow(selected: String?, onSelect: (String?) -> Unit) {
 @Composable
 private fun LazyRowChips(content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
     androidx.compose.foundation.lazy.LazyRow(
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         content = content
     )
@@ -234,10 +238,10 @@ private fun FilterChipItem(label: String, icon: (@Composable () -> Unit)? = null
 
 @Composable
 private fun SaveSearchSection(viewModel: ListingsViewModel) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
         when {
             viewModel.searchSaved -> Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(15.dp))
+                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("annonces.search_saved"), color = com.soukmar.app.ui.theme.SuccessColor, style = MaterialTheme.typography.labelMedium)
             }
@@ -271,7 +275,7 @@ private fun SaveSearchSection(viewModel: ListingsViewModel) {
                 }
             }
             else -> TextButton(onClick = { viewModel.showSaveSearchForm = true }) {
-                Icon(Icons.Filled.Bookmark, contentDescription = null, modifier = Modifier.size(15.dp))
+                Icon(Icons.Outlined.Bookmark, contentDescription = null, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("annonces.save_search"))
             }
@@ -383,11 +387,11 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
         Spacer(Modifier.height(6.dp))
         if (viewModel.lat != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.MyLocation, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Outlined.MyLocation, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("annonces.current_location"), color = TextPrimary, modifier = Modifier.weight(1f))
                 IconButton(onClick = { viewModel.clearLocation() }) {
-                    Icon(Icons.Filled.Close, contentDescription = t("common.cancel"), tint = TextMuted)
+                    Icon(Icons.Outlined.Close, contentDescription = t("common.cancel"), tint = TextMuted)
                 }
             }
             Spacer(Modifier.height(6.dp))
@@ -404,7 +408,7 @@ private fun FiltersPanel(viewModel: ListingsViewModel) {
                     CircularProgressIndicator(color = Primary, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
                 }
-                Icon(Icons.Filled.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Outlined.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("annonces.use_gps"))
             }

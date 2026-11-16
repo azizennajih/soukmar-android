@@ -9,7 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,7 +38,7 @@ fun DeleteAccountScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("delete_account.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("common.cancel")) } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("common.cancel")) } }
             )
         }
     ) { padding ->
@@ -51,7 +51,7 @@ fun DeleteAccountScreen(
             }
 
             Box(
-                modifier = Modifier.fillMaxWidth().background(ErrorColor.copy(alpha = 0.08f), RoundedCornerShape(14.dp)).padding(16.dp)
+                modifier = Modifier.fillMaxWidth().background(ErrorColor.copy(alpha = 0.08f), RoundedCornerShape(16.dp)).padding(16.dp)
             ) {
                 Text(t("delete_account.warning"), color = TextPrimary)
             }
@@ -59,7 +59,7 @@ fun DeleteAccountScreen(
             Spacer(Modifier.height(20.dp))
 
             Column(
-                modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
+                modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
             ) {
                 viewModel.errorMessage?.let { ErrorBanner(it); Spacer(Modifier.height(10.dp)) }
 
@@ -82,7 +82,7 @@ fun DeleteAccountScreen(
                 Button(
                     onClick = { viewModel.submit(onLoggedOut) },
                     enabled = viewModel.canSubmit,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = ErrorColor, contentColor = Color.White)
                 ) {
                     if (viewModel.submitting) {

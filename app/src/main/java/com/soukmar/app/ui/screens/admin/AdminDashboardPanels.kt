@@ -131,7 +131,7 @@ fun AdminOverviewPanel(vm: AdminDashboardViewModel) {
     val active = vm.listings.count { it.status == "ACTIVE" }
     val pending = vm.listings.count { it.status == "PENDING" }
     val premium = vm.listings.count { it.isPremium }
-    LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Kpi(t("admin.kpi_total"), "$total", Modifier.weight(1f))
@@ -184,7 +184,7 @@ fun AdminListingsPanel(vm: AdminDashboardViewModel, onOpenListing: (String) -> U
         vm.actionError?.let { Text(it, color = ErrorColor, modifier = Modifier.padding(horizontal = 12.dp), fontSize = 13.sp) }
         if (vm.filteredListings.isEmpty()) {
             Empty(t("admin.empty_listings"))
-        } else LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        } else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(vm.filteredListings, key = { it.id }) { l ->
                 Card(Modifier.clickable { onOpenListing(l.id) }) {
                     Text(l.title, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 2)
@@ -266,7 +266,7 @@ private fun roleLabel(role: String): String = when (role) {
 fun AdminVisitorsPanel(vm: AdminDashboardViewModel) {
     val a = vm.analytics
     if (a == null) { Empty(t("admin.activity_empty")); return }
-    LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Kpi(t("admin.visitors_active_now"), "${a.activeNow.total}", Modifier.weight(1f))
@@ -301,7 +301,7 @@ fun AdminVisitorsPanel(vm: AdminDashboardViewModel) {
 fun AdminRevenuePanel(vm: AdminDashboardViewModel) {
     val premium = vm.listings.filter { it.isPremium }
     val byMonth = IntArray(12).also { arr -> premium.forEach { l -> l.createdAt.substringAfter('-').take(2).toIntOrNull()?.let { if (it in 1..12) arr[it - 1] += 99 } } }
-    LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Kpi(t("admin.revenue_total"), money(premium.size * 99.0, vm.revenueCurrency), Modifier.weight(1f))
@@ -335,7 +335,7 @@ fun AdminSecurityPanel(vm: AdminDashboardViewModel) {
         FilterRow(SEVERITY_FILTERS, vm.severityFilter, { if (it == "ALL") t("admin.filter_all") else it }) { vm.severityFilter = it }
         if (vm.filteredSecurity.isEmpty()) {
             Empty(t("admin.security_empty"))
-        } else LazyColumn(contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        } else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(vm.filteredSecurity, key = { it.id }) { e ->
                 Card {
                     val color = when (e.severity) { "HIGH" -> ErrorColor; "MEDIUM" -> Gold; else -> SuccessColor }

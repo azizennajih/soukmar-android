@@ -9,9 +9,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +42,7 @@ fun FavorisScreen(
         topBar = {
             TopAppBar(
                 title = { Text("${t("mes_favoris.title")} (${viewModel.listings.size})") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -51,15 +51,15 @@ fun FavorisScreen(
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.listings.isEmpty() -> EmptyFavoris(onBrowse)
                 else -> LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    columns = GridCells.Adaptive(minSize = 160.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(viewModel.listings, key = { it.id }) { listing ->
                         Box {
-                            ListingCard(listing = listing, onClick = { onOpenListing(listing.id) })
+                            ListingCard(listing = listing, onClick = { onOpenListing(listing.id) }, showFavorite = false)
                             IconButton(
                                 onClick = { viewModel.removeFavorite(listing.id) },
                                 modifier = Modifier
@@ -68,7 +68,7 @@ fun FavorisScreen(
                                     .size(30.dp)
                                     .background(WhiteColor.copy(alpha = 0.9f), CircleShape)
                             ) {
-                                Icon(Icons.Filled.Favorite, contentDescription = "Retirer des favoris", tint = Primary, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Outlined.Favorite, contentDescription = "Retirer des favoris", tint = Primary, modifier = Modifier.size(16.dp))
                             }
                         }
                     }
@@ -85,7 +85,7 @@ private fun EmptyFavoris(onBrowse: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.FavoriteBorder, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.FavoriteBorder)
         Spacer(Modifier.height(12.dp))
         Text(t("mes_favoris.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))

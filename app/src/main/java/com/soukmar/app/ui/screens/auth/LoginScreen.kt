@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.AppTextField
 import com.soukmar.app.ui.components.CountrySwitcher
@@ -32,6 +33,8 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .systemBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -40,7 +43,7 @@ fun LoginScreen(
             LanguageSwitcher()
         }
         Spacer(Modifier.height(8.dp))
-        com.soukmar.app.ui.components.SoukMarLogo()
+        com.soukmar.app.ui.components.SoukMarLogo(markSize = 44.dp, fontSize = 26.sp)
         Spacer(Modifier.height(24.dp))
         Text(t("auth.login_title"), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(4.dp))

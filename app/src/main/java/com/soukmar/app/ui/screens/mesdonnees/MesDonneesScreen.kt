@@ -11,7 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +56,7 @@ fun MesDonneesScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("mes_donnees.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("common.cancel")) } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("common.cancel")) } }
             )
         },
         snackbarHost = { SnackbarHost(snackbar) }
@@ -113,8 +113,8 @@ fun MesDonneesScreen(
 @Composable
 private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp),
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         content = content
     )

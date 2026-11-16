@@ -1,6 +1,14 @@
 package com.soukmar.app.ui.navigation
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.soukmar.app.ui.screens.account.AccountScreen
+import com.soukmar.app.ui.screens.categories.CategoriesScreen
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,8 +53,34 @@ import com.soukmar.app.ui.theme.TextPrimary
 @Composable
 fun SoukMarNavGraph(startDestination: String) {
     val navController: NavHostController = rememberNavController()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val showBottomBar = currentRoute in MAIN_TAB_ROUTES
 
-    NavHost(navController = navController, startDestination = startDestination) {
+    Scaffold(
+        containerColor = com.soukmar.app.ui.theme.WhiteColor,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            if (showBottomBar) {
+                MainBottomBar(
+                    currentRoute = currentRoute,
+                    onSelectTab = { route ->
+                        navController.navigate(route) {
+                            popUpTo(Routes.HOME) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onPost = { navController.navigate(Routes.deposerAnnonce()) }
+                )
+            }
+        }
+    ) { innerPadding ->
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
+    ) {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
@@ -81,10 +115,20 @@ fun SoukMarNavGraph(startDestination: String) {
         composable(Routes.HOME) {
             HomeScreen(
                 onOpenCategory = { category -> navController.navigate(Routes.listings(category)) },
+                onOpenAllCategories = { navController.navigate(Routes.CATEGORIES) { popUpTo(Routes.HOME) { saveState = true }; launchSingleTop = true; restoreState = true } },
                 onOpenSearch = { navController.navigate(Routes.listings()) },
                 onOpenImageSearch = { navController.navigate(Routes.IMAGE_SEARCH) },
-                onOpenDeposerAnnonce = { navController.navigate(Routes.deposerAnnonce()) },
-                onOpenChat = { navController.navigate(Routes.CHAT_LIST) },
+                onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
+                onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                onOpenListing = { id -> navController.navigate(Routes.listingDetail(id)) }
+            )
+        }
+        composable(Routes.CATEGORIES) {
+            CategoriesScreen(onOpenCategory = { category -> navController.navigate(Routes.listings(category)) })
+        }
+        composable(Routes.ACCOUNT) {
+            AccountScreen(
+                onOpenProfil = { navController.navigate(Routes.PROFIL) },
                 onOpenMesAnnonces = { navController.navigate(Routes.MES_ANNONCES) },
                 onOpenFavoris = { navController.navigate(Routes.FAVORIS) },
                 onOpenMesAbonnements = { navController.navigate(Routes.MES_ABONNEMENTS) },
@@ -145,7 +189,7 @@ fun SoukMarNavGraph(startDestination: String) {
         }
         composable(Routes.CHAT_LIST) {
             ChatListScreen(
-                onBack = { navController.popBackStack() },
+                onBack = null,
                 onOpenConversation = { conversationId -> navController.navigate(Routes.chatDetail(conversationId)) }
             )
         }
@@ -294,5 +338,6 @@ fun SoukMarNavGraph(startDestination: String) {
                 }
             )
         }
+    }
     }
 }

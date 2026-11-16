@@ -26,11 +26,13 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .systemBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SoukMarLogo()
+        SoukMarLogo(markSize = 44.dp, fontSize = 26.sp)
         Spacer(Modifier.height(24.dp))
 
         if (viewModel.emailSent) {

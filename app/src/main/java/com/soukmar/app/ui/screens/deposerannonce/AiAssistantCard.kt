@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,11 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.AddAPhoto
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -71,7 +72,7 @@ import kotlinx.serialization.json.booleanOrNull
 @Composable
 fun AiAssistantCard(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit) {
     if (!viewModel.aiConfigured) return
-    val shape = RoundedCornerShape(14.dp)
+    val shape = RoundedCornerShape(16.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -95,7 +96,7 @@ fun AiAssistantCard(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit
                 CircularProgressIndicator(color = Gold, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
             }
-            Icon(if (viewModel.aiOpen) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = Gold)
+            Icon(if (viewModel.aiOpen) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown, contentDescription = null, tint = Gold)
         }
 
         viewModel.aiNotice?.let {
@@ -104,7 +105,7 @@ fun AiAssistantCard(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit
 
         if (viewModel.aiOpen) {
             HorizontalDivider(color = BorderColor)
-            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (viewModel.aiAvailable == false) {
                     Notice(t("ai.unavailable"), warn = true) {
                         TextButton(onClick = { viewModel.checkAiStatus() }) { Text(t("ai.retry_status"), color = Primary, fontSize = 12.sp) }
@@ -122,15 +123,15 @@ fun AiAssistantCard(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit
                                         .background(TextPrimary.copy(alpha = 0.75f))
                                         .clickable(enabled = !viewModel.aiLoading) { viewModel.removePhoto(index) },
                                     contentAlignment = Alignment.Center
-                                ) { Icon(Icons.Filled.Close, contentDescription = t("ai.photo_remove"), tint = WhiteColor, modifier = Modifier.size(13.dp)) }
+                                ) { Icon(Icons.Outlined.Close, contentDescription = t("ai.photo_remove"), tint = WhiteColor, modifier = Modifier.size(13.dp)) }
                             }
                         }
                     }
                 }
 
                 if (viewModel.photos.size < viewModel.maxPhotos) {
-                    OutlinedButton(onClick = onPickPhotos, enabled = !viewModel.aiLoading, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                        Icon(Icons.Filled.AddAPhoto, contentDescription = null, modifier = Modifier.size(18.dp))
+                    OutlinedButton(onClick = onPickPhotos, enabled = !viewModel.aiLoading, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
+                        Icon(Icons.Outlined.AddAPhoto, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(if (viewModel.photos.isEmpty()) t("ai.add_photos") else t("ai.add_more"))
                     }
@@ -145,7 +146,7 @@ fun AiAssistantCard(viewModel: DeposerAnnonceViewModel, onPickPhotos: () -> Unit
                 if (viewModel.aiLoading) {
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(com.soukmar.app.ui.theme.BgColor).padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         CircularProgressIndicator(color = Gold, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                         Column {
@@ -250,9 +251,9 @@ private fun AiResult(viewModel: DeposerAnnonceViewModel, draft: AiListingDraftDt
 
     AiPrimaryButton(t("ai.apply"), enabled = !viewModel.aiLoading && viewModel.aiTitle.isNotBlank() && viewModel.aiDescription.isNotBlank()) { viewModel.aiApply() }
     if (viewModel.aiPhotosChanged) {
-        OutlinedButton(onClick = { viewModel.aiAnalyse() }, enabled = !viewModel.aiLoading && viewModel.aiUris.isNotEmpty(), modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(t("ai.reanalyse")) }
+        OutlinedButton(onClick = { viewModel.aiAnalyse() }, enabled = !viewModel.aiLoading && viewModel.aiUris.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) { Text(t("ai.reanalyse")) }
     }
-    OutlinedButton(onClick = { viewModel.aiAnalyse(force = true) }, enabled = !viewModel.aiLoading && viewModel.aiUris.isNotEmpty(), modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(t("ai.regenerate")) }
+    OutlinedButton(onClick = { viewModel.aiAnalyse(force = true) }, enabled = !viewModel.aiLoading && viewModel.aiUris.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) { Text(t("ai.regenerate")) }
 }
 
 /** Option codes (SELECT) have a translation, free text (brand, model) is shown as it is. */
@@ -280,7 +281,7 @@ private fun Label(text: String) {
 
 @Composable
 private fun Fact(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(label, color = TextMuted, fontSize = 13.sp, modifier = Modifier.weight(0.4f))
         Text(value, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(0.6f))
     }
@@ -298,7 +299,7 @@ private fun Notice(text: String, warn: Boolean, action: (@Composable () -> Unit)
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(bg).padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(Icons.Filled.Warning, contentDescription = null, tint = if (warn) Gold else ErrorColor, modifier = Modifier.size(16.dp))
+        Icon(Icons.Outlined.Warning, contentDescription = null, tint = if (warn) Gold else ErrorColor, modifier = Modifier.size(16.dp))
         Text(text, color = if (warn) TextPrimary else ErrorColor, fontSize = 13.sp, modifier = Modifier.weight(1f))
         action?.invoke()
     }

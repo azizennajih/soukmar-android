@@ -10,13 +10,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.HourglassEmpty
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.HourglassEmpty
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,10 +52,10 @@ import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
 
 private fun iconFor(tier: BoostTierId): ImageVector = when (tier) {
-    BoostTierId.bump -> Icons.Filled.ArrowUpward
-    BoostTierId.spotlight -> Icons.Filled.Bolt
-    BoostTierId.top -> Icons.Filled.WorkspacePremium
-    BoostTierId.global -> Icons.Filled.Public
+    BoostTierId.bump -> Icons.Outlined.ArrowUpward
+    BoostTierId.spotlight -> Icons.Outlined.Bolt
+    BoostTierId.top -> Icons.Outlined.WorkspacePremium
+    BoostTierId.global -> Icons.Outlined.Public
 }
 
 @Composable
@@ -70,7 +70,7 @@ fun BoostListingScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("boost.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("boost.back")) } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("boost.back")) } }
             )
         }
     ) { padding ->
@@ -96,8 +96,8 @@ private fun BoostListingContent(viewModel: BoostListingViewModel) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(WhiteColor, RoundedCornerShape(14.dp))
-                .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+                .background(WhiteColor, RoundedCornerShape(16.dp))
+                .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -106,7 +106,7 @@ private fun BoostListingContent(viewModel: BoostListingViewModel) {
                     model = listing.images.first(),
                     contentDescription = listing.title,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(56.dp).clip(RoundedCornerShape(10.dp))
+                    modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp))
                 )
                 Spacer(Modifier.width(12.dp))
             }
@@ -131,13 +131,13 @@ private fun BoostListingContent(viewModel: BoostListingViewModel) {
                 val tierNames = pendingRequest.tiers.joinToString(", ") { i18n.t("boost.tier_" + it.lowercase() + "_name") }
                 val priceParts = formatPricePartsT(pendingRequest.totalPrice, pendingRequest.currency)
                 PendingOrConfirmBanner(
-                    icon = Icons.Filled.HourglassEmpty,
+                    icon = Icons.Outlined.HourglassEmpty,
                     title = t("boost.pending_title"),
                     body = t("boost.pending_body", "tiers" to tierNames, "price" to "${priceParts.first} ${priceParts.second}")
                 )
             }
             viewModel.submitted -> {
-                PendingOrConfirmBanner(icon = Icons.Filled.CheckCircle, title = t("boost.confirm_title"), body = t("boost.confirm_body"))
+                PendingOrConfirmBanner(icon = Icons.Outlined.CheckCircle, title = t("boost.confirm_title"), body = t("boost.confirm_body"))
             }
             else -> {
                 BOOST_TIERS.forEach { tier ->
@@ -175,17 +175,17 @@ private fun TierCard(tier: BoostTier, price: String, selected: Boolean, activeUn
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(if (selected) PrimaryLight else WhiteColor)
-            .border(if (selected) 1.5.dp else 1.dp, if (selected) Primary else BorderColor, RoundedCornerShape(14.dp))
+            .border(if (selected) 1.5.dp else 1.dp, if (selected) Primary else BorderColor, RoundedCornerShape(16.dp))
             .clickable(onClick = onToggle)
-            .padding(14.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.Top
     ) {
         Checkbox(checked = selected, onCheckedChange = { onToggle() }, colors = CheckboxDefaults.colors(checkedColor = Primary))
         Spacer(Modifier.width(6.dp))
         Box(
-            modifier = Modifier.size(36.dp).background(PrimaryLight, RoundedCornerShape(10.dp)),
+            modifier = Modifier.size(36.dp).background(PrimaryLight, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(iconFor(tier.id), contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
@@ -223,7 +223,7 @@ private fun SummaryCard(viewModel: BoostListingViewModel) {
     var showSelectOneError by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         SummaryRow(t("boost.subtotal"), money(quote.subtotal, currency))
         if (quote.discountPercent > 0) {
@@ -275,7 +275,7 @@ private fun SummaryRow(label: String, value: String, bold: Boolean = false, colo
 @Composable
 private fun PendingOrConfirmBanner(icon: ImageVector, title: String, body: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().background(PrimaryLight, RoundedCornerShape(14.dp)).padding(16.dp),
+        modifier = Modifier.fillMaxWidth().background(PrimaryLight, RoundedCornerShape(16.dp)).padding(16.dp),
         verticalAlignment = Alignment.Top
     ) {
         Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(22.dp))

@@ -20,22 +20,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.HourglassEmpty
-import androidx.compose.material.icons.filled.LocalOffer
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.CallEnd
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicOff
-import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.HourglassEmpty
+import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.CallEnd
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.MicOff
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -102,18 +102,18 @@ fun ChatScreen(
                         ChatHeaderContent(viewModel, onOpenListing)
                     }
                 },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("chat.back")) } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     viewModel.conversation?.let { conv ->
                         IconButton(onClick = { viewModel.requestBlockToggle() }, enabled = !viewModel.blockSubmitting) {
                             Icon(
-                                if (conv.blockedByMe) Icons.Filled.RemoveCircleOutline else Icons.Filled.Block,
+                                if (conv.blockedByMe) Icons.Outlined.RemoveCircleOutline else Icons.Outlined.Block,
                                 contentDescription = t(if (conv.blockedByMe) "block.unblock" else "block.block"),
                                 tint = if (conv.blockedByMe) Primary else TextMuted
                             )
                         }
                         IconButton(onClick = { viewModel.reportOpen = true }) {
-                            Icon(Icons.Filled.Flag, contentDescription = "Signaler", tint = TextMuted)
+                            Icon(Icons.Outlined.Flag, contentDescription = "Signaler", tint = TextMuted)
                         }
                     }
                 }
@@ -229,7 +229,7 @@ private fun ActiveCallBar(viewModel: ChatViewModel) {
         modifier = Modifier.fillMaxWidth().background(if (active) SuccessColor else Gold).padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Filled.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+        Icon(Icons.Outlined.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
         Text(
             if (active) t("chat.call_active") else t("chat.call_ringing"),
@@ -240,13 +240,13 @@ private fun ActiveCallBar(viewModel: ChatViewModel) {
         )
         IconButton(onClick = { viewModel.toggleMute() }) {
             Icon(
-                if (viewModel.callManager.muted) Icons.Filled.MicOff else Icons.Filled.Mic,
+                if (viewModel.callManager.muted) Icons.Outlined.MicOff else Icons.Outlined.Mic,
                 contentDescription = t(if (viewModel.callManager.muted) "chat.call_unmute" else "chat.call_mute"),
                 tint = Color.White
             )
         }
         IconButton(onClick = { viewModel.endCall() }) {
-            Icon(Icons.Filled.CallEnd, contentDescription = t("chat.call_end"), tint = Color.White)
+            Icon(Icons.Outlined.CallEnd, contentDescription = t("chat.call_end"), tint = Color.White)
         }
     }
 }
@@ -261,7 +261,7 @@ private fun IncomingCallDialog(callerName: String, onAccept: () -> Unit, onRejec
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(modifier = Modifier.size(72.dp).background(Primary, CircleShape), contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
+                Icon(Icons.Outlined.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
             }
             Spacer(Modifier.height(16.dp))
             Text(t("chat.call_incoming"), color = TextMuted, fontSize = 13.sp)
@@ -275,14 +275,14 @@ private fun IncomingCallDialog(callerName: String, onAccept: () -> Unit, onRejec
                     modifier = Modifier.size(56.dp),
                     contentPadding = PaddingValues(0.dp),
                     shape = CircleShape
-                ) { Icon(Icons.Filled.CallEnd, contentDescription = t("chat.call_reject"), tint = Color.White) }
+                ) { Icon(Icons.Outlined.CallEnd, contentDescription = t("chat.call_reject"), tint = Color.White) }
                 Button(
                     onClick = onAccept,
                     colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
                     modifier = Modifier.size(56.dp),
                     contentPadding = PaddingValues(0.dp),
                     shape = CircleShape
-                ) { Icon(Icons.Filled.Call, contentDescription = t("chat.call_accept"), tint = Color.White) }
+                ) { Icon(Icons.Outlined.Call, contentDescription = t("chat.call_accept"), tint = Color.White) }
             }
         }
     }
@@ -312,7 +312,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 modifier = Modifier.fillMaxWidth().background(GoldLight).padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.Lock, contentDescription = null, tint = Gold, modifier = Modifier.size(15.dp))
+                Icon(Icons.Outlined.Lock, contentDescription = null, tint = Gold, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
                 Text("${t("chat.reserved_msg")} ${t("chat.reserved_word")}", fontSize = 13.sp, color = Gold, modifier = Modifier.weight(1f))
                 TextButton(onClick = { viewModel.requestCancelReservation() }) { Text(t("chat.cancel"), fontSize = 12.sp) }
@@ -324,7 +324,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
+                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
                 Text("Signalement envoyé, merci.", color = SuccessColor, fontSize = 13.sp)
             }
@@ -360,7 +360,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(15.dp))
+                Icon(Icons.Outlined.Block, contentDescription = null, tint = TextMuted, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(t("chat.blocked_banner"), color = TextMuted, fontSize = 13.sp, textAlign = TextAlign.Center)
             }
@@ -370,7 +370,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     modifier = Modifier.fillMaxWidth().background(PrimaryLight).padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Filled.LocalOffer, contentDescription = null, tint = Gold, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Outlined.LocalOffer, contentDescription = null, tint = Gold, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     OutlinedTextField(
                         value = viewModel.offerAmount,
@@ -407,7 +407,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                 // Offers go from the buyer to the listing's owner only.
                 if (viewModel.conversation?.let { it.listing.userId != viewModel.currentUserId } == true) {
                     IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
-                        Icon(Icons.Filled.LocalOffer, contentDescription = t("chat.send_offer"), tint = Gold)
+                        Icon(Icons.Outlined.LocalOffer, contentDescription = t("chat.send_offer"), tint = Gold)
                     }
                 }
                 OutlinedTextField(
@@ -421,7 +421,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
                 )
                 IconButton(onClick = { viewModel.sendMessage() }, enabled = viewModel.messageText.isNotBlank()) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Envoyer", tint = if (viewModel.messageText.isNotBlank()) Primary else TextMuted)
+                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Envoyer", tint = if (viewModel.messageText.isNotBlank()) Primary else TextMuted)
                 }
             }
         }
@@ -460,8 +460,8 @@ private fun TextBubble(msg: MessageDto, mine: Boolean) {
             MsgTimeLabel(msg.createdAt)
             Box(
                 modifier = Modifier
-                    .background(if (mine) Primary else WhiteColor, RoundedCornerShape(14.dp))
-                    .border(if (mine) 0.dp else 1.dp, BorderColor, RoundedCornerShape(14.dp))
+                    .background(if (mine) Primary else WhiteColor, RoundedCornerShape(16.dp))
+                    .border(if (mine) 0.dp else 1.dp, BorderColor, RoundedCornerShape(16.dp))
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .fillMaxWidth(0.72f)
             ) {
@@ -489,13 +489,13 @@ private fun OfferBubble(
         MsgTimeLabel(msg.createdAt)
         Column(
             modifier = Modifier
-                .background(GoldLight, RoundedCornerShape(14.dp))
-                .border(1.dp, Gold, RoundedCornerShape(14.dp))
+                .background(GoldLight, RoundedCornerShape(16.dp))
+                .border(1.dp, Gold, RoundedCornerShape(16.dp))
                 .padding(12.dp)
                 .fillMaxWidth(0.68f)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.LocalOffer, contentDescription = null, tint = Gold, modifier = Modifier.size(13.dp))
+                Icon(Icons.Outlined.LocalOffer, contentDescription = null, tint = Gold, modifier = Modifier.size(13.dp))
                 Spacer(Modifier.width(4.dp))
                 Text(t("chat.offer_price"), fontSize = 11.sp, color = Gold, fontWeight = FontWeight.SemiBold)
             }
@@ -505,20 +505,20 @@ private fun OfferBubble(
                 Text(amountParts?.second ?: currency, fontSize = 11.sp, color = TextMuted)
             }
             when (msg.offerStatus) {
-                "PENDING" -> StatusRow(Icons.Filled.HourglassEmpty, t("chat.pending"), TextMuted)
-                "ACCEPTED" -> StatusRow(Icons.Filled.CheckCircle, t("chat.accepted"), SuccessColor)
-                "REJECTED" -> if (mine) StatusRow(Icons.Filled.Block, t("chat.cancelled"), ErrorColor) else StatusRow(Icons.Filled.Cancel, t("chat.rejected"), ErrorColor)
+                "PENDING" -> StatusRow(Icons.Outlined.HourglassEmpty, t("chat.pending"), TextMuted)
+                "ACCEPTED" -> StatusRow(Icons.Outlined.CheckCircle, t("chat.accepted"), SuccessColor)
+                "REJECTED" -> if (mine) StatusRow(Icons.Outlined.Block, t("chat.cancelled"), ErrorColor) else StatusRow(Icons.Outlined.Cancel, t("chat.rejected"), ErrorColor)
             }
             if (canRespond) {
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = onAccept, colors = ButtonDefaults.buttonColors(containerColor = SuccessColor), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(t("chat.accept"), fontSize = 12.sp)
                     }
                     Button(onClick = onReject, colors = ButtonDefaults.buttonColors(containerColor = ErrorColor), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(t("chat.reject"), fontSize = 12.sp)
                     }
@@ -527,7 +527,7 @@ private fun OfferBubble(
             if (canCancel) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = onCancel, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                    Icon(Icons.Filled.Block, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Outlined.Block, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(t("chat.cancel_offer"), fontSize = 12.sp)
                 }

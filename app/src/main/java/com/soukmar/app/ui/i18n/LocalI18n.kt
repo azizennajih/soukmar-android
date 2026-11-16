@@ -13,6 +13,9 @@ import java.time.format.FormatStyle
 /** The country the app is browsing/listing in (drives the numeric date format, like currency and city lists). */
 val LocalCountry = staticCompositionLocalOf { "MA" }
 
+/** Shared favourite ids for the heart on listing cards; null in previews and before the app root provides it. */
+val LocalFavorites = staticCompositionLocalOf<com.soukmar.app.data.local.FavoritesStore?> { null }
+
 val LocalI18n = staticCompositionLocalOf<I18nRepository> {
     error("LocalI18n not provided — wrap the app root in CompositionLocalProvider(LocalI18n provides ...)")
 }

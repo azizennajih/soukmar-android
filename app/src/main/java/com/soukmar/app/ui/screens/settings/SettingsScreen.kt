@@ -8,14 +8,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,7 +54,7 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("parametres.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = t("common.cancel")) } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("common.cancel")) } }
             )
         }
     ) { padding ->
@@ -69,14 +69,14 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(8.dp))
 
-            SettingsRow(Icons.Filled.Person, t("parametres.profile_account"), t("parametres.profile_account_sub"), onOpenProfil)
-            SettingsRow(Icons.Filled.NotificationsNone, t("parametres.notifications"), t("parametres.notifications_sub"), onOpenNotifications)
-            SettingsRow(Icons.Filled.Shield, t("parametres.privacy_data"), t("parametres.privacy_data_sub"), onOpenMesDonnees)
-            SettingsRow(Icons.Filled.Gavel, t("parametres.legal"), t("parametres.legal_sub"), onOpenLegal)
+            SettingsRow(Icons.Outlined.Person, t("parametres.profile_account"), t("parametres.profile_account_sub"), onOpenProfil)
+            SettingsRow(Icons.Outlined.NotificationsNone, t("parametres.notifications"), t("parametres.notifications_sub"), onOpenNotifications)
+            SettingsRow(Icons.Outlined.Shield, t("parametres.privacy_data"), t("parametres.privacy_data_sub"), onOpenMesDonnees)
+            SettingsRow(Icons.Outlined.Gavel, t("parametres.legal"), t("parametres.legal_sub"), onOpenLegal)
 
             Spacer(Modifier.height(20.dp))
             SettingsRow(
-                Icons.Filled.DeleteForever,
+                Icons.Outlined.DeleteForever,
                 t("parametres.delete_account"),
                 t("parametres.delete_account_sub"),
                 onOpenDeleteAccount,
@@ -86,10 +86,10 @@ fun SettingsScreen(
             Spacer(Modifier.height(20.dp))
             OutlinedButton(
                 onClick = { viewModel.logout(onLoggedOut) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
             ) {
-                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(t("nav.logout"))
             }
@@ -112,13 +112,13 @@ private fun SettingsRow(icon: ImageVector, title: String, subtitle: String, onCl
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
-            .padding(14.dp),
+            .background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(40.dp).background(tint.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
+            modifier = Modifier.size(40.dp).background(tint.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = tint)
@@ -128,7 +128,7 @@ private fun SettingsRow(icon: ImageVector, title: String, subtitle: String, onCl
             Text(title, fontWeight = FontWeight.SemiBold, color = if (danger) ErrorColor else TextPrimary)
             Text(subtitle, color = TextMuted, fontSize = 12.sp)
         }
-        Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = TextMuted)
+        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = TextMuted)
     }
     Spacer(Modifier.height(10.dp))
 }

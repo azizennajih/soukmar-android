@@ -22,7 +22,8 @@ class ListingDetailViewModel @Inject constructor(
     private val reviewRepository: ReviewRepository,
     private val reportRepository: ReportRepository,
     private val chatRepository: ChatRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val favoritesStore: com.soukmar.app.data.local.FavoritesStore
 ) : ViewModel() {
 
     var listing by mutableStateOf<ListingDto?>(null)
@@ -83,6 +84,7 @@ class ListingDetailViewModel @Inject constructor(
                     listing = result.data
                     if (isLoggedIn) {
                         favorited = listingRepository.getFavoriteIds().contains(id)
+                        favoritesStore.set(id, favorited)
                         checkCanReview(id)
                     }
                     loadSimilar(id)
@@ -130,7 +132,7 @@ class ListingDetailViewModel @Inject constructor(
         favLoading = true
         viewModelScope.launch {
             val ok = if (wasFav) listingRepository.removeFavorite(id) else listingRepository.addFavorite(id)
-            if (!ok) favorited = wasFav
+            if (!ok) favorited = wasFav else favoritesStore.set(id, !wasFav)
             favLoading = false
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.*
 import com.soukmar.app.ui.i18n.t
@@ -24,7 +25,7 @@ fun ResetPasswordScreen(
         modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SoukMarLogo()
+        SoukMarLogo(markSize = 44.dp, fontSize = 26.sp)
         Spacer(Modifier.height(24.dp))
 
         if (token.isNullOrBlank()) {

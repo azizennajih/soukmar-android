@@ -7,74 +7,64 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soukmar.app.ui.components.CountrySwitcher
 import com.soukmar.app.ui.components.LanguageSwitcher
+import com.soukmar.app.ui.components.ListingCard
+import com.soukmar.app.ui.components.SearchPill
+import com.soukmar.app.ui.components.SectionHeader
 import com.soukmar.app.ui.components.SoukMarLogo
+import com.soukmar.app.ui.components.SponsorBanner
 import com.soukmar.app.ui.i18n.t
 import com.soukmar.app.ui.i18n.tCatalog
 import com.soukmar.app.ui.model.CATEGORIES
-import com.soukmar.app.ui.model.CATEGORY_GROUPS
 import com.soukmar.app.ui.model.CategoryIcon
 import com.soukmar.app.ui.model.categoryConfig
-import com.soukmar.app.ui.theme.BorderColor
+import com.soukmar.app.ui.theme.Accent
+import com.soukmar.app.ui.theme.IconSize
 import com.soukmar.app.ui.theme.Primary
+import com.soukmar.app.ui.theme.ShapeCard
+import com.soukmar.app.ui.theme.Spacing
+import com.soukmar.app.ui.theme.SurfaceMuted
 import com.soukmar.app.ui.theme.TextMuted
 import com.soukmar.app.ui.theme.TextPrimary
 import com.soukmar.app.ui.theme.WhiteColor
 
+/** Home: logo and header actions, the large search, categories at a glance, premium and newest listings. Bottom bar comes from the nav graph. */
 @Composable
 fun HomeScreen(
     onOpenCategory: (String) -> Unit,
+    onOpenAllCategories: () -> Unit,
     onOpenSearch: () -> Unit,
     onOpenImageSearch: () -> Unit,
-    onOpenDeposerAnnonce: () -> Unit,
-    onOpenChat: () -> Unit,
-    onOpenMesAnnonces: () -> Unit,
     onOpenFavoris: () -> Unit,
-    onOpenMesAbonnements: () -> Unit,
-    onOpenSavedSearches: () -> Unit,
     onOpenNotifications: () -> Unit,
-    onOpenAdmin: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenListing: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -87,197 +77,146 @@ fun HomeScreen(
     }
 
     Scaffold(
+        containerColor = WhiteColor,
         topBar = {
             TopAppBar(
                 title = { SoukMarLogo() },
                 actions = {
                     LanguageSwitcher()
                     IconButton(onClick = onOpenFavoris) {
-                        Icon(Icons.Filled.FavoriteBorder, contentDescription = t("nav.my_favorites"))
-                    }
-                    IconButton(onClick = onOpenMesAnnonces) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = t("nav.my_listings"))
-                    }
-                    IconButton(onClick = onOpenChat) {
-                        Icon(Icons.Filled.ChatBubbleOutline, contentDescription = t("nav.messages"))
+                        Icon(Icons.Outlined.FavoriteBorder, contentDescription = t("nav.my_favorites"), modifier = Modifier.size(IconSize.standard))
                     }
                     IconButton(onClick = onOpenNotifications) {
                         BadgedBox(badge = {
                             if (viewModel.unreadNotifications > 0) {
-                                Badge { Text(if (viewModel.unreadNotifications > 99) "99+" else viewModel.unreadNotifications.toString()) }
+                                Badge(containerColor = Primary, contentColor = WhiteColor) {
+                                    Text(if (viewModel.unreadNotifications > 99) "99+" else viewModel.unreadNotifications.toString())
+                                }
                             }
                         }) {
-                            Icon(Icons.Filled.NotificationsNone, contentDescription = t("nav.notifications"))
+                            Icon(Icons.Outlined.NotificationsNone, contentDescription = t("nav.notifications"), modifier = Modifier.size(IconSize.standard))
                         }
                     }
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = null)
-                        }
-                        DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                            if (viewModel.user?.role == "ADMIN") {
-                                DropdownMenuItem(
-                                    text = { Text(t("nav.admin")) },
-                                    leadingIcon = { Icon(Icons.Filled.Shield, contentDescription = null) },
-                                    onClick = { menuExpanded = false; onOpenAdmin() }
-                                )
-                            }
-                            DropdownMenuItem(
-                                text = { Text(t("nav.my_follows")) },
-                                leadingIcon = { Icon(Icons.Filled.Group, contentDescription = null) },
-                                onClick = { menuExpanded = false; onOpenMesAbonnements() }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(t("nav.saved_searches")) },
-                                leadingIcon = { Icon(Icons.Filled.BookmarkBorder, contentDescription = null) },
-                                onClick = { menuExpanded = false; onOpenSavedSearches() }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(t("nav.settings")) },
-                                leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-                                onClick = { menuExpanded = false; onOpenSettings() }
-                            )
-                        }
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onOpenDeposerAnnonce,
-                containerColor = Primary,
-                contentColor = WhiteColor,
-                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                text = { Text(t("nav.post_full")) }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = WhiteColor, scrolledContainerColor = WhiteColor)
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
-            viewModel.user?.let { u ->
-                Text("Bonjour, ${u.name}", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-                Spacer(Modifier.height(12.dp))
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 160.dp),
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(start = Spacing.lg, end = Spacing.lg, bottom = Spacing.xl),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        ) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "search") {
+                SearchPill(
+                    placeholder = t("nav.search_placeholder"),
+                    onClick = onOpenSearch,
+                    onCameraClick = onOpenImageSearch,
+                    cameraLabel = t("nav.search_by_image")
+                )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(WhiteColor, RoundedCornerShape(999.dp))
-                    .border(1.dp, BorderColor, RoundedCornerShape(999.dp))
-                    .padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    modifier = Modifier.weight(1f).clickable(onClick = onOpenSearch).padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Filled.Search, contentDescription = null, tint = TextMuted)
-                    Spacer(Modifier.width(8.dp))
-                    Text(t("nav.search_placeholder"), color = TextMuted)
-                }
-                IconButton(onClick = onOpenImageSearch) {
-                    Icon(Icons.Filled.CameraAlt, contentDescription = t("nav.search_by_image"), tint = TextMuted)
+            // Categories at a glance: one horizontal row, the full grid is the second tab.
+            item(span = { GridItemSpan(maxLineSpan) }, key = "categories") {
+                Column {
+                    SectionHeader(t("nav.categories"), actionLabel = t("home.see_all"), onAction = onOpenAllCategories)
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                        items(CATEGORIES, key = { it.value }) { cat -> CategoryChip(cat.value, onClick = { onOpenCategory(cat.value) }) }
+                    }
                 }
             }
 
             if (viewModel.interests.isNotEmpty()) {
-                Spacer(Modifier.height(20.dp))
-                InterestsSection(viewModel.interests, onOpenCategory)
-            }
-
-            Spacer(Modifier.height(20.dp))
-            Text(t("nav.categories"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Spacer(Modifier.height(10.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                CATEGORY_GROUPS.forEach { (groupKey, values) ->
-                item(span = { GridItemSpan(maxLineSpan) }, key = "group_$groupKey") {
-                    Text(
-                        t("home.cat_group_$groupKey").uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        color = com.soukmar.app.ui.theme.TextMuted, modifier = Modifier.padding(top = 10.dp)
-                    )
-                }
-                items(values.mapNotNull { v -> CATEGORIES.find { it.value == v } }, key = { it.value }) { cat ->
-                    Column(
-                        modifier = Modifier
-                            .clickable { onOpenCategory(cat.value) }
-                            .background(cat.bg, RoundedCornerShape(14.dp))
-                            .padding(vertical = 16.dp, horizontal = 8.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CategoryIcon(cat.value, tint = cat.fg, modifier = Modifier.size(26.dp))
-                        Spacer(Modifier.height(6.dp))
-                        Text(tCatalog("cats.${cat.value}", cat.value), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = cat.fg, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                        val count = viewModel.categoryCounts[cat.value] ?: 0
-                        if (count > 0) {
-                            Text(
-                                if (count == 1) t("home.category_count_one") else t("home.category_count", "count" to count.toString()),
-                                fontSize = 10.sp, color = cat.fg.copy(alpha = 0.75f), textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
+                item(span = { GridItemSpan(maxLineSpan) }, key = "interests") {
+                    Column {
+                        SectionHeader(t("home.welcome_back"))
+                        Text(t("home.your_interests"), color = TextMuted, style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(Spacing.sm))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                            items(viewModel.interests, key = { it.category }) { interest ->
+                                Row(
+                                    modifier = Modifier
+                                        .background(SurfaceMuted, CircleShape)
+                                        .clickable(role = Role.Button) { onOpenCategory(interest.category) }
+                                        .heightIn(min = 48.dp)
+                                        .padding(horizontal = Spacing.md),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CategoryIcon(interest.category, tint = TextPrimary, modifier = Modifier.size(IconSize.small))
+                                    Spacer(Modifier.width(Spacing.sm))
+                                    Column {
+                                        Text(tCatalog("cats.${interest.category}", interest.category), style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                                        Text(t("home.new_listings_count", "count" to interest.newListingsCount.toString()), style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+            }
+
+            viewModel.inlineBanners.firstOrNull()?.let { banner ->
+                item(span = { GridItemSpan(maxLineSpan) }, key = "sponsor") {
+                    SponsorBanner(banner, onClick = { viewModel.bannerClicked(banner.id) })
                 }
-                viewModel.inlineBanners.firstOrNull()?.let { banner ->
-                    item(span = { GridItemSpan(maxLineSpan) }, key = "sponsor") {
-                        com.soukmar.app.ui.components.SponsorBanner(banner, onClick = { viewModel.bannerClicked(banner.id) }, modifier = Modifier.padding(top = 10.dp))
+            }
+
+            if (viewModel.featuredListings.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }, key = "featured_header") {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(8.dp).background(Accent, CircleShape))
+                        Spacer(Modifier.width(Spacing.sm))
+                        SectionHeader(t("home.featured"), Modifier.weight(1f))
                     }
                 }
-                // The country lives at the very bottom (like the web footer), not in the top bar.
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
-                        CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
-                    }
+                items(viewModel.featuredListings, key = { "f_" + it.id }) { listing ->
+                    ListingCard(listing = listing, onClick = { onOpenListing(listing.id) })
+                }
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }, key = "recent_header") {
+                SectionHeader(t("home.recent"), actionLabel = t("home.see_all"), onAction = onOpenSearch)
+            }
+            if (viewModel.feedLoading && viewModel.recentListings.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }, key = "loading") {
+                    Box(Modifier.fillMaxWidth().padding(Spacing.xl), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
+                }
+            }
+            items(viewModel.recentListings, key = { "r_" + it.id }) { listing ->
+                ListingCard(listing = listing, onClick = { onOpenListing(listing.id) })
+            }
+
+            // The country lives at the very bottom (like the web footer), not in the top bar.
+            item(span = { GridItemSpan(maxLineSpan) }, key = "country") {
+                Box(modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.lg), contentAlignment = Alignment.Center) {
+                    CountrySwitcher(country = viewModel.country, onSelect = { viewModel.selectCountry(it) })
                 }
             }
         }
     }
 }
 
-/** Mirrors the web home page's personalized "Vos centres d'intérêt actuels"
- * section — top 3 recency-weighted categories from GET /listings/interests,
- * only shown when there's at least one (a fresh account or one with no
- * recent activity just won't see the section, same as the web). */
+/** Round icon with the category name below; 72 dp wide, so the whole chip is a comfortable touch target. */
 @Composable
-private fun InterestsSection(interests: List<com.soukmar.app.data.remote.dto.InterestDto>, onOpenCategory: (String) -> Unit) {
-    Column {
-        Text(t("home.welcome_back"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
-        Text(t("home.your_interests"), color = TextMuted, fontSize = 12.sp)
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            interests.forEach { interest ->
-                val cat = categoryConfig(interest.category)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { onOpenCategory(interest.category) }
-                        .background(cat?.bg ?: WhiteColor, RoundedCornerShape(14.dp))
-                        .padding(vertical = 14.dp, horizontal = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CategoryIcon(cat?.value ?: "OTHER", tint = cat?.fg ?: TextPrimary, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        tCatalog("cats.${interest.category}", interest.category),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = cat?.fg ?: TextPrimary,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        maxLines = 1
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        t("home.new_listings_count", "count" to interest.newListingsCount.toString()),
-                        fontSize = 9.sp,
-                        color = (cat?.fg ?: TextMuted).copy(alpha = 0.8f)
-                    )
-                }
-            }
+fun CategoryChip(category: String, onClick: () -> Unit) {
+    val cat = categoryConfig(category)
+    Column(
+        modifier = Modifier.width(76.dp).clickable(role = Role.Button, onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(Modifier.size(60.dp).background(cat?.bg ?: SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) {
+            CategoryIcon(category, tint = cat?.fg ?: TextPrimary, modifier = Modifier.size(IconSize.feature))
         }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            tCatalog("cats.$category", category),
+            style = MaterialTheme.typography.labelMedium,
+            color = TextPrimary,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

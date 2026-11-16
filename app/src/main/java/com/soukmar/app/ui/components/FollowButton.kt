@@ -3,8 +3,8 @@ package com.soukmar.app.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.PersonRemove
+import androidx.compose.material.icons.outlined.PersonAdd
+import androidx.compose.material.icons.outlined.PersonRemove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -28,12 +28,12 @@ fun FollowButton(following: Boolean, submitting: Boolean, onToggle: () -> Unit) 
             border = BorderStroke(1.dp, Primary),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
         ) {
-            Icon(Icons.Filled.PersonRemove, contentDescription = null, modifier = androidx.compose.ui.Modifier.padding(end = 6.dp))
+            Icon(Icons.Outlined.PersonRemove, contentDescription = null, modifier = androidx.compose.ui.Modifier.padding(end = 6.dp))
             Text(t("seller.unfollow"))
         }
     } else {
         Button(onClick = onToggle, enabled = !submitting, colors = ButtonDefaults.buttonColors(containerColor = Primary)) {
-            Icon(Icons.Filled.PersonAdd, contentDescription = null, modifier = androidx.compose.ui.Modifier.padding(end = 6.dp))
+            Icon(Icons.Outlined.PersonAdd, contentDescription = null, modifier = androidx.compose.ui.Modifier.padding(end = 6.dp))
             Text(t("seller.follow"))
         }
     }

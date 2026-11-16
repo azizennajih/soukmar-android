@@ -10,9 +10,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Assignment
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,14 +47,14 @@ private data class StatusStyle(val label: String, val bg: Color, val fg: Color)
 
 @Composable
 private fun statusStyle(status: String): StatusStyle = when (status) {
-    "ACTIVE" -> StatusStyle(t("annonces.active"), Color(0xFFDCFCE7), Color(0xFF15803D))
-    "RESERVED" -> StatusStyle(t("annonces.reserved"), Color(0xFFFEF9C3), Color(0xFFA16207))
-    "PENDING" -> StatusStyle(t("annonces.pending"), Color(0xFFFEF9C3), Color(0xFFA16207))
-    "SOLD" -> StatusStyle(t("annonces.sold"), Color(0xFFDBEAFE), Color(0xFF1D4ED8))
-    "REJECTED" -> StatusStyle(t("annonces.rejected"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
-    "EXPIRED" -> StatusStyle(t("annonces.expired"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
-    "CHANGES_REQUESTED" -> StatusStyle(t("annonces.changes_requested"), Color(0xFFFEF9C3), Color(0xFFA16207))
-    "SUSPENDED" -> StatusStyle(t("annonces.suspended"), Color(0xFFFEE2E2), Color(0xFFB91C1C))
+    "ACTIVE" -> StatusStyle(t("annonces.active"), com.soukmar.app.ui.theme.SuccessLight, com.soukmar.app.ui.theme.SuccessDark)
+    "RESERVED" -> StatusStyle(t("annonces.reserved"), com.soukmar.app.ui.theme.WarningLight, com.soukmar.app.ui.theme.WarningDark)
+    "PENDING" -> StatusStyle(t("annonces.pending"), com.soukmar.app.ui.theme.WarningLight, com.soukmar.app.ui.theme.WarningDark)
+    "SOLD" -> StatusStyle(t("annonces.sold"), com.soukmar.app.ui.theme.InfoLight, com.soukmar.app.ui.theme.InfoDark)
+    "REJECTED" -> StatusStyle(t("annonces.rejected"), com.soukmar.app.ui.theme.ErrorLight, com.soukmar.app.ui.theme.ErrorDark)
+    "EXPIRED" -> StatusStyle(t("annonces.expired"), com.soukmar.app.ui.theme.ErrorLight, com.soukmar.app.ui.theme.ErrorDark)
+    "CHANGES_REQUESTED" -> StatusStyle(t("annonces.changes_requested"), com.soukmar.app.ui.theme.WarningLight, com.soukmar.app.ui.theme.WarningDark)
+    "SUSPENDED" -> StatusStyle(t("annonces.suspended"), com.soukmar.app.ui.theme.ErrorLight, com.soukmar.app.ui.theme.ErrorDark)
     else -> StatusStyle(status, BorderColor, TextMuted)
 }
 
@@ -81,10 +81,10 @@ fun MesAnnoncesScreen(
         topBar = {
             TopAppBar(
                 title = { Text("${t("mes_annonces.title")} (${viewModel.listings.size})") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     if (viewModel.listings.isNotEmpty()) SortMenu(sortBy = viewModel.sortBy, onSelect = { viewModel.sortBy = it })
-                    IconButton(onClick = onNewListing) { Icon(Icons.Filled.Add, contentDescription = t("mes_annonces.new")) }
+                    IconButton(onClick = onNewListing) { Icon(Icons.Outlined.Add, contentDescription = t("mes_annonces.new")) }
                 }
             )
         }
@@ -93,7 +93,7 @@ fun MesAnnoncesScreen(
             when {
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.listings.isEmpty() -> EmptyMesAnnonces(onNewListing)
-                else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     item(key = "search") {
                         OutlinedTextField(
                             value = viewModel.searchTerm,
@@ -101,9 +101,9 @@ fun MesAnnoncesScreen(
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             placeholder = { Text(t("mes_annonces.search_placeholder")) },
-                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                             trailingIcon = {
-                                if (viewModel.searchTerm.isNotEmpty()) IconButton(onClick = { viewModel.searchTerm = "" }) { Icon(Icons.Filled.Close, contentDescription = t("common.close")) }
+                                if (viewModel.searchTerm.isNotEmpty()) IconButton(onClick = { viewModel.searchTerm = "" }) { Icon(Icons.Outlined.Close, contentDescription = t("common.close")) }
                             },
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -157,7 +157,7 @@ fun MesAnnoncesScreen(
 private fun SortMenu(sortBy: SortKey, onSelect: (SortKey) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Filled.Sort, contentDescription = t("annonces.sort")) }
+        IconButton(onClick = { open = true }) { Icon(Icons.Outlined.Sort, contentDescription = t("annonces.sort")) }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             val options = listOf(
                 SortKey.NEWEST to t("annonces.newest"),
@@ -182,7 +182,7 @@ private fun EmptyMesAnnonces(onNewListing: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.AutoMirrored.Outlined.Assignment)
         Spacer(Modifier.height(12.dp))
         Text(t("mes_annonces.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
@@ -230,13 +230,13 @@ private fun ListingRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+            .background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
             .padding(12.dp)
     ) {
         Row {
             Box(
-                modifier = Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onOpen),
+                modifier = Modifier.size(72.dp).clip(RoundedCornerShape(12.dp)).clickable(onClick = onOpen),
             ) {
                 if (listing.images.isNotEmpty()) {
                     AsyncImage(model = listing.images.first(), contentDescription = listing.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
@@ -262,15 +262,15 @@ private fun ListingRow(
                 )
                 Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Visibility, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Icon(Icons.Outlined.Visibility, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
                     Spacer(Modifier.width(1.dp))
                     Text("${listing.views} ${t("listing.views")}", color = TextMuted, fontSize = 11.sp, maxLines = 1)
                     Spacer(Modifier.width(4.dp))
-                    Icon(Icons.Filled.Schedule, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
                     Spacer(Modifier.width(1.dp))
                     Text(timeAgoT(listing.createdAt), color = TextMuted, fontSize = 11.sp, maxLines = 1)
                     Spacer(Modifier.width(4.dp))
-                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                    Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
                     Spacer(Modifier.width(1.dp))
                     Text(cityLabelT(listing.city), color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 }
@@ -278,7 +278,7 @@ private fun ListingRow(
                     Spacer(Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                         Icon(
-                            Icons.Filled.HourglassEmpty,
+                            Icons.Outlined.HourglassEmpty,
                             contentDescription = null,
                             tint = if (expiringSoon) Primary else TextMuted,
                             modifier = Modifier.size(11.dp)
@@ -299,8 +299,8 @@ private fun ListingRow(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(if (rejected) PrimaryLight else Color(0xFFFEF6E4), RoundedCornerShape(8.dp))
-                    .border(1.dp, if (rejected) Primary else Color(0xFFC9941A), RoundedCornerShape(8.dp))
+                    .background(if (rejected) PrimaryLight else com.soukmar.app.ui.theme.GoldLight, RoundedCornerShape(8.dp))
+                    .border(1.dp, if (rejected) Primary else com.soukmar.app.ui.theme.Gold, RoundedCornerShape(8.dp))
                     .padding(8.dp)
             ) {
                 Text(reviewHint, fontSize = 12.sp, color = TextPrimary)
@@ -312,27 +312,27 @@ private fun ListingRow(
         }
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            RowActionButton(Icons.Filled.Visibility, t("mes_annonces.see"), onClick = onOpen)
+            RowActionButton(Icons.Outlined.Visibility, t("mes_annonces.see"), onClick = onOpen)
             if (canToggleReserve) {
                 RowActionButton(
-                    if (listing.status == "RESERVED") Icons.Filled.LockOpen else Icons.Filled.Lock,
+                    if (listing.status == "RESERVED") Icons.Outlined.LockOpen else Icons.Outlined.Lock,
                     if (listing.status == "RESERVED") t("mes_annonces.unreserve") else t("mes_annonces.reserve"),
                     active = listing.status == "RESERVED",
                     onClick = onToggleReserve
                 )
             }
             if (canEdit) {
-                RowActionButton(Icons.Filled.Edit, if (listing.status == "CHANGES_REQUESTED" || listing.status == "REJECTED") t("mes_annonces.edit_resubmit") else t("mes_annonces.edit"), onClick = onEdit)
+                RowActionButton(Icons.Outlined.Edit, if (listing.status == "CHANGES_REQUESTED" || listing.status == "REJECTED") t("mes_annonces.edit_resubmit") else t("mes_annonces.edit"), onClick = onEdit)
             }
             if (canToggleReserve) {
-                RowActionButton(Icons.Filled.ArrowUpward, if (canBump) t("mes_annonces.bump") else t("mes_annonces.bump_cooldown"), enabled = canBump && !bumping, onClick = onBump)
-                RowActionButton(Icons.Filled.RocketLaunch, t("mes_annonces.boost"), onClick = onBoost)
+                RowActionButton(Icons.Outlined.ArrowUpward, if (canBump) t("mes_annonces.bump") else t("mes_annonces.bump_cooldown"), enabled = canBump && !bumping, onClick = onBump)
+                RowActionButton(Icons.Outlined.RocketLaunch, t("mes_annonces.boost"), onClick = onBoost)
             }
             if (canToggleReserve && canExtend) {
-                RowActionButton(Icons.Filled.DateRange, t("mes_annonces.extend"), enabled = !extending, onClick = onExtend)
+                RowActionButton(Icons.Outlined.DateRange, t("mes_annonces.extend"), enabled = !extending, onClick = onExtend)
             }
-            RowActionButton(Icons.Filled.BarChart, t("mes_annonces.stats"), active = statsOpen, onClick = onToggleStats)
-            RowActionButton(Icons.Filled.Delete, t("mes_annonces.delete"), danger = true, onClick = onDelete)
+            RowActionButton(Icons.Outlined.BarChart, t("mes_annonces.stats"), active = statsOpen, onClick = onToggleStats)
+            RowActionButton(Icons.Outlined.Delete, t("mes_annonces.delete"), danger = true, onClick = onDelete)
         }
     }
 }

@@ -9,9 +9,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,7 +48,7 @@ fun NotificationsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("notifications.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } },
                 actions = {
                     if (viewModel.hasUnread) {
                         TextButton(onClick = { viewModel.markAllRead() }) { Text(t("notifications.mark_all_read")) }
@@ -62,7 +62,7 @@ fun NotificationsScreen(
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.notifications.isEmpty() -> EmptyState()
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(12.dp),
+                    contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -118,7 +118,7 @@ private fun NotificationRow(n: NotificationDto, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .background(if (n.isRead) WhiteColor else PrimaryLight, androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
-            .padding(14.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.Top
     ) {
         if (!n.isRead) {
@@ -130,7 +130,7 @@ private fun NotificationRow(n: NotificationDto, onClick: () -> Unit) {
             n.listingTitle?.let {
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Link, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
+                    Icon(Icons.Outlined.Link, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(it, color = TextMuted, fontSize = 12.sp)
                 }
@@ -148,7 +148,7 @@ private fun EmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.NotificationsNone, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.NotificationsNone)
         Spacer(Modifier.height(12.dp))
         Text(t("notifications.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))

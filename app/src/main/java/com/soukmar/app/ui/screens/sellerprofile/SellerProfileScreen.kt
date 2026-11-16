@@ -10,11 +10,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,7 +60,7 @@ fun SellerProfileScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Profil vendeur") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -83,12 +83,12 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         item {
             Column(
-                modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(20.dp),
+                modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
@@ -108,7 +108,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 profile.city?.let {
                     Spacer(Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(2.dp))
                         Text(cityLabelT(it), color = TextMuted, fontSize = 13.sp)
                     }
@@ -138,15 +138,15 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                 }
                 responseLabel(profile.avgResponseHours)?.let {
                     Spacer(Modifier.height(8.dp))
-                    Box(modifier = Modifier.background(Color(0xFFF1F5F9), RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                    Box(modifier = Modifier.background(com.soukmar.app.ui.theme.SurfaceMuted, RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Icon(Icons.Filled.Bolt, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(12.dp))
+                            Icon(Icons.Outlined.Bolt, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(12.dp))
                             Text(it, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
                 Spacer(Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("${profile.followerCount} ${t("seller.followers")}", color = TextMuted, fontSize = 13.sp)
                     if (!viewModel.isOwnProfile) {
                         if (viewModel.isLoggedIn) {
@@ -157,7 +157,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
                             )
                         } else {
                             OutlinedButton(onClick = onRequireLogin) {
-                                Icon(Icons.Filled.PersonAdd, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
+                                Icon(Icons.Outlined.PersonAdd, contentDescription = null, modifier = Modifier.padding(end = 6.dp))
                                 Text(t("seller.follow"))
                             }
                         }
@@ -174,7 +174,7 @@ private fun SellerProfileContent(viewModel: SellerProfileViewModel, onOpenListin
             item { Text(t("seller.no_listings"), color = TextMuted, fontSize = 13.sp) }
         } else {
             items(listingRows) { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     row.forEach { listing ->
                         ListingCard(listing = listing, onClick = { onOpenListing(listing.id) }, modifier = Modifier.weight(1f))
                     }
@@ -207,7 +207,7 @@ private fun StarRow(rating: Int) {
 @Composable
 private fun ReviewRow(review: ReviewWithDetailsDto) {
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(14.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -230,7 +230,7 @@ private fun ReviewRow(review: ReviewWithDetailsDto) {
         val listingTitle = review.listing?.title
         if (listingTitle != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Link, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
+                Icon(Icons.Outlined.Link, contentDescription = null, tint = TextMuted, modifier = Modifier.size(11.dp))
                 Spacer(Modifier.width(4.dp))
                 Text("$listingTitle · ${timeAgoT(review.createdAt)}", color = TextMuted, fontSize = 11.sp)
             }

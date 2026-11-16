@@ -13,9 +13,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -58,7 +58,7 @@ fun ImageSearchScreen(
         topBar = {
             TopAppBar(
                 title = { Text(t("image_search.title")) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -71,9 +71,9 @@ fun ImageSearchScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(if (viewModel.previewUri != null) WhiteColor else PrimaryLight)
-                        .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+                        .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
                         .clickable { picker.launch("image/*") },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -83,10 +83,10 @@ fun ImageSearchScreen(
                             model = viewModel.previewUri,
                             contentDescription = t("image_search.title"),
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp))
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp))
                         )
                     } else {
-                        Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = Primary, modifier = Modifier.size(32.dp))
+                        Icon(Icons.Outlined.CameraAlt, contentDescription = null, tint = Primary, modifier = Modifier.size(32.dp))
                         Spacer(Modifier.height(8.dp))
                         Text(t("image_search.pick_btn"), color = Primary, fontWeight = FontWeight.SemiBold)
                     }
@@ -94,7 +94,7 @@ fun ImageSearchScreen(
 
                 if (viewModel.previewUri != null) {
                     Spacer(Modifier.height(10.dp))
-                    OutlinedButton(onClick = { picker.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = { picker.launch("image/*") }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text(t("image_search.pick_btn"))
                     }
                 }
@@ -122,10 +122,10 @@ fun ImageSearchScreen(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                         LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            columns = GridCells.Adaptive(minSize = 160.dp),
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(viewModel.results, key = { it.id }) { listing ->
@@ -146,7 +146,7 @@ private fun EmptyResultsState(onBrowseAll: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.Image, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.Image)
         Spacer(Modifier.height(12.dp))
         Text(t("image_search.no_results"), color = TextPrimary, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
         Spacer(Modifier.height(4.dp))

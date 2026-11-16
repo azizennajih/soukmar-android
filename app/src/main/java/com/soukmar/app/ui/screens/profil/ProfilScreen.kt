@@ -14,9 +14,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -61,7 +61,7 @@ fun ProfilScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Profil") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -86,7 +86,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
     ) {
         // Avatar + identity card
         Column(
-            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(20.dp),
+            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box {
@@ -110,7 +110,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
                     enabled = !viewModel.uploadingImage,
                     modifier = Modifier.align(Alignment.BottomEnd).size(28.dp).background(Primary, CircleShape).border(2.dp, WhiteColor, CircleShape)
                 ) {
-                    Icon(Icons.Filled.CameraAlt, contentDescription = "Changer la photo", tint = Color.White, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Outlined.CameraAlt, contentDescription = "Changer la photo", tint = Color.White, modifier = Modifier.size(14.dp))
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -132,7 +132,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
 
         // Edit profile form
         Column(
-            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
+            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
         ) {
             Text(t("profil.edit_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(Modifier.height(12.dp))
@@ -185,7 +185,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             Button(
                 onClick = { viewModel.saveProfile() },
                 enabled = !viewModel.saving,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
                 if (viewModel.saving) {
@@ -200,7 +200,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
 
         // Change password form
         Column(
-            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
+            modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
         ) {
             Text(t("profil.change_password_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(Modifier.height(12.dp))
@@ -240,7 +240,7 @@ private fun ProfilContent(viewModel: ProfilViewModel, onPickAvatar: () -> Unit) 
             Button(
                 onClick = { viewModel.changePassword() },
                 enabled = !viewModel.pwSaving,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
                 if (viewModel.pwSaving) {
@@ -266,7 +266,7 @@ private fun IdVerificationCard(viewModel: ProfilViewModel) {
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(14.dp)).border(1.dp, BorderColor, RoundedCornerShape(14.dp)).padding(16.dp)
+        modifier = Modifier.fillMaxWidth().background(WhiteColor, RoundedCornerShape(16.dp)).border(1.dp, BorderColor, RoundedCornerShape(16.dp)).padding(16.dp)
     ) {
         Text(t("profil.id_verification_title"), fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(Modifier.height(6.dp))
@@ -276,7 +276,7 @@ private fun IdVerificationCard(viewModel: ProfilViewModel) {
         when (viewModel.idVerificationStatus) {
             "APPROVED" -> {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(15.dp))
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(15.dp))
                     Text(t("profil.id_verification_approved"), color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
@@ -315,7 +315,7 @@ private fun IdVerificationCard(viewModel: ProfilViewModel) {
                 Button(
                     onClick = { viewModel.submitIdVerification() },
                     enabled = !viewModel.submittingIdVerification && viewModel.idImageUri != null && viewModel.selfieImageUri != null,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     if (viewModel.submittingIdVerification) {
@@ -335,9 +335,9 @@ private fun IdPhotoPicker(uri: android.net.Uri?, onPick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(90.dp)
-            .background(com.soukmar.app.ui.theme.BgColor, RoundedCornerShape(10.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            .clip(RoundedCornerShape(10.dp)),
+            .background(com.soukmar.app.ui.theme.BgColor, RoundedCornerShape(12.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp)),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -345,7 +345,7 @@ private fun IdPhotoPicker(uri: android.net.Uri?, onPick: () -> Unit) {
             AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clickable(onClick = onPick))
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize().clickable(onClick = onPick), verticalArrangement = Arrangement.Center) {
-                Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = TextMuted)
+                Icon(Icons.Outlined.CameraAlt, contentDescription = null, tint = TextMuted)
                 Spacer(Modifier.height(4.dp))
                 Text(t("deposer.upload_hint"), color = TextMuted, fontSize = 11.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
@@ -359,7 +359,7 @@ private fun PhoneVerificationRow(viewModel: ProfilViewModel) {
         when {
             viewModel.profile?.phoneVerified == true -> {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = com.soukmar.app.ui.theme.SuccessColor, modifier = Modifier.size(14.dp))
                     Text(t("profil.phone_verified"), color = com.soukmar.app.ui.theme.SuccessColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
             }

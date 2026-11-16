@@ -30,8 +30,8 @@ fun SponsorBanner(banner: SponsorBannerDto, onClick: () -> Unit, modifier: Modif
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
             .clickable {
                 onClick()
                 // Only https links are stored by the backend; anything else is not opened.

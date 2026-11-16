@@ -10,11 +10,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,7 +49,7 @@ fun SavedSearchesScreen(
         topBar = {
             TopAppBar(
                 title = { Text("${t("saved_searches.title")} (${viewModel.searches.size})") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = t("chat.back")) } }
             )
         }
     ) { padding ->
@@ -58,8 +58,8 @@ fun SavedSearchesScreen(
                 viewModel.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Primary) }
                 viewModel.searches.isEmpty() -> EmptyState()
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(viewModel.searches, key = { it.id }) { search ->
@@ -85,9 +85,9 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onEdit: (
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen)
-            .background(WhiteColor, RoundedCornerShape(14.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
-            .padding(14.dp),
+            .background(WhiteColor, RoundedCornerShape(16.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -108,7 +108,7 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onEdit: (
                     }
                     search.city?.let {
                         if (meta.isNotEmpty()) Text(" · ", color = TextMuted, fontSize = 12.sp)
-                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
+                        Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = TextMuted, modifier = Modifier.size(12.dp))
                         Spacer(Modifier.width(2.dp))
                         Text(cityLabelT(it), color = TextMuted, fontSize = 12.sp)
                     }
@@ -116,10 +116,10 @@ private fun SavedSearchRow(search: SavedSearchDto, onOpen: () -> Unit, onEdit: (
             }
         }
         IconButton(onClick = onEdit) {
-            Icon(Icons.Filled.Edit, contentDescription = t("annonces.edit_search_title"), tint = TextMuted)
+            Icon(Icons.Outlined.Edit, contentDescription = t("annonces.edit_search_title"), tint = TextMuted)
         }
         IconButton(onClick = onDelete) {
-            Icon(Icons.Filled.Close, contentDescription = t("common.delete"), tint = TextMuted)
+            Icon(Icons.Outlined.Close, contentDescription = t("common.delete"), tint = TextMuted)
         }
     }
 }
@@ -134,7 +134,7 @@ private fun EmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.NotificationsNone, contentDescription = null, tint = TextMuted, modifier = Modifier.size(40.dp))
+        com.soukmar.app.ui.components.EmptyIcon(Icons.Outlined.NotificationsNone)
         Spacer(Modifier.height(12.dp))
         Text(t("saved_searches.empty"), style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Spacer(Modifier.height(4.dp))
