@@ -33,6 +33,7 @@ class ChatViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val socketManager: ChatSocketManager,
     private val tokenManager: TokenManager,
+    private val uploadRepository: com.soukmar.app.data.repository.UploadRepository,
     val callManager: CallManager
 ) : ViewModel() {
 
@@ -54,6 +55,11 @@ class ChatViewModel @Inject constructor(
         private set
 
     var messageText by mutableStateOf("")
+    /** Photo picked for the next message (local Uri, shown as preview until sent). */
+    var pendingImage by mutableStateOf<android.net.Uri?>(null)
+    var sendingImage by mutableStateOf(false)
+        private set
+    var imageError by mutableStateOf<String?>(null)
     var offerAmount by mutableStateOf("")
     var showOfferInput by mutableStateOf(false)
 
@@ -143,11 +149,30 @@ class ChatViewModel @Inject constructor(
         val text = messageText.trim()
         val conv = conversation ?: return
         val partner = partnerId() ?: return
-        if (text.isEmpty()) return
-        socketManager.sendMessage(conv.id, partner, conv.listingId, text)
-        messageText = ""
-        socketManager.emitTyping(conv.id, false)
-        typingJob?.cancel()
+        val image = pendingImage
+        if ((text.isEmpty() && image == null) || sendingImage) return
+        if (image == null) {
+            socketManager.sendMessage(conv.id, partner, conv.listingId, text)
+            messageText = ""
+            socketManager.emitTyping(conv.id, false)
+            typingJob?.cancel()
+            return
+        }
+        sendingImage = true
+        imageError = null
+        viewModelScope.launch {
+            when (val up = uploadRepository.uploadChatImage(image)) {
+                is ApiResult.Success -> {
+                    socketManager.sendMessage(conv.id, partner, conv.listingId, text, up.data)
+                    pendingImage = null
+                    messageText = ""
+                    socketManager.emitTyping(conv.id, false)
+                    typingJob?.cancel()
+                }
+                is ApiResult.Error -> imageError = up.message
+            }
+            sendingImage = false
+        }
     }
 
     fun onTyping() {

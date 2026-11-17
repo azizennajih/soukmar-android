@@ -72,6 +72,21 @@ class UploadRepository @Inject constructor(
         }
     }
 
+    /** One photo for a chat message: downscaled like a listing photo, the server strips EXIF/GPS and returns a private signed URL. */
+    suspend fun uploadChatImage(uri: Uri): ApiResult<String> = withContext(Dispatchers.IO) {
+        val tempFile = File.createTempFile("chat_", ".jpg", context.cacheDir)
+        try {
+            compressToJpeg(uri, tempFile, 1600)
+            val part = MultipartBody.Part.createFormData("image", tempFile.name, tempFile.asRequestBody("image/jpeg".toMediaType()))
+            val res = api.uploadChatImage(part)
+            if (res.isSuccessful && res.body() != null) ApiResult.Success(res.body()!!.url) else parseError(res)
+        } catch (e: Exception) {
+            ApiResult.Error(genericErrorText())
+        } finally {
+            tempFile.delete()
+        }
+    }
+
     /** AI listing assistant: null when the status cannot be read (treated as "not configured"). */
     suspend fun aiStatus(): com.soukmar.app.data.remote.dto.AiStatusDto? = try {
         val res = api.getAiStatus()

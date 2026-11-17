@@ -34,6 +34,8 @@ data class ChatListingDto(
 data class MessageDto(
     val id: String,
     val content: String,
+    /** Signed Cloudinary URL of an attached chat photo (content may then be empty). */
+    val imageUrl: String? = null,
     val type: String,
     val offerAmount: Double? = null,
     val offerStatus: String? = null,

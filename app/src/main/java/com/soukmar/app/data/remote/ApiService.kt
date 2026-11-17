@@ -135,6 +135,10 @@ interface ApiService {
         @Part("type") type: okhttp3.RequestBody
     ): Response<UploadResponseDto>
 
+    @Multipart
+    @POST("upload/chat")
+    suspend fun uploadChatImage(@Part image: MultipartBody.Part): Response<com.soukmar.app.data.remote.dto.ChatImageUploadDto>
+
     @GET("favorites")
     suspend fun getFavorites(): Response<List<ListingDto>>
 

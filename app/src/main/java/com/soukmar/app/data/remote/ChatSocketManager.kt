@@ -103,12 +103,13 @@ class ChatSocketManager @Inject constructor(private val json: Json) {
         socket?.emit("join_conversation", conversationId)
     }
 
-    fun sendMessage(conversationId: String, receiverId: String, listingId: String, content: String) {
+    fun sendMessage(conversationId: String, receiverId: String, listingId: String, content: String, imageUrl: String? = null) {
         socket?.emit("send_message", JSONObject().apply {
             put("conversationId", conversationId)
             put("receiverId", receiverId)
             put("listingId", listingId)
             put("content", content)
+            if (imageUrl != null) put("imageUrl", imageUrl)
         })
     }
 

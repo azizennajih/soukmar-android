@@ -109,6 +109,9 @@ data class ListingUpsertRequest(
 @Serializable
 data class UploadResponseDto(val urls: List<String> = emptyList())
 
+@Serializable
+data class ChatImageUploadDto(val url: String)
+
 /** Partial PUT body for a status-only change (e.g. mes-annonces' réserver/
  * mettre en vente toggle) — the backend applies whichever fields are
  * present, so this avoids re-sending the full listing form. */

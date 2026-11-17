@@ -108,5 +108,6 @@ private fun lastMessagePreview(conv: ConversationDto): String {
         val amount = last.offerAmount?.let { if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString() } ?: ""
         return t("chat.offer_short", "amount" to amount, "currency" to conv.listing.currency)
     }
-    return last.content.take(40)
+    if (last.imageUrl != null && last.content.isBlank()) return "\uD83D\uDCF7 " + t("chatimg.label")
+    return (if (last.imageUrl != null) "\uD83D\uDCF7 " else "") + last.content.take(40)
 }

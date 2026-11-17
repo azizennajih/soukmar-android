@@ -3,6 +3,16 @@
 package com.soukmar.app.ui.screens.chat
 
 import android.Manifest
+import android.net.Uri
+import androidx.core.content.FileProvider
+import coil.compose.AsyncImage
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.InsertDriveFile
+import java.io.File
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -300,6 +310,37 @@ private fun CompactStars(avgRating: Double?) {
 
 @Composable
 private fun ChatContent(viewModel: ChatViewModel) {
+    val context = LocalContext.current
+    var lightboxUrl by remember { mutableStateOf<String?>(null) }
+    var attachMenuOpen by remember { mutableStateOf(false) }
+    val galleryPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> if (uri != null) viewModel.pendingImage = uri }
+    val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> if (uri != null) viewModel.pendingImage = uri }
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) viewModel.pendingImage = pendingCameraUri
+        pendingCameraUri = null
+    }
+    fun startCameraCapture() {
+        val photoFile = File(File(context.cacheDir, "camera").apply { mkdirs() }, "chat_${System.currentTimeMillis()}.jpg")
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", photoFile)
+        pendingCameraUri = uri
+        cameraLauncher.launch(uri)
+    }
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) startCameraCapture() }
+    fun launchCamera() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) startCameraCapture()
+        else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+    lightboxUrl?.let { url ->
+        Dialog(onDismissRequest = { lightboxUrl = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.92f)).clickable { lightboxUrl = null }, contentAlignment = Alignment.Center) {
+                AsyncImage(model = url, contentDescription = t("chatimg.alt"), contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize().padding(8.dp))
+                IconButton(onClick = { lightboxUrl = null }, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+                    Icon(Icons.Outlined.Close, contentDescription = t("chatimg.close"), tint = Color.White)
+                }
+            }
+        }
+    }
     val listState = rememberLazyListState()
 
     LaunchedEffect(viewModel.messages.size) {
@@ -349,7 +390,7 @@ private fun ChatContent(viewModel: ChatViewModel) {
                         onReject = { viewModel.respondOffer(msg, "REJECTED") },
                         onCancel = { viewModel.requestCancelOffer(msg) }
                     )
-                    else -> TextBubble(msg, viewModel.isMine(msg))
+                    else -> TextBubble(msg, viewModel.isMine(msg), onImageClick = { lightboxUrl = it })
                 }
             }
         }
@@ -400,10 +441,48 @@ private fun ChatContent(viewModel: ChatViewModel) {
             }
 
             HorizontalDivider(color = BorderColor)
+            viewModel.pendingImage?.let { img ->
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = img, contentDescription = t("chatimg.alt"), contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(64.dp).background(BorderColor, RoundedCornerShape(12.dp)).border(1.dp, BorderColor, RoundedCornerShape(12.dp))
+                    )
+                    if (viewModel.sendingImage) {
+                        Text(t("chatimg.uploading"), fontSize = 12.sp, color = TextMuted, modifier = Modifier.padding(start = 12.dp))
+                    }
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { viewModel.pendingImage = null }, enabled = !viewModel.sendingImage) {
+                        Icon(Icons.Outlined.Close, contentDescription = t("chatimg.remove"), tint = TextPrimary)
+                    }
+                }
+            }
+            viewModel.imageError?.let { Text(it, color = Primary, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 12.dp)) }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
+                Box {
+                    IconButton(onClick = { attachMenuOpen = true }, enabled = !viewModel.sendingImage) {
+                        Icon(Icons.Outlined.AttachFile, contentDescription = t("chatimg.attach"), tint = TextMuted)
+                    }
+                    DropdownMenu(expanded = attachMenuOpen, onDismissRequest = { attachMenuOpen = false }) {
+                        DropdownMenuItem(
+                            text = { Text(t("chatimg.camera")) },
+                            leadingIcon = { Icon(Icons.Outlined.CameraAlt, contentDescription = null) },
+                            onClick = { attachMenuOpen = false; launchCamera() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(t("chatimg.gallery")) },
+                            leadingIcon = { Icon(Icons.Outlined.Image, contentDescription = null) },
+                            onClick = { attachMenuOpen = false; galleryPicker.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(t("chatimg.file")) },
+                            leadingIcon = { Icon(Icons.Outlined.InsertDriveFile, contentDescription = null) },
+                            onClick = { attachMenuOpen = false; filePicker.launch("image/*") }
+                        )
+                    }
+                }
                 // Offers go from the buyer to the listing's owner only.
                 if (viewModel.conversation?.let { it.listing.userId != viewModel.currentUserId } == true) {
                     IconButton(onClick = { viewModel.showOfferInput = !viewModel.showOfferInput }) {
@@ -420,8 +499,9 @@ private fun ChatContent(viewModel: ChatViewModel) {
                     keyboardActions = KeyboardActions(onSend = { viewModel.sendMessage() }),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, cursorColor = Primary)
                 )
-                IconButton(onClick = { viewModel.sendMessage() }, enabled = viewModel.messageText.isNotBlank()) {
-                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Envoyer", tint = if (viewModel.messageText.isNotBlank()) Primary else TextMuted)
+                val canSend = (viewModel.messageText.isNotBlank() || viewModel.pendingImage != null) && !viewModel.sendingImage
+                IconButton(onClick = { viewModel.sendMessage() }, enabled = canSend) {
+                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Envoyer", tint = if (canSend) Primary else TextMuted)
                 }
             }
         }
@@ -451,7 +531,7 @@ private fun MsgTimeLabel(iso: String) {
 }
 
 @Composable
-private fun TextBubble(msg: MessageDto, mine: Boolean) {
+private fun TextBubble(msg: MessageDto, mine: Boolean, onImageClick: (String) -> Unit = {}) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (mine) Alignment.End else Alignment.Start
@@ -465,7 +545,15 @@ private fun TextBubble(msg: MessageDto, mine: Boolean) {
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .fillMaxWidth(0.72f)
             ) {
-                Text(msg.content, color = if (mine) Color.White else TextPrimary, fontSize = 14.sp)
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    msg.imageUrl?.let { url ->
+                        AsyncImage(
+                            model = url, contentDescription = t("chatimg.alt"), contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp, max = 240.dp).clip(RoundedCornerShape(12.dp)).clickable { onImageClick(url) }
+                        )
+                    }
+                    if (msg.content.isNotBlank()) Text(msg.content, color = if (mine) Color.White else TextPrimary, fontSize = 14.sp)
+                }
             }
         }
     }

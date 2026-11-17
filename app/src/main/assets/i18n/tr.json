@@ -25,7 +25,9 @@
     "search_by_image": "Fotoğrafla ara",
     "country_fixed": "Ülke hesabınız tarafından sabitlendi",
     "country_auto_detected": "Ülke, konumunuza göre otomatik olarak algılandı",
-    "my_follows": "Takip edilenler"
+    "my_follows": "Takip edilenler",
+    "home": "Ana sayfa",
+    "account": "Hesabım"
   },
   "image_search": {
     "title": "Fotoğrafla arama",
@@ -2132,5 +2134,19 @@
     "keep_mine": "Benimkiler kalsın",
     "applied": "Öneri uygulandı. Lütfen bilgileri kontrol edin ve eksikleri tamamlayın.",
     "applied_kept_texts": "Metinleriniz korundu. Kategori ve özellikler uygulandı."
+  },
+  "chatimg": {
+    "label": "Fotoğraf",
+    "attach": "Fotoğraf ekle",
+    "camera": "Fotoğraf çek",
+    "gallery": "Galeriden seç",
+    "file": "Dosya yükle",
+    "remove": "Fotoğrafı kaldır",
+    "alt": "Gönderilen fotoğraf",
+    "close": "Kapat",
+    "uploading": "Fotoğraf yükleniyor …",
+    "err_type": "Lütfen bir görsel seçin (JPG, PNG, WebP veya GIF).",
+    "err_big": "Görsel çok büyük (en fazla 10 MB).",
+    "err_upload": "Fotoğraf gönderilemedi. Lütfen tekrar deneyin."
   }
 }
