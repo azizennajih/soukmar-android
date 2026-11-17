@@ -133,3 +133,10 @@ Ab hier wächst die App nicht mehr in nummerierten Phasen, sondern in gebündelt
 - **i18n:** zwei neue Schlüssel `nav.home`, `nav.account` zuerst im Web angelegt (11 Sprachen), dann kopiert.
 - **Fallstricke:** `GridItemSpan(2)` durch `maxLineSpan` ersetzt (Raster ist jetzt adaptiv). Heredocs mit Kotlin-Code scheitern in der Git-Bash dieses PCs, Dateien stattdessen mit dem Write-Werkzeug oder Node-Skripten schreiben.
 - **Getestet:** `assembleDebug` grün. Emulator (`soukmar_test`, 720×1280, lokales Backend, Konto ahmed): Splash, Login, Startseite (Kopfzeile, Suche, Kategorienreihe, Premium- und Neueste-Karten, untere Leiste), Kategorien-Tab, Konto-Tab, Anzeigen-Detail, erster Schritt des Anzeigenformulars: jeweils per Bildschirmfoto geprüft. **Nicht getestet:** Herz antippen, Suchergebnisse, Formular-Schritte 2 bis 5 samt Veröffentlichen, Chat, Favoriten, Meine Anzeigen, Profil, Einstellungen, Admin im Emulator; RTL-Darstellung; Tablet-Breite; echtes Gerät; `assembleLive`.
+
+## Tranche 27 — Sicherheitsprüfung (2026-11-17)
+- **Token verschlüsselt:** neue `data/local/TokenCipher.kt` (AES-256-GCM, Schlüssel im Android Keystore); `TokenManager` verschlüsselt beim Speichern und entschlüsselt beim Lesen. Ältere Klartext-Token werden weiter akzeptiert und beim nächsten Schreiben verschlüsselt; schlägt die Entschlüsselung fehl (Schlüssel weg), ist der Nutzer abgemeldet.
+- **WhatsApp-Link:** nur Ziffern der Nummer, `startActivity` abgefangen (`ListingDetailScreen.kt`).
+- Geprüft ohne Befund: Manifest (nur `MainActivity` exportiert, keine Deep Links), FileProvider (nur `cache/camera`), `network_security_config` (Klartext nur 10.0.2.2/localhost), Logging nur im Debug, `allowBackup=false`, Banner-Links nur `https://`.
+- **Offen (Empfehlung):** `isMinifyEnabled = false` im Release; R8 braucht eigene Regeln (Hilt, kotlinx.serialization, Socket.IO) und einen Release-Test, vor dem Play-Store-Build nachholen. `live`-Build ist mit dem Debug-Schlüssel signiert (nur Sideload).
+- **Getestet:** `assembleDebug` erfolgreich. **Nicht getestet:** Login und Chat im Emulator mit dem verschlüsselten Token.

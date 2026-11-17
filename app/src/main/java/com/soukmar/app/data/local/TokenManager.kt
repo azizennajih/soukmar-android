@@ -26,14 +26,14 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
         val USER_ROLE = stringPreferencesKey("user_role")
     }
 
-    val tokenFlow: Flow<String?> = context.dataStore.data.map { it[Keys.TOKEN] }
+    val tokenFlow: Flow<String?> = context.dataStore.data.map { prefs -> prefs[Keys.TOKEN]?.let { TokenCipher.decrypt(it) } }
     val roleFlow: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ROLE] }
 
-    suspend fun getToken(): String? = context.dataStore.data.first()[Keys.TOKEN]
+    suspend fun getToken(): String? = context.dataStore.data.first()[Keys.TOKEN]?.let { TokenCipher.decrypt(it) }
 
     suspend fun saveSession(token: String, userId: String, name: String, email: String, role: String) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.TOKEN] = token
+            prefs[Keys.TOKEN] = TokenCipher.encrypt(token)
             prefs[Keys.USER_ID] = userId
             prefs[Keys.USER_NAME] = name
             prefs[Keys.USER_EMAIL] = email
@@ -43,7 +43,7 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
 
     /** Swaps only the login token — the server issues a fresh one after a password change and revokes all older ones. */
     suspend fun replaceToken(token: String) {
-        context.dataStore.edit { prefs -> prefs[Keys.TOKEN] = token }
+        context.dataStore.edit { prefs -> prefs[Keys.TOKEN] = TokenCipher.encrypt(token) }
     }
 
     suspend fun currentUserId(): String? = context.dataStore.data.first()[Keys.USER_ID]

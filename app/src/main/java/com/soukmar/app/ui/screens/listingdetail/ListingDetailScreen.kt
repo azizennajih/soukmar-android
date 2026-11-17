@@ -234,7 +234,11 @@ fun ListingDetailScreen(
                             onChat = { viewModel.startChat() },
                             onLogin = onRequireLogin,
                             onCallWhatsapp = { number ->
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$number")))
+                                // Digits only: the number is user data and must not be able to alter the link.
+                                val digits = number.filter { it.isDigit() }
+                                if (digits.isNotEmpty()) {
+                                    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$digits"))) } catch (e: Exception) { /* no app or browser */ }
+                                }
                             }
                         )
 
