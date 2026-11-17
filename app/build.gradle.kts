@@ -28,7 +28,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "API_BASE_URL", "\"https://souqmar24.com/api/\"")
             buildConfigField("String", "SOCKET_URL", "\"https://souqmar24.com\"")
@@ -38,6 +39,15 @@ android {
         }
         // Installable test build for a real phone/tablet: same live server as release (souqmar24.com), signed with the
         // debug key so it can be sideloaded. Not for the Play Store (that needs a proper release keystore).
+        // Same minified (R8) build as release, but pointed at the local backend on the emulator and signed with the
+        // debug key: lets a shrunk build be exercised end to end without the production server.
+        create("releaseLocal") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
+            buildConfigField("String", "SOCKET_URL", "\"http://10.0.2.2:3000\"")
+        }
         create("live") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
