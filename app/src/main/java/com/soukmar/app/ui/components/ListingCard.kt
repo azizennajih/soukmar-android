@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Verified
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -188,6 +189,11 @@ fun ListingCard(
                     Spacer(Modifier.width(4.dp))
                 }
                 Spacer(Modifier.width(4.dp))
+                // Number of views, like the web card
+                Icon(Icons.Outlined.Visibility, contentDescription = null, tint = TextSubtle, modifier = Modifier.size(12.dp))
+                Spacer(Modifier.width(2.dp))
+                Text(listing.views.toString(), color = TextSubtle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                Spacer(Modifier.width(6.dp))
                 Text(timeAgoT(listing.createdAt), color = TextSubtle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
             }
             listing.user?.let { seller ->
